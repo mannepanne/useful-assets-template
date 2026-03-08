@@ -1,7 +1,7 @@
 ---
 name: review-pr-team
 description: Comprehensive PR review using agent teams - security, product, and architecture specialists who debate and challenge each other's findings. Use for critical changes requiring thorough multi-perspective analysis.
-disable-model-invocation: true
+disable-model-invocation: false
 user-invocable: true
 argument-hint:
   - PR-number
