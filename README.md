@@ -4,7 +4,7 @@ My (Magnus Hultberg) battle-tested project template for working with AI coding a
 
 ## What is this
 
-This template encapsulates patterns and workflows that have consistently delivered results for me when building software with AI assistants like Claude Code. It's opinionated, practical, and designed to minimise friction while maximising collaboration quality.
+This template encapsulates patterns and workflows that have worked well for me when building software with AI assistants like Claude Code. It's opinionated, practical, and designed to minimise friction while maximising collaboration quality and consistency of output over time.
 
 ## Core principles
 
