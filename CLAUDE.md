@@ -8,12 +8,12 @@ Navigation index and quick reference for working with this project.
 
 ---
 
-## Rules of Engagement
+## Rules of engagement
 
 Collaboration principles and ways of working: @.claude/CLAUDE.md
 When asked to remember anything, add project memory in this CLAUDE.md (project root), not @.claude/CLAUDE.md.
 
-## Project Overview
+## Project overview
 
 **[PROJECT NAME]** - [One sentence description of what this project does]
 
@@ -27,7 +27,7 @@ When asked to remember anything, add project memory in this CLAUDE.md (project r
 
 **Full specification:** [Link to master spec in SPECIFICATIONS/ORIGINAL_IDEA/]
 
-## Architecture Overview
+## Architecture overview
 
 **Stack:**
 - **Framework**: [e.g., Next.js 14+, Django, FastAPI, etc.]
@@ -44,9 +44,9 @@ When asked to remember anything, add project memory in this CLAUDE.md (project r
 
 **Current Status:** [e.g., "Planning complete - ready to begin Phase 1", "In development - Phase 3", "Production ready"]
 
-## Implementation Phases
+## Implementation phases
 
-Development is organized into numbered phases with clear deliverables, testing requirements, and PR workflows.
+Development is organised into numbered phases with clear deliverables, testing requirements, and PR workflows.
 
 1. [01-phase-name.md](./SPECIFICATIONS/01-phase-name.md) - [Brief description] ([Timeframe])
 2. [02-phase-name.md](./SPECIFICATIONS/02-phase-name.md) - [Brief description] ([Timeframe])
@@ -75,11 +75,11 @@ How-it-works documentation for implemented features:
 - [troubleshooting.md](./REFERENCE/troubleshooting.md) - Common issues and solutions
 - [Add project-specific reference docs as they're created]
 
-*Note: Keep CLAUDE.md files short (<300 lines). Break details into separate reference files with succinct summaries. CLAUDE.md files work as "library index" to find context when needed, minimizing token usage.*
+*Note: Keep CLAUDE.md files short (<300 lines). Break details into separate reference files with succinct summaries. CLAUDE.md files work as "library index" to find context when needed, minimising token usage.*
 
-## Code Conventions
+## Code conventions
 
-### File Headers
+### File headers
 ```typescript
 // ABOUT: Brief description of file purpose
 // ABOUT: Key functionality or responsibility
@@ -95,7 +95,7 @@ How-it-works documentation for implemented features:
 - Minimal (code should be self-documenting)
 - Explain complex logic and non-obvious decisions
 
-## Development Workflow
+## Development workflow
 
 1. Create feature branch: `git checkout -b feature/feature-name`
 2. Check `SPECIFICATIONS/` for relevant specs
@@ -105,9 +105,9 @@ How-it-works documentation for implemented features:
   - **`/review-pr-team`** - Multi-perspective agent team (critical changes, 5-10 min)
   - **See:** [pr-review-workflow.md](./REFERENCE/pr-review-workflow.md) for complete guide
 
-## TypeScript Configuration
+## TypeScript configuration
 
-[Customize based on your project]
+[Customise based on your project]
 - Target: [e.g., ESNext, ES2022, etc.]
 - Strict mode: [enabled/disabled]
 - Path alias: [e.g., `@/` maps to `./src/`]
@@ -130,7 +130,7 @@ npm run test:coverage     # Coverage report
 
 **See:** [testing-strategy.md](./REFERENCE/testing-strategy.md) for complete details
 
-## Quick Reference Links
+## Quick reference links
 
 **Planning & Specs:**
 - **Project outline** → [SPECIFICATIONS/ORIGINAL_IDEA/project-outline.md](./SPECIFICATIONS/ORIGINAL_IDEA/project-outline.md)
@@ -144,7 +144,7 @@ npm run test:coverage     # Coverage report
 - **Known issues?** → [technical-debt.md](./REFERENCE/technical-debt.md)
 - **Getting unstuck?** → [troubleshooting.md](./REFERENCE/troubleshooting.md)
 
-## Project-Specific Notes
+## Project-specific notes
 
 [Add any project-specific context, quirks, or important information here]
 

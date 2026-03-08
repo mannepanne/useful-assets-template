@@ -12,7 +12,7 @@
 
 ---
 
-## Configuration Overview
+## Configuration overview
 
 **Environment files used:**
 - **Local development:** [e.g., `.dev.vars`, `.env.local`, etc. - specify which and why]
@@ -25,7 +25,7 @@
 
 ---
 
-## Required Environment Variables
+## Required environment variables
 
 ### [SERVICE_1_API_KEY]
 [Description of what this key is for]
@@ -87,7 +87,7 @@ npx wrangler secret put DATABASE_URL
 
 ---
 
-## Environment File Templates
+## Environment file templates
 
 ### `.dev.vars` Template
 ```bash
@@ -122,7 +122,7 @@ SERVICE_1_API_KEY=your_key_here
 
 ---
 
-## Third-Party Service Setup
+## Third-party service setup
 
 ### [Service Name 1]
 **Purpose:** [What this service does for your project]
@@ -151,9 +151,9 @@ SERVICE_1_API_KEY=your_key_here
 
 ---
 
-## Local Development Setup
+## Local development setup
 
-### First-Time Setup
+### First-time setup
 
 1. **Install dependencies**
    ```bash
@@ -172,7 +172,7 @@ SERVICE_1_API_KEY=your_key_here
    # Check that services connect successfully
    ```
 
-### Updating Environment Variables
+### Updating environment variables
 
 **When you add a new variable:**
 1. Update this documentation
@@ -182,9 +182,9 @@ SERVICE_1_API_KEY=your_key_here
 
 ---
 
-## Production Deployment
+## Production deployment
 
-### Environment Variables Checklist
+### Environment variables checklist
 
 Before deploying, ensure all required variables are set:
 
@@ -193,7 +193,7 @@ Before deploying, ensure all required variables are set:
 - [ ] [ADDITIONAL_VARIABLE]
 - [ ] [Add all your variables to this checklist]
 
-### Deployment Commands
+### Deployment commands
 
 **Cloudflare Workers:**
 ```bash
@@ -223,7 +223,7 @@ vercel --prod
 
 ---
 
-## Security Best Practices
+## Security best practices
 
 ### Development
 - Use separate API keys for development and production
@@ -265,7 +265,7 @@ vercel --prod
 
 ---
 
-## Environment Variable Reference
+## Environment variable reference
 
 Quick reference table of all variables:
 

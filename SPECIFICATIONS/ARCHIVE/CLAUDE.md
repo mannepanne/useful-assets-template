@@ -2,7 +2,7 @@
 
 Auto-loaded when working with files in this directory. Completed implementation phases moved here for reference.
 
-## Completed Phases
+## Completed phases
 
 *(No archived phases yet - specifications move here after successful completion and PR merge)*
 

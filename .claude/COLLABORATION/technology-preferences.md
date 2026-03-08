@@ -10,7 +10,7 @@
 
 Reference guide for selecting technologies across projects.
 
-## General Preferences
+## General preferences
 
 - Free or low cost solutions are always preferred
 - We prefer state-of-the-art solutions, but avoid experimental code or beta versions (unless nothing else is available)
@@ -18,7 +18,7 @@ Reference guide for selecting technologies across projects.
 - If a suitable technology doesn't seem to be available, recommend running a deep research task first to understand the topic better and find potential alternatives
 - For any selected framework, library, third party component, API or other service, read the manual to ensure you use the latest stable version and follow best practice usage and patterns
 
-## Platform-Specific Preferences
+## Platform-specific preferences
 
 | Use Case | Preferred Technology | Reason |
 | --- | --- | --- |

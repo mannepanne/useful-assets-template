@@ -6,7 +6,7 @@ My battle-tested project template for working with AI coding assistants, refined
 
 This template encapsulates patterns and workflows that have consistently delivered results for me when building software with AI assistants like Claude Code. It's opinionated, practical, and designed to minimise friction while maximising collaboration quality.
 
-## Core Principles
+## Core principles
 
 **Lifecycle-based documentation** - Documents move through clear stages (SPECIFICATIONS → REFERENCE → ARCHIVE), keeping active context minimal and focused.
 
@@ -39,7 +39,7 @@ REFERENCE/                  # How implemented features work
 
 1. **Use this template** (click "Use this template" button on GitHub)
 2. **Follow setup guide** - See [TEMPLATE-INSTRUCTIONS.md](./TEMPLATE-INSTRUCTIONS.md)
-3. **Customize for your project** - Replace placeholders with your details
+3. **Customise for your project** - Replace placeholders with your details
 4. **Start building** - Break project into phases, work systematically
 
 ## Why did I end up here...

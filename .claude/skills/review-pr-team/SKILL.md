@@ -8,7 +8,7 @@ argument-hint:
 ---
 # Multi-Perspective PR Review with Agent Teams
 
-This skill provides comprehensive pull request review using **agent teams** - three specialized reviewers who independently analyze the PR, then **discuss findings, debate severity, and challenge each other's conclusions** to reach collaborative consensus.
+This skill provides comprehensive pull request review using **agent teams** - three specialized reviewers who independently analyse the PR, then **discuss findings, debate severity, and challenge each other's conclusions** to reach collaborative consensus.
 
 ## How This Works
 
@@ -143,7 +143,7 @@ Your focus: Design patterns, code quality, scalability, maintainability, testing
 
 Each teammate:
 1. Review the PR diff and changed files thoroughly
-2. Analyze from your specialized perspective
+2. Analyse from your specialized perspective
 3. Document findings in 4 categories:
    - ✅ **Strengths**: What's done well
    - 🔴 **Critical Issues**: Must fix before merge (blocking)
@@ -228,7 +228,7 @@ After all teammates complete the discussion phase:
 ```markdown
 ## Comprehensive PR Review - Collaborative Team Analysis
 
-> This review was conducted by a team of specialized reviewers who independently analyzed the PR, then discussed findings, debated severity, and reached collaborative consensus.
+> This review was conducted by a team of specialized reviewers who independently analysed the PR, then discussed findings, debated severity, and reached collaborative consensus.
 
 ### 🔴 Critical Issues - Must Fix Before Merge
 
@@ -299,7 +299,7 @@ After all teammates complete the discussion phase:
 
 ---
 
-*This review was conducted by an agent team using collaborative discussion. Reviewers independently analyzed the PR, then shared findings, challenged each other's conclusions, and reached consensus through structured debate.*
+*This review was conducted by an agent team using collaborative discussion. Reviewers independently analysed the PR, then shared findings, challenged each other's conclusions, and reached consensus through structured debate.*
 ```
 
 3. **Post the synthesized review** as a comment on the PR:
@@ -341,7 +341,7 @@ Clean up the team
 This will:
 1. Fetch PR #1 details and relevant project context
 2. Create agent team with security, product, and architect reviewers
-3. Reviewers independently analyze the PR
+3. Reviewers independently analyse the PR
 4. Reviewers discuss findings, debate severity, and reach consensus
 5. Lead synthesizes collaborative findings
 6. Post comprehensive review to PR #1

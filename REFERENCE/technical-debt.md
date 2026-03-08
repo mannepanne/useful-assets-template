@@ -14,7 +14,7 @@ Items here are accepted risks or pragmatic choices made during development, not 
 
 ---
 
-## Active Technical Debt
+## Active technical debt
 
 *(No items yet - will be added as the project is built)*
 
@@ -30,7 +30,7 @@ Items here are accepted risks or pragmatic choices made during development, not 
 
 ---
 
-## Resolved Items
+## Resolved items
 
 *(Move items here when addressed, with resolution notes)*
 

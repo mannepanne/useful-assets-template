@@ -137,7 +137,7 @@ Conduct a comprehensive, unbiased review across all dimensions:
 **Performance:**
 - Any obvious performance issues?
 - Appropriate use of caching?
-- Database queries optimized (if applicable)?
+- Database queries optimised (if applicable)?
 - Resource usage reasonable?
 
 **Testing:**

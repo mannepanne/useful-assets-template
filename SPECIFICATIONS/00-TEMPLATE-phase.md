@@ -4,7 +4,7 @@
 
 ---
 
-## Phase Overview
+## Phase overview
 
 **Phase number:** [X]
 **Phase name:** [Descriptive name for this implementation phase]
@@ -16,21 +16,21 @@
 
 ---
 
-## Scope and Deliverables
+## Scope and deliverables
 
-### In Scope
+### In scope
 - [ ] [Specific deliverable 1]
 - [ ] [Specific deliverable 2]
 - [ ] [Specific deliverable 3]
 - [ ] [Tests for all new functionality]
 - [ ] [Documentation updates]
 
-### Out of Scope
-- [Feature or optimization deferred to later phase]
+### Out of scope
+- [Feature or optimisation deferred to later phase]
 - [Nice-to-have that's not critical for this phase]
 - [Advanced functionality saved for future iteration]
 
-### Acceptance Criteria
+### Acceptance criteria
 - [ ] [Specific testable criterion 1]
 - [ ] [Specific testable criterion 2]
 - [ ] [Specific testable criterion 3]
@@ -40,9 +40,9 @@
 
 ---
 
-## Technical Approach
+## Technical approach
 
-### Architecture Decisions
+### Architecture decisions
 
 **[Decision 1: e.g., "Authentication Strategy"]**
 - Choice: [What you decided to use]
@@ -54,7 +54,7 @@
 - Rationale: [Why this works for your use case]
 - Alternatives considered: [Other options you evaluated]
 
-### Technology Choices
+### Technology choices
 
 **Framework/Library:** [Name and version]
 - Purpose: [What it's used for]
@@ -62,7 +62,7 @@
 
 **[Additional technologies as needed]**
 
-### Key Files and Components
+### Key files and components
 
 **New files to create:**
 ```
@@ -83,7 +83,7 @@ src/
 - [existing-file-2.ts] - [what changes and why]
 ```
 
-### Database Schema Changes
+### Database schema changes
 
 **New tables:** (if applicable)
 ```sql
@@ -107,9 +107,9 @@ CREATE INDEX idx_[table]_[column] ON [table]([column]);
 
 ---
 
-## Testing Strategy
+## Testing strategy
 
-### Unit Tests
+### Unit tests
 
 **Coverage targets:**
 - Lines: 95%+
@@ -122,7 +122,7 @@ CREATE INDEX idx_[table]_[column] ON [table]([column]);
 - `[utilityName].test.ts` - Business logic and edge cases
 - `[apiRoute].test.ts` - API endpoint responses and errors
 
-### Integration Tests
+### Integration tests
 
 **Test scenarios:**
 - [ ] [End-to-end flow 1]
@@ -130,7 +130,7 @@ CREATE INDEX idx_[table]_[column] ON [table]([column]);
 - [ ] [Error handling scenario]
 - [ ] [Edge case scenario]
 
-### Manual Testing Checklist
+### Manual testing checklist
 
 - [ ] [User action 1] works as expected
 - [ ] [User action 2] works as expected
@@ -141,7 +141,7 @@ CREATE INDEX idx_[table]_[column] ON [table]([column]);
 
 ---
 
-## Pre-Commit Checklist
+## Pre-commit checklist
 
 Before creating PR, verify:
 
@@ -159,21 +159,21 @@ Before creating PR, verify:
 
 ---
 
-## PR Workflow
+## PR workflow
 
-### Branch Naming
+### Branch naming
 ```
 feature/phase-[X]-[brief-description]
 ```
 
 Example: `feature/phase-2-authentication`
 
-### PR Title
+### PR title
 ```
 Phase [X]: [Phase Name]
 ```
 
-### PR Description Template
+### PR description template
 ```markdown
 ## Summary
 [Brief overview of what this phase implements]
@@ -195,7 +195,7 @@ Phase [X]: [Phase Name]
 [Any special deployment steps or environment variables needed]
 ```
 
-### Review Requirements
+### Review requirements
 - [ ] Use `/review-pr` for standard review
 - [ ] Use `/review-pr-team` if this phase involves:
   - Breaking changes
@@ -203,7 +203,7 @@ Phase [X]: [Phase Name]
   - Complex architectural decisions
   - Database migrations
 
-### Deployment Steps
+### Deployment steps
 1. [Step 1: e.g., "Run database migrations"]
 2. [Step 2: e.g., "Deploy to staging"]
 3. [Step 3: e.g., "Verify in staging environment"]
@@ -212,31 +212,31 @@ Phase [X]: [Phase Name]
 
 ---
 
-## Edge Cases and Considerations
+## Edge cases and considerations
 
-### Known Risks
+### Known risks
 - **[Risk 1]:** [Description and mitigation strategy]
 - **[Risk 2]:** [Description and mitigation strategy]
 
-### Performance Considerations
+### Performance considerations
 - [Consideration 1: e.g., "API calls are batched to reduce requests"]
 - [Consideration 2: e.g., "Images are lazy-loaded for better performance"]
 
-### Security Considerations
+### Security considerations
 - [Consideration 1: e.g., "All user input is sanitized"]
 - [Consideration 2: e.g., "API endpoints require authentication"]
 
-### Accessibility Considerations
+### Accessibility considerations
 - [Consideration 1: e.g., "All interactive elements are keyboard accessible"]
 - [Consideration 2: e.g., "ARIA labels added for screen readers"]
 
-### Future Optimization Opportunities
-- [Optimization 1: e.g., "Could add caching in Phase 5"]
-- [Optimization 2: e.g., "Batch operations could be parallelized later"]
+### Future optimisation opportunities
+- [Optimisation 1: e.g., "Could add caching in Phase 5"]
+- [Optimisation 2: e.g., "Batch operations could be parallelized later"]
 
 ---
 
-## Technical Debt Introduced
+## Technical debt introduced
 
 **[TD-XXX: Brief description]** (if applicable)
 - **Location:** `[file path]` - `[function name]`
@@ -249,7 +249,7 @@ See [technical-debt.md](../REFERENCE/technical-debt.md) for full tracker.
 
 ---
 
-## Related Documentation
+## Related documentation
 
 - [Root CLAUDE.md](../CLAUDE.md) - Project navigation
 - [Master specification](./ORIGINAL_IDEA/project-outline.md) - Original vision

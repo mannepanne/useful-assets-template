@@ -1,8 +1,8 @@
-# Template Customization Instructions
+# Template customisation instructions
 
-Step-by-step guide to transform this template into your own project.
+Step-by-step guide to transform this template into a new project.
 
-## Before You Start
+## Before you start
 
 **Time required:** 30-60 minutes for initial setup
 
@@ -13,20 +13,20 @@ Step-by-step guide to transform this template into your own project.
 
 **Recommended approach:**
 - Read through this entire guide first
-- Complete customization in one sitting
+- Complete customisation in one sitting
 - Commit changes as you go
 
-## Step-by-Step Customization
+## Step-by-step customisation
 
-### Phase 1: Project Identity (15 minutes)
+### Phase 1: Project identity (15 minutes)
 
-#### 1.1 Update Root README.md
+#### 1.1 Update root README.md
 - [ ] Replace this template's README with your project README
 - [ ] Include project description, setup instructions, and how to run
 - [ ] Add badges, screenshots, or demos if applicable
 - [ ] Update license section
 
-#### 1.2 Customize Root CLAUDE.md
+#### 1.2 Customise root CLAUDE.md
 - [ ] Open `CLAUDE.md` in project root
 - [ ] Replace all `[PLACEHOLDER]` sections with your project details:
   - [ ] Project name and description
@@ -35,7 +35,7 @@ Step-by-step guide to transform this template into your own project.
   - [ ] Key integrations
   - [ ] Current project status
 - [ ] Update "Implementation Phases" section with your phase names
-- [ ] Customize "Code Conventions" examples to match your project
+- [ ] Customise "Code Conventions" examples to match your project
 - [ ] Add any project-specific notes at the bottom
 - [ ] Remove the ⚠️ template warning at the top
 
@@ -50,14 +50,14 @@ Step-by-step guide to transform this template into your own project.
 4. Get daily summaries via email
 ```
 
-#### 1.3 Update This File
-- [ ] Once customization is complete, delete or archive this `TEMPLATE-INSTRUCTIONS.md` file
+#### 1.3 Update this file
+- [ ] Once customisation is complete, delete or archive this `TEMPLATE-INSTRUCTIONS.md` file
 
 ---
 
-### Phase 2: Project Planning (20-30 minutes)
+### Phase 2: Project planning (20-30 minutes)
 
-#### 2.1 Create Your Project Specification
+#### 2.1 Create your project specification
 - [ ] Create `SPECIFICATIONS/ORIGINAL_IDEA/project-outline.md`
 - [ ] Document:
   - [ ] Project vision and goals
@@ -70,7 +70,7 @@ Step-by-step guide to transform this template into your own project.
 
 **Tip:** Use [00-TEMPLATE-phase.md](./SPECIFICATIONS/00-TEMPLATE-phase.md) as a reference, but create a higher-level document here.
 
-#### 2.2 Break Down Implementation Phases
+#### 2.2 Break down implementation phases
 - [ ] Identify 4-8 major implementation phases
 - [ ] Create phase files: `01-phase-name.md`, `02-phase-name.md`, etc.
 - [ ] Use `00-TEMPLATE-phase.md` as a template for each phase
@@ -94,9 +94,9 @@ Step-by-step guide to transform this template into your own project.
 
 ---
 
-### Phase 3: Environment Configuration (10-15 minutes)
+### Phase 3: Environment configuration (10-15 minutes)
 
-#### 3.1 Document Environment Variables
+#### 3.1 Document environment variables
 - [ ] Open `REFERENCE/environment-setup.md`
 - [ ] Replace template sections with your actual services:
   - [ ] List all required environment variables
@@ -105,7 +105,7 @@ Step-by-step guide to transform this template into your own project.
   - [ ] Add third-party service setup instructions
 - [ ] Remove the ⚠️ template warning
 
-#### 3.2 Create Environment File Templates
+#### 3.2 Create environment file templates
 - [ ] Create `.dev.vars.template` or `.env.local.template` (based on your framework)
 - [ ] List all required variables with placeholder values
 - [ ] Add comments explaining each variable
@@ -136,9 +136,9 @@ RESEND_API_KEY=re_...
 
 ---
 
-### Phase 4: Project-Specific Settings (5-10 minutes)
+### Phase 4: Project-specific settings (5-10 minutes)
 
-#### 4.1 Customize Claude Code Permissions
+#### 4.1 Customise Claude Code permissions
 - [ ] Open `.claude/settings.local.json`
 - [ ] Review auto-approved permissions
 - [ ] Add project-specific permissions if needed:
@@ -154,7 +154,7 @@ RESEND_API_KEY=re_...
 "WebFetch(domain:your-api-domain.com)"
 ```
 
-#### 4.2 Review Collaboration Preferences
+#### 4.2 Review collaboration preferences
 - [ ] Check `.claude/CLAUDE.md` - collaboration principles (generally don't change)
 - [ ] Review `.claude/COLLABORATION/technology-preferences.md`
 - [ ] Update if your tech stack differs significantly from defaults
@@ -162,9 +162,9 @@ RESEND_API_KEY=re_...
 
 ---
 
-### Phase 5: Testing Setup (5 minutes)
+### Phase 5: Testing setup (5 minutes)
 
-#### 5.1 Set Up Test Framework
+#### 5.1 Set up test framework
 - [ ] Install your testing framework:
   ```bash
   npm install -D vitest @vitest/ui
@@ -182,7 +182,7 @@ RESEND_API_KEY=re_...
   ```
 - [ ] Verify tests run: `npm test`
 
-#### 5.2 Review Testing Strategy
+#### 5.2 Review testing strategy
 - [ ] Read `REFERENCE/testing-strategy.md`
 - [ ] Ensure it matches your framework choice
 - [ ] Update examples if using different testing library
@@ -190,15 +190,15 @@ RESEND_API_KEY=re_...
 
 ---
 
-### Phase 6: Final Cleanup (5 minutes)
+### Phase 6: Final cleanup (5 minutes)
 
-#### 6.1 Remove Template Artifacts
+#### 6.1 Remove template artifacts
 - [ ] Delete `SPECIFICATIONS/00-TEMPLATE-phase.md` (or keep as reference)
 - [ ] Delete or archive `TEMPLATE-INSTRUCTIONS.md` (this file)
 - [ ] Search for remaining `⚠️ TEMPLATE` warnings
 - [ ] Remove template README and replace with your own
 
-#### 6.2 Initialize Git Repository
+#### 6.2 Initialise git repository
 - [ ] If not already a git repo:
   ```bash
   git init
@@ -213,7 +213,7 @@ RESEND_API_KEY=re_...
   git push -u origin main
   ```
 
-#### 6.3 Verify Setup
+#### 6.3 Verify setup
 - [ ] All template placeholders replaced
 - [ ] Environment file template created
 - [ ] `.gitignore` configured
@@ -223,11 +223,11 @@ RESEND_API_KEY=re_...
 
 ---
 
-## Customization Checklist Summary
+## Customisation checklist summary
 
 Quick reference to ensure you didn't miss anything:
 
-### Core Files
+### Core files
 - [ ] `README.md` - Project-specific README
 - [ ] `CLAUDE.md` - Project navigation with your details
 - [ ] `.gitignore` - Includes all secret files
@@ -237,7 +237,7 @@ Quick reference to ensure you didn't miss anything:
 - [ ] `SPECIFICATIONS/ORIGINAL_IDEA/project-outline.md` - Your project spec
 - [ ] `SPECIFICATIONS/01-XX-phase-name.md` - Your implementation phases (4-8 files)
 
-### Reference Docs
+### Reference docs
 - [ ] `REFERENCE/environment-setup.md` - Your environment variables
 - [ ] `REFERENCE/testing-strategy.md` - Updated for your test framework
 - [ ] `REFERENCE/troubleshooting.md` - Will update as you encounter issues
@@ -250,14 +250,14 @@ Quick reference to ensure you didn't miss anything:
 ### Cleanup
 - [ ] Template warnings removed
 - [ ] Template example files deleted
-- [ ] Git repository initialized
+- [ ] Git repository initialised
 - [ ] First commit made
 
 ---
 
-## Starting Development
+## Starting development
 
-Once customization is complete:
+Once customisation is complete:
 
 1. **Read your Phase 1 specification**
    - Review deliverables and acceptance criteria
@@ -299,7 +299,7 @@ Once customization is complete:
 
 ---
 
-## Troubleshooting Customization
+## Troubleshooting customisation
 
 ### "I'm not sure how to break down phases"
 - Start with 3-4 major milestones
@@ -311,7 +311,7 @@ Once customization is complete:
 ### "My project doesn't fit this structure"
 - The template is flexible - adapt as needed
 - Core principles (tests, docs, phases) apply broadly
-- Feel free to reorganize folders for your needs
+- Feel free to reorganise folders for your needs
 - Keep the lazy-loading CLAUDE.md pattern if possible
 
 ### "Do I need to use all the REFERENCE files?"
@@ -319,7 +319,7 @@ Once customization is complete:
 - `environment-setup.md` - Yes, document your env vars
 - `troubleshooting.md` - Start with template, add issues as you encounter them
 - `technical-debt.md` - Use as needed during development
-- `pr-review-workflow.md` - Keep as-is unless you customize review process
+- `pr-review-workflow.md` - Keep as-is unless you customise review process
 
 ### "Can I skip the ORIGINAL_IDEA folder?"
 - Not recommended - it's your source of truth
@@ -329,13 +329,13 @@ Once customization is complete:
 
 ---
 
-## Getting Help
+## Getting help
 
-If you get stuck during customization:
+If you get stuck during customisation:
 - Review the template README.md
 - Look at collaboration principles in `.claude/CLAUDE.md`
 - Ask Claude Code for help: "How should I structure my project phases for [describe your project]?"
 
 ---
 
-**Once customization is complete, you're ready to build!** Start with Phase 1 and work through your implementation systematically. Good luck! 🚀
+**Once customisation is complete, you're ready to build!** Start with Phase 1 and work through your implementation systematically. Good luck! 🚀

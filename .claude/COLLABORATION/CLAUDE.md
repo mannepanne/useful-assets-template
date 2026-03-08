@@ -2,7 +2,7 @@
 
 Auto-loaded when working with files in this directory. Navigation index for collaboration guidance.
 
-## Files in This Directory
+## Files in this directory
 
 ### [documentation-standards.md](./documentation-standards.md)
 **When to read:** Creating or updating project documentation, README files, or reference guides.

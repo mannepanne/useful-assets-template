@@ -8,7 +8,7 @@ Auto-loaded when working with files in this directory. Forward-looking plans for
 
 ---
 
-## Purpose of This Folder
+## Purpose of this folder
 
 The SPECIFICATIONS folder contains **forward-looking plans** for features you're actively building. These are living documents that guide development and evolve as you learn more.
 
@@ -19,11 +19,11 @@ The SPECIFICATIONS folder contains **forward-looking plans** for features you're
 3. **Move completed specs to ARCHIVE/** - Keep this folder focused on current/upcoming work
 4. **Reference ORIGINAL_IDEA/** - Link back to master vision for context
 
-## How to Structure Implementation Phases
+## How to structure implementation phases
 
 Break your project into numbered sequential phases (e.g., 01-foundation.md, 02-authentication.md, etc.).
 
-### What Each Phase File Should Include
+### What each phase file should include
 
 1. **Phase Overview**
    - Phase number and name
@@ -69,7 +69,7 @@ Break your project into numbered sequential phases (e.g., 01-foundation.md, 02-a
 
 See [00-TEMPLATE-phase.md](./00-TEMPLATE-phase.md) for a complete example.
 
-## Supporting Folders
+## Supporting folders
 
 ### ORIGINAL_IDEA/
 
@@ -90,7 +90,7 @@ Move completed phase files here after:
 
 Archive serves as historical record. For current implementation details, see `REFERENCE/` documentation instead.
 
-## Workflow Example
+## Workflow example
 
 **Starting a new project:**
 1. Create master specification in `ORIGINAL_IDEA/project-outline.md`
@@ -104,7 +104,7 @@ Update the "Current phase" indicator in both:
 - Root CLAUDE.md (project navigation)
 - This file (implementation library)
 
-## When to Update This File
+## When to update this file
 
 Replace this template guidance with your actual phase list when you:
 1. Complete project planning
@@ -115,15 +115,15 @@ Replace this template guidance with your actual phase list when you:
 
 ---
 
-## Template Replacement
+## Template replacement
 
 When starting your project, replace the content below this line with your actual implementation phase list.
 
 ---
 
-## Active Implementation Phases
+## Active implementation phases
 
-Development is organized into [X] sequential phases. Each phase includes scope, acceptance criteria, testing strategy, and PR workflow.
+Development is organised into [X] sequential phases. Each phase includes scope, acceptance criteria, testing strategy, and PR workflow.
 
 **Current phase:** [Phase number and name]
 
@@ -140,7 +140,7 @@ Development is organized into [X] sequential phases. Each phase includes scope, 
 
 [Continue numbering phases...]
 
-### Supporting Documentation
+### Supporting documentation
 
 **[ORIGINAL_IDEA/](./ORIGINAL_IDEA/)**
 - `project-outline.md` - Master specification and product vision
@@ -150,7 +150,7 @@ Development is organized into [X] sequential phases. Each phase includes scope, 
 **[ARCHIVE/](./ARCHIVE/)**
 - Completed specifications (moved here when phase is done)
 
-## When Specs Move to Archive
+## When specs move to archive
 
 After completing a phase and merging the PR:
 1. Move the phase file to `ARCHIVE/`

@@ -82,11 +82,11 @@ You'll still maintain all core collaboration principles (Swedish directness, no 
 2. **Scope Control**: Ask permission before major rewrites or scope changes
 3. **Technology Choices**: Justify new technology suggestions with clear benefits
 
-**Project documentation** refers to project-specific CLAUDE.md, README.md, and organized files in the designated documentation folders.
+**Project documentation** refers to project-specific CLAUDE.md, README.md, and organised files in the designated documentation folders.
 
 ## Documentation Organization Pattern
 
-Projects use **lifecycle-based documentation** to minimize token usage:
+Projects use **lifecycle-based documentation** to minimise token usage:
 
 **The Two CLAUDE.md Files:**
 - `.claude/CLAUDE.md` (this file) - Collaboration principles, applies across projects
@@ -150,7 +150,7 @@ Tests serve dual purposes: **Validation** (verify code works) and **Directional 
 ## Version Control and Repository Management
 
 ### Repository Configuration
-- If the project isn't in a git repo, stop and ask if we shouldn't initialize one first. Usually we do want to do this straight away so we don't risk losing any work.
+- If the project isn't in a git repo, stop and ask if we shouldn't initialise one first. Usually we do want to do this straight away so we don't risk losing any work.
 - Maintain README.md file and with project-specific summary.
 - Use .gitignore for system files (.DS_Store, Thumbs.db, etc).
 - Structure projects with clear separation of concerns.
@@ -248,5 +248,10 @@ We value documentation - it enables picking up projects later and communicating 
 - Use lifecycle-based structure: ../SPECIFICATIONS/ (active),  ../SPECIFICATIONS/ARCHIVE/ (completed), ../REFERENCE/ (implementation)
 - Keep documentation current alongside code changes
 - Focus on clarity, completeness, and actionability
+
+**Writing style:**
+- **British English** - Use British spelling throughout (optimise not optimize, minimise not minimize, colour not color, etc.)
+- **Headline capitalisation** - Only capitalise the first word in headlines and proper nouns, not every word (e.g., "Getting started with the project" not "Getting Started With The Project")
+- **Consistency** - Match the style of existing documentation when editing
 
 **Detailed templates and process:** [documentation-standards.md](./COLLABORATION/documentation-standards.md)

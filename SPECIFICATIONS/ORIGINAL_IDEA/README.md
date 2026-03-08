@@ -2,7 +2,7 @@
 
 This folder is for storing your initial project concept documents, brainstorming notes, and naming inspiration.
 
-## What Goes Here
+## What goes here
 
 - Initial project outlines and specifications
 - Product vision documents
@@ -14,7 +14,7 @@ This folder is for storing your initial project concept documents, brainstorming
 
 These documents serve as the "source of truth" for the project's original intent. They're referenced throughout development but typically don't change once implementation begins.
 
-## Example Files
+## Example files
 
 - `project-outline.md` - Master specification and vision
 - `naming-rationale.md` - Why you chose the project name

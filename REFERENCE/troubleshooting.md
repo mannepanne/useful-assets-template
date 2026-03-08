@@ -13,7 +13,7 @@
 
 ---
 
-## Local Development Issues
+## Local development issues
 
 ### Port already in use
 ```bash
@@ -83,7 +83,7 @@ npm run clean                   # If you have a clean script
 
 ---
 
-## Build and Deployment Issues
+## Build and deployment issues
 
 ### Build failures
 
@@ -151,7 +151,7 @@ vercel env rm VAR_NAME            # Remove variable
 
 ---
 
-## API Integration Issues
+## API integration issues
 
 ### Generic API troubleshooting
 
@@ -205,7 +205,7 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 
 ---
 
-## Testing Issues
+## Testing issues
 
 ### Tests failing locally
 ```bash
@@ -250,7 +250,7 @@ open coverage/index.html
 
 ---
 
-## Performance Issues
+## Performance issues
 
 ### Slow local development
 - Check for file watching issues (too many files)
@@ -269,15 +269,15 @@ open coverage/index.html
 
 ### Large bundle sizes
 ```bash
-# Analyze bundle size
+# Analyse bundle size
 npm run build
 # Check output for large dependencies
 
 # Next.js specific
-npm run build -- --analyze
+npm run build -- --analyse
 
-# Webpack bundle analyzer (if using webpack)
-npx webpack-bundle-analyzer dist/stats.json
+# Webpack bundle analyser (if using webpack)
+npx webpack-bundle-analyser dist/stats.json
 ```
 
 **Optimization strategies:**
@@ -288,7 +288,7 @@ npx webpack-bundle-analyzer dist/stats.json
 
 ---
 
-## Git and Version Control Issues
+## Git and version control issues
 
 ### Merge conflicts
 ```bash
@@ -332,7 +332,7 @@ echo "path/to/large/files/" >> .gitignore
 
 ---
 
-## Database Issues
+## Database issues
 
 ### Migration failures
 ```bash
@@ -361,7 +361,7 @@ echo "path/to/large/files/" >> .gitignore
 
 ---
 
-## Browser/Client Issues
+## Browser/client issues
 
 ### JavaScript not loading
 - Check browser console for errors
@@ -387,7 +387,7 @@ res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
 ---
 
-## When All Else Fails
+## When all else fails
 
 ### Systematic debugging approach
 1. **Isolate the problem**
@@ -440,7 +440,7 @@ lsof -i :3000         # See what's using port 3000
 
 ---
 
-## Project-Specific Issues
+## Project-specific issues
 
 [Add issues specific to your project as you encounter them]
 

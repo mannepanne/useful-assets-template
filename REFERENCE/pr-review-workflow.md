@@ -132,7 +132,7 @@ The skill will:
 1. Fetch PR #42 details
 2. Gather project context
 3. Create agent team (3 reviewers)
-4. Reviewers independently analyze
+4. Reviewers independently analyse
 5. Reviewers discuss and debate findings
 6. Lead synthesizes collaborative analysis
 7. Post unified review with discussion highlights

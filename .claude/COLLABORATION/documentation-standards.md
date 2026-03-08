@@ -29,7 +29,7 @@ When creating documentation, focus on these areas:
 
 ## Documentation Process
 
-1. Analyze the target code thoroughly
+1. Analyse the target code thoroughly
 2. Identify all public interfaces
 3. Document expected behaviors
 4. Include code examples

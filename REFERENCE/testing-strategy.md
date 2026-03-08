@@ -26,7 +26,7 @@ When making changes, tests should:
 
 ---
 
-## Testing Principles
+## Testing principles
 
 ### 1. Tests Define Expected Behavior
 

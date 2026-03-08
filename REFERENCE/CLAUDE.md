@@ -2,7 +2,7 @@
 
 Auto-loaded when working with files in this directory. How-it-works documentation for implemented features.
 
-## Files in This Directory
+## Files in this directory
 
 ### [testing-strategy.md](./testing-strategy.md)
 **When to read:** Writing tests, setting up test coverage, or implementing TDD workflow.
