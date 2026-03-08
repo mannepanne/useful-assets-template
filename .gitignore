@@ -146,6 +146,9 @@ credentials.json
 secrets.json
 service-account*.json
 
+# Third-party tool directories
+.entire/
+
 # Project-specific (add your own below this line)
 # Example:
 # /data/
