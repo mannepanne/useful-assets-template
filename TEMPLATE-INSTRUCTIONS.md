@@ -2,12 +2,18 @@
 
 Step-by-step guide to transform this template into a new project.
 
+**NOTE:** There are some very Magnus specific references (to me) and ways of working encapsulated in @.claude/CLAUDE.md and the @.claude/COLLABORATION files. That obviously works for me, but unless you want to be treated as a Swedish 50 something slightly detailed obsessive SciFi-geek, you probably want to either wipe it (and let Claude recreate it for your project) or spend some time making it your own.
+
+**Customisation recommendation:** do these steps in collaboration with Claude. In conversation, discuss the idea, ask for feedback and critique, answer any and all questions from Claude to refine and iterate on the idea. Explicitly tell Claude to not write any code, just talk through what you are about to embark on. Save all the resulting thoughts and notes as Markdown files in the @SPECIFICATIONS/ folder, and I typically ask for a phased step by step implementation plan as the very last output.
+
+When done, ask Claude to review all reference documentation and start making it project specific.
+
 ## Before you start
 
 **Time required:** 30-60 minutes for initial setup
 
-**What you'll need:**
-- Your project idea and name
+**Starter for 10:**
+- Project idea and name
 - Basic architecture decisions (framework, database, hosting)
 - List of major features to implement
 
@@ -18,24 +24,24 @@ Step-by-step guide to transform this template into a new project.
 
 ## Step-by-step customisation
 
-### Phase 1: Project identity (15 minutes)
+### Phase 1: Project identity
 
 #### 1.1 Update root README.md
-- [ ] Replace this template's README with your project README
+- [ ] Replace this template's README with a new project README
 - [ ] Include project description, setup instructions, and how to run
 - [ ] Add badges, screenshots, or demos if applicable
 - [ ] Update license section
 
 #### 1.2 Customise root CLAUDE.md
 - [ ] Open `CLAUDE.md` in project root
-- [ ] Replace all `[PLACEHOLDER]` sections with your project details:
+- [ ] Replace all `[PLACEHOLDER]` sections with new specific project details:
   - [ ] Project name and description
   - [ ] Core workflow steps
   - [ ] Technology stack
   - [ ] Key integrations
   - [ ] Current project status
-- [ ] Update "Implementation Phases" section with your phase names
-- [ ] Customise "Code Conventions" examples to match your project
+- [ ] Update "Implementation Phases" section with actual phase names
+- [ ] Customise "Code Conventions" examples to match the project
 - [ ] Add any project-specific notes at the bottom
 - [ ] Remove the ⚠️ template warning at the top
 
@@ -55,9 +61,9 @@ Step-by-step guide to transform this template into a new project.
 
 ---
 
-### Phase 2: Project planning (20-30 minutes)
+### Phase 2: Project planning
 
-#### 2.1 Create your project specification
+#### 2.1 Create the project specification
 - [ ] Create `SPECIFICATIONS/ORIGINAL_IDEA/project-outline.md`
 - [ ] Document:
   - [ ] Project vision and goals
@@ -74,11 +80,10 @@ Step-by-step guide to transform this template into a new project.
 - [ ] Identify 4-8 major implementation phases
 - [ ] Create phase files: `01-phase-name.md`, `02-phase-name.md`, etc.
 - [ ] Use `00-TEMPLATE-phase.md` as a template for each phase
-- [ ] Each phase should be 1-2 weeks of work maximum
 - [ ] Phases should be sequential (each builds on previous)
 
-**Example phase breakdown:**
-1. `01-foundation.md` - Project setup, database, basic deployment
+**Example phase breakdown using the "TaskMaster" example:**
+1. `01-foundation.md` - Project setup, database (if used), basic deployment
 2. `02-authentication.md` - User accounts and auth
 3. `03-task-management.md` - Core CRUD for tasks
 4. `04-ai-integration.md` - AI-powered task breakdown
@@ -87,18 +92,18 @@ Step-by-step guide to transform this template into a new project.
 
 #### 2.3 Update SPECIFICATIONS/CLAUDE.md
 - [ ] Open `SPECIFICATIONS/CLAUDE.md`
-- [ ] Replace the "Template Replacement" section with your actual phase list
+- [ ] Replace the "Template Replacement" section with actual phase list
 - [ ] Update "Current phase" indicator
-- [ ] List your `ORIGINAL_IDEA/` files
+- [ ] List the `ORIGINAL_IDEA/` files (if used)
 - [ ] Remove the ⚠️ template warning
 
 ---
 
-### Phase 3: Environment configuration (10-15 minutes)
+### Phase 3: Environment configuration
 
-#### 3.1 Document environment variables
+#### 3.1 Document environment
 - [ ] Open `REFERENCE/environment-setup.md`
-- [ ] Replace template sections with your actual services:
+- [ ] Replace template sections with actual services:
   - [ ] List all required environment variables
   - [ ] Document how to obtain each credential
   - [ ] Provide setup commands for local and production
@@ -116,8 +121,8 @@ Step-by-step guide to transform this template into a new project.
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/dbname
 
-# OpenAI API
-OPENAI_API_KEY=sk-...
+# Anthropic API
+ANTHROPIC_API_KEY=sk-...
 
 # Email Service
 RESEND_API_KEY=re_...
@@ -131,12 +136,12 @@ RESEND_API_KEY=re_...
   .env.local
   .env.production
   ```
-- [ ] Add common ignores for your framework
+- [ ] Add common ignores for chosen framework
 - [ ] Add system files (.DS_Store, Thumbs.db)
 
 ---
 
-### Phase 4: Project-specific settings (5-10 minutes)
+### Phase 4: Project-specific settings
 
 #### 4.1 Customise Claude Code permissions
 - [ ] Open `.claude/settings.local.json`
@@ -145,11 +150,11 @@ RESEND_API_KEY=re_...
   - File paths you want to allow reading
   - Additional bash commands
   - WebFetch domains for APIs you'll use
-- [ ] Keep it minimal - only add what you need
+- [ ] Keep it minimal - only add what's required
 
 **Example additions:**
 ```json
-"Read(//path/to/your/project/src/**)",
+"Read(//path/to/project/src/**)",
 "Bash(docker:*)",
 "WebFetch(domain:your-api-domain.com)"
 ```
@@ -157,15 +162,15 @@ RESEND_API_KEY=re_...
 #### 4.2 Review collaboration preferences
 - [ ] Check `.claude/CLAUDE.md` - collaboration principles (generally don't change)
 - [ ] Review `.claude/COLLABORATION/technology-preferences.md`
-- [ ] Update if your tech stack differs significantly from defaults
+- [ ] Update if chosen tech stack differs significantly from defaults
 - [ ] Review `.claude/COLLABORATION/product-management-mode.md` (optional reading)
 
 ---
 
-### Phase 5: Testing setup (5 minutes)
+### Phase 5: Testing setup
 
 #### 5.1 Set up test framework
-- [ ] Install your testing framework:
+- [ ] Install the testing framework:
   ```bash
   npm install -D vitest @vitest/ui
   # or
@@ -184,19 +189,19 @@ RESEND_API_KEY=re_...
 
 #### 5.2 Review testing strategy
 - [ ] Read `REFERENCE/testing-strategy.md`
-- [ ] Ensure it matches your framework choice
+- [ ] Ensure it matches the framework choice
 - [ ] Update examples if using different testing library
 - [ ] Keep coverage targets (95%+ lines/functions/statements, 90%+ branches)
 
 ---
 
-### Phase 6: Final cleanup (5 minutes)
+### Phase 6: Final cleanup
 
 #### 6.1 Remove template artifacts
 - [ ] Delete `SPECIFICATIONS/00-TEMPLATE-phase.md` (or keep as reference)
 - [ ] Delete or archive `TEMPLATE-INSTRUCTIONS.md` (this file)
 - [ ] Search for remaining `⚠️ TEMPLATE` warnings
-- [ ] Remove template README and replace with your own
+- [ ] Remove template README and replace with project specific one
 
 #### 6.2 Initialise git repository
 - [ ] If not already a git repo:
@@ -219,7 +224,7 @@ RESEND_API_KEY=re_...
 - [ ] `.gitignore` configured
 - [ ] Tests run successfully
 - [ ] Documentation reflects your project
-- [ ] No Ansible or template references remaining
+- [ ] No template references remaining
 
 ---
 
@@ -229,18 +234,18 @@ Quick reference to ensure you didn't miss anything:
 
 ### Core files
 - [ ] `README.md` - Project-specific README
-- [ ] `CLAUDE.md` - Project navigation with your details
+- [ ] `CLAUDE.md` - Project navigation with appropriate details
 - [ ] `.gitignore` - Includes all secret files
 
 ### Specifications
-- [ ] `SPECIFICATIONS/CLAUDE.md` - Your phase list
-- [ ] `SPECIFICATIONS/ORIGINAL_IDEA/project-outline.md` - Your project spec
-- [ ] `SPECIFICATIONS/01-XX-phase-name.md` - Your implementation phases (4-8 files)
+- [ ] `SPECIFICATIONS/CLAUDE.md` - Project implementation phase list
+- [ ] `SPECIFICATIONS/ORIGINAL_IDEA/project-outline.md` - Project vision and outline spec
+- [ ] `SPECIFICATIONS/01-XX-phase-name.md` - Actual implementation phases
 
 ### Reference docs
-- [ ] `REFERENCE/environment-setup.md` - Your environment variables
-- [ ] `REFERENCE/testing-strategy.md` - Updated for your test framework
-- [ ] `REFERENCE/troubleshooting.md` - Will update as you encounter issues
+- [ ] `REFERENCE/environment-setup.md` - Project environment variables
+- [ ] `REFERENCE/testing-strategy.md` - Updated for chosen test framework
+- [ ] `REFERENCE/troubleshooting.md` - Will update as issues are encountered
 
 ### Configuration
 - [ ] `.claude/settings.local.json` - Project-specific permissions
@@ -259,7 +264,7 @@ Quick reference to ensure you didn't miss anything:
 
 Once customisation is complete:
 
-1. **Read your Phase 1 specification**
+1. **Read the Phase 1 specification**
    - Review deliverables and acceptance criteria
    - Understand technical approach
    - Note testing requirements
@@ -305,16 +310,19 @@ Once customisation is complete:
 - Start with 3-4 major milestones
 - Each should deliver working, testable functionality
 - Foundation phase always comes first (setup, database, deployment)
-- End with a polish/launch phase
-- Keep phases small (1-2 weeks max)
+- End with a polish / launch phase
+- Keep phases small (sensible size for continuous review and validation)
 
 ### "My project doesn't fit this structure"
 - The template is flexible - adapt as needed
 - Core principles (tests, docs, phases) apply broadly
-- Feel free to reorganise folders for your needs
+- Feel free to reorganise folders for project specific purposes and needs
 - Keep the lazy-loading CLAUDE.md pattern if possible
 
 ### "Do I need to use all the REFERENCE files?"
+
+No, not at all. This is just how I have chosen to do things. Make it yours.
+
 - `testing-strategy.md` - Yes, update for your framework
 - `environment-setup.md` - Yes, document your env vars
 - `troubleshooting.md` - Start with template, add issues as you encounter them
@@ -322,10 +330,10 @@ Once customisation is complete:
 - `pr-review-workflow.md` - Keep as-is unless you customise review process
 
 ### "Can I skip the ORIGINAL_IDEA folder?"
-- Not recommended - it's your source of truth
+- Absolutely, but I am a stickler for remembering how something started, it's like a source of truth
 - Even a simple outline helps maintain vision
 - Useful when making trade-off decisions later
-- Takes 15-30 minutes to create
+- Takes very little time to create and can be immensely helpful inn two month's time...
 
 ---
 
@@ -338,4 +346,4 @@ If you get stuck during customisation:
 
 ---
 
-**Once customisation is complete, you're ready to build!** Start with Phase 1 and work through your implementation systematically. Good luck! 🚀
+**Once customisation is complete, the project is ready to build!** Start with Phase 1 and work through the implementation systematically. Good luck! 🚀

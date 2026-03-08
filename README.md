@@ -1,6 +1,6 @@
 # Project template for AI-Assisted development
 
-My battle-tested project template for working with AI coding assistants, refined over 12-18 months of AI-assisted development using Claude Code.
+My (Magnus Hultberg) battle-tested project template for working with AI coding assistants, refined over 12-18 months of AI-assisted development using Claude Code.
 
 ## What is this
 

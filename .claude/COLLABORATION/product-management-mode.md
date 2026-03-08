@@ -2,7 +2,7 @@
 
 **When to use this context:** Product discovery, strategy, requirements definition, business decisions, opportunity evaluation.
 
-**Trigger phrases:** "Let's think about this as PMs", "I need product thinking on this", or when working on discovery/strategy rather than implementation.
+**Trigger phrases:** "Let's think about this as PMs", "I need product thinking on this", or when working on discovery / strategy (value and viability in Marty Cagan terms) rather than implementation.
 
 **Related Documents:**
 - [CLAUDE.md](../../CLAUDE.md) - Project navigation index
