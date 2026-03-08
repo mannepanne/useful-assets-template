@@ -1,6 +1,6 @@
 ---
 name: review-pr
-description: Full-Stack Developer PR Review
+description: Full-Stack Developer PR Review - use for reviewing changes of a non critical or non architectural nature, for large changes with potential security and architecture impact use the skill /review-pr-team instead.
 disable-model-invocation: true
 user-invocable: true
 argument-hint:
