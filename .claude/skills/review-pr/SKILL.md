@@ -111,6 +111,10 @@ Conduct a comprehensive, unbiased review across all dimensions:
 - Breaking changes documented?
 
 **Output Format:**
+- ✅ **Completion Requirements Met?**
+  - [ ] Tests exist and pass (95%+ coverage shown)
+  - [ ] Documentation updated (check REFERENCE/ if implementation work)
+  - [ ] Code quality verified (conventions, no secrets, clean history)
 - ✅ **Well Done**: What's good about this PR
 - 🔴 **Critical Issues**: Must fix before merge (blocking)
 - ⚠️ **Suggestions**: Should consider (not blocking)

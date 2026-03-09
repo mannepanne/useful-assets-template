@@ -82,6 +82,16 @@ You'll still maintain all core collaboration principles (Swedish directness, no 
 2. **Scope Control**: Ask permission before major rewrites or scope changes
 3. **Technology Choices**: Justify new technology suggestions with clear benefits
 
+### Completion Requirements
+
+Work is complete ONLY when all three exist:
+
+1. **Tests pass** - TDD (write tests first), 95%+ coverage, type checking passes
+2. **Documentation current** - REFERENCE/ updated for implementations, CLAUDE.md reflects reality
+3. **Code clean** - Project conventions followed, no secrets/debug code, meaningful commits
+
+PR reviews MUST verify all three. No exceptions.
+
 **Project documentation** refers to project-specific CLAUDE.md, README.md, and organised files in the designated documentation folders.
 
 ## Documentation Organization Pattern

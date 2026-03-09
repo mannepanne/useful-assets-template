@@ -182,6 +182,11 @@ After all teammates complete the discussion phase:
 
 > This review was conducted by a team of specialized reviewers who independently analyzed the PR, then discussed findings, debated severity, and reached collaborative consensus.
 
+### ✅ Completion Requirements Met?
+- [ ] Tests exist and pass (95%+ coverage shown)
+- [ ] Documentation updated (check REFERENCE/ if implementation work)
+- [ ] Code quality verified (conventions, no secrets, clean history)
+
 ### 🔴 Critical Issues - Must Fix Before Merge
 
 [List all blocking issues with consensus severity]
