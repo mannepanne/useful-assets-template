@@ -1,6 +1,8 @@
 # Hooks Reference
 
-Complete details on all 6 hooks in the session state system.
+Complete details on all 5 hooks in the session state system.
+
+**Note:** PostCompact is listed in [official docs](https://code.claude.com/docs/en/hooks) but CLI validation rejects it as of March 2026. Using 5 hooks with belt-and-suspenders approach: PreCompact reminder includes "re-read after compaction."
 
 ## Hook events
 
@@ -77,24 +79,24 @@ IMPORTANT: After compaction completes, immediately re-read
 
 **This is the most critical hook** - context loss prevention depends on it.
 
-### PostCompact
+### PostCompact (NOT AVAILABLE IN CLI)
 
-**When:** After context compaction completes
+**Status:** Listed in [official docs](https://code.claude.com/docs/en/hooks) but CLI validation rejects it as of March 2026.
 
-**Purpose:** Restore context from saved state
+**What it would do:** Read session-state/current.md after compaction to restore context.
 
-**Reminder message:**
+**Workaround:** PreCompact reminder includes explicit instruction:
 ```
-=== SESSION STATE: CONTEXT RESTORED ===
-ACTION: Read .claude/session-state/current.md to restore context.
+IMPORTANT: After compaction completes, immediately re-read
+.claude/session-state/current.md to restore the context you just saved.
 ```
 
-**What to do:**
-1. Read session-state.md to restore working memory
+**Manual steps after compaction:**
+1. Read session-state/current.md to restore working memory
 2. Note current task and next action
 3. Continue work from where you left off
 
-**Note:** PostCompact exists in official docs but may have validation issues in some versions. PreCompact includes "re-read after compaction" reminder as backup.
+**Future:** Hook script has PostCompact handler ready - just waiting for CLI validation support.
 
 ### PostToolUse
 
@@ -172,13 +174,6 @@ All hooks configured in `.claude/settings.json`:
         "timeout": 10
       }]
     }],
-    "PostCompact": [{
-      "hooks": [{
-        "type": "command",
-        "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/session-state-handler.sh",
-        "timeout": 10
-      }]
-    }],
     "PostToolUse": [{
       "matcher": "Bash",
       "hooks": [{
@@ -227,7 +222,7 @@ All hooks handled by `.claude/skills/session-state/scripts/session-state-handler
 
 ## Timeouts
 
-- **SessionStart/PreCompact/PostCompact/SessionEnd:** 10 seconds
+- **SessionStart/PreCompact/SessionEnd:** 10 seconds
 - **PreToolUse/PostToolUse:** 5 seconds
 
 Hooks that take too long will be killed by Claude Code.
@@ -248,10 +243,10 @@ Hooks that take too long will be killed by Claude Code.
 
 ## Experimental notes
 
-**PostCompact validation issue:**
-- Official docs list PostCompact as valid hook
-- Some CLI versions reject it in schema validation
-- Workaround: bash write to settings.json (bypasses validation)
-- Belt-and-suspenders: PreCompact also reminds to re-read after compaction
+**PostCompact not available:**
+- Official docs list PostCompact but CLI validation rejects it (March 2026)
+- Cannot be added to settings.json - blocks Claude Code startup
+- Solution: PreCompact reminder explicitly says "re-read after compaction"
+- Hook script has PostCompact handler ready for when CLI supports it
 
 **This system is experimental** - real usage may reveal needed improvements.

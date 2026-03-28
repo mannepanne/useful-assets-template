@@ -30,6 +30,8 @@ mkdir -p .claude/session-state
 
 Read existing `.claude/settings.json` and add hooks configuration:
 
+**Note:** PostCompact is listed in official docs but CLI validation rejects it. Configure 5 hooks only.
+
 ```json
 {
   "hooks": {
@@ -57,17 +59,6 @@ Read existing `.claude/settings.json` and add hooks configuration:
       }
     ],
     "PreCompact": [
-      {
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bash $CLAUDE_PROJECT_DIR/.claude/skills/session-state/scripts/session-state-handler.sh",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostCompact": [
       {
         "hooks": [
           {
@@ -140,9 +131,10 @@ Session state system installed successfully!
 Files created:
 - .claude/session-state/current.md (working state)
 
-Hooks configured (6 events):
-- SessionStart, PreToolUse, PreCompact, PostCompact, PostToolUse, SessionEnd
+Hooks configured (5 events):
+- SessionStart, PreToolUse, PreCompact, PostToolUse, SessionEnd
 - All reference script from skill folder: .claude/skills/session-state/scripts/
+- Note: PostCompact in docs but CLI validation rejects it
 
 Check .claude/session-state/current.md to track your work.
 Hooks will activate on next tool use.
@@ -153,5 +145,4 @@ Hooks will activate on next tool use.
 1. Start working - hooks fire automatically
 2. SessionStart will fire when you use first tool
 3. PreToolUse reminds every 10 tool uses
-4. PreCompact critical - save before compaction
-5. PostCompact restores after compaction
+4. PreCompact critical - save before compaction (includes "re-read after" reminder)

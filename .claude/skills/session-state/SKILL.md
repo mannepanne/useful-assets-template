@@ -14,7 +14,7 @@ Maintains working memory across:
 - Session crashes or interruptions
 - Switching between projects
 
-**How:** 6 hooks fire at critical moments, reminding Claude to update `.claude/session-state/current.md`. On PR merge, current state archives to `.claude/session-state/pr-[number].md` (keeps last 5).
+**How:** 5 hooks fire at critical moments, reminding Claude to update `.claude/session-state/current.md`. On PR merge, current state archives to `.claude/session-state/pr-[number].md` (keeps last 5).
 
 ## Commands
 
@@ -27,7 +27,7 @@ Set up session state system in current project.
 Installation:
 - [ ] Check if already installed
 - [ ] Create directories and copy files
-- [ ] Configure hooks in settings.json
+- [ ] Configure hooks in settings.json (5 hooks: SessionStart, PreToolUse, PreCompact, PostToolUse, SessionEnd)
 - [ ] Initialize session-state/current.md
 - [ ] Validate with /doctor
 ```
@@ -44,7 +44,7 @@ Update:
 - [ ] Verify installation exists
 - [ ] Backup current session-state/current.md
 - [ ] Update template and hook script
-- [ ] Update hooks configuration
+- [ ] Update hooks configuration (5 hooks, PostCompact not available in CLI yet)
 - [ ] Validate with /doctor
 ```
 
@@ -63,10 +63,11 @@ Check installation and validate configuration.
 **Quick summary:**
 1. **SessionStart** - Read state, validate
 2. **PreToolUse** (every 10 uses) - Gentle update reminder
-3. **PreCompact** - **Critical save before compaction**
-4. **PostCompact** - Restore context after compaction
-5. **PostToolUse** - Detect PR merge, archive state
-6. **SessionEnd** - Finalize
+3. **PreCompact** - **Critical save before compaction** (reminder includes: re-read after compaction)
+4. **PostToolUse** - Detect PR merge, archive state
+5. **SessionEnd** - Finalize
+
+**Note:** PostCompact hook exists in official docs but CLI validation rejects it. PreCompact reminder includes "re-read after compaction" as workaround.
 
 ## Portable design
 
