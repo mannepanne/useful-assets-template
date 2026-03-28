@@ -9,7 +9,7 @@ Preserves context across:
 - Session crashes or interruptions
 - Long development sessions
 
-**How it works:** 5 hooks fire automatically at critical moments, reminding Claude to update a working memory file (`.claude/session-state/current.md`). This file tracks your current task, decisions made, failed approaches, and next steps.
+**How it works:** 3 hooks fire automatically at critical moments, reminding Claude to update a working memory file (`.claude/session-state/current.md`). Regular reminders keep state current instead of last-minute saves before compaction.
 
 ## Security First
 
@@ -23,7 +23,7 @@ Session state is meant for active work sessions only, not permanent documentatio
 - Sensitive business logic or proprietary algorithms
 - Database connection strings or infrastructure details
 
-**Pattern detection** automatically scans for common secret patterns and warns if detected.
+**Pattern detection** was planned but hooks that could implement it (SessionEnd) cannot reach Claude. Future enhancement.
 
 ## Installation
 
@@ -58,10 +58,10 @@ Session state is meant for active work sessions only, not permanent documentatio
 
 ## Key Features
 
-- **5 hooks:** SessionStart, PreToolUse (every 10 uses), PreCompact (critical save), PostToolUse (PR detection), SessionEnd
+- **3 hooks:** SessionStart (read state), PreToolUse (every 10 uses), PostToolUse (PR detection)
 - **PR-based archival:** Auto-archives to `pr-[number].md` when you merge PRs
 - **Auto-pruning:** Keeps only last 5 PR archives
-- **Pattern detection:** Warns about potential secrets
+- **JSON output:** PreToolUse and PostToolUse use proper JSON format to reach Claude
 - **Progressive disclosure:** Lean main file + detailed references loaded on-demand
 
 ## For Active Sessions Only
