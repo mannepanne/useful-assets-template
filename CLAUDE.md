@@ -97,13 +97,22 @@ How-it-works documentation for implemented features:
 
 ## Development workflow
 
-1. Create feature branch: `git checkout -b feature/feature-name`
-2. Check `SPECIFICATIONS/` for relevant specs
-3. Implement with tests: `npm test && npx tsc --noEmit`
+**⚠️ CRITICAL: ALL CODE CHANGES REQUIRE A FEATURE BRANCH + PR ⚠️**
+
+**Step 0 (BEFORE making ANY changes):**
+- [ ] On feature branch (not main)?
+- [ ] If on main: create feature branch first
+
+**CRITICAL: ALL changes require feature branch + PR. NEVER work on main. Zero exceptions.**
+
+**Implementation steps:**
+1. Create feature branch (feature/, fix/, refactor/)
+2. Check SPECIFICATIONS/ for relevant specs
+3. Implement with tests (run tests + type checking)
 4. Create PR for review:
-  - **`/review-pr`** - Fast single-reviewer (regular PRs, 1-2 min)
-  - **`/review-pr-team`** - Multi-perspective agent team (critical changes, 5-10 min)
-  - **See:** [pr-review-workflow.md](./REFERENCE/pr-review-workflow.md) for complete guide
+  - **`/review-pr`** - Fast single-reviewer (1-2 min)
+  - **`/review-pr-team`** - Multi-perspective team (5-10 min)
+  - **See:** [pr-review-workflow.md](./REFERENCE/pr-review-workflow.md)
 
 ## TypeScript configuration
 
@@ -143,6 +152,12 @@ npm run test:coverage     # Coverage report
 - **Testing strategy?** → [testing-strategy.md](./REFERENCE/testing-strategy.md)
 - **Known issues?** → [technical-debt.md](./REFERENCE/technical-debt.md)
 - **Getting unstuck?** → [troubleshooting.md](./REFERENCE/troubleshooting.md)
+- **Session state system?** → [session-state-system.md](./REFERENCE/session-state-system.md)
+
+**Session State:**
+- **Current work** → [.claude/session-state/current.md](./.claude/session-state/current.md) - Active task context, survives compaction
+- **PR archives** → [.claude/session-state/](./.claude/session-state/) - Last 5 PRs archived
+- **Install in other projects** → `/session-state install` - See [skill](./.claude/skills/session-state/SKILL.md)
 
 ## Project-specific notes
 
