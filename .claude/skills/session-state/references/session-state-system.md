@@ -21,43 +21,32 @@ The session state system maintains working memory for Claude Code sessions throu
 
 ## How It Works
 
-### The Five Hooks
+### The Three Hooks
 
 **1. SessionStart**
 - Fires when Claude Code session begins
 - Validates `.claude/session-state/current.md` exists
 - Shows git status vs documented state
 - Claude reads state and asks clarifications if needed
+- **Output:** Plain text (automatically becomes context)
 
 **2. PreToolUse (every 10 tool uses)**
 - Fires before Read, Edit, Write, Bash tools
 - Rate limited to every 10th use (tracked in temp file)
 - Gentle reminder: "Update session state if work completed"
 - Claude proactively updates after meaningful chunks
+- **Output:** JSON with `additionalContext` (required to reach Claude)
 
-**3. PreCompact (CRITICAL - Save)**
-- Fires before context compaction
-- Urgent reminder with checklist of what to save
-- Safety net - last chance before context loss
-- Claude immediately updates session-state.md
-
-**4. PostCompact (Restore)**
-- Fires after context compaction completes
-- Reminder to read session-state.md
-- Claude reads saved state to restore lost context
-- Reviews current task, decisions, blockers
-
-**5. PostToolUse (on PR merge)**
+**3. PostToolUse (on PR merge)**
 - Fires after Bash commands
 - Detects `gh pr merge` commands
 - Claude archives current state to `.claude/session-state/pr-[number].md`
-- Resets `session-state.md` from template
+- Resets session state from template
 - Prunes old history (keeps last 5)
+- **Output:** JSON with `additionalContext` (required to reach Claude)
 
-**6. SessionEnd**
-- Fires when session ends
-- Reminder to finalize state
-- Claude updates final context for next session
+**Why only 3 hooks?**
+PreCompact, PostCompact, and SessionEnd hooks exist but their output **cannot reach Claude**. They're designed for logging/metrics only. The system keeps state current through regular PreToolUse reminders instead of last-minute saves.
 
 ### Hook Philosophy
 
@@ -115,7 +104,9 @@ The session state system maintains working memory for Claude Code sessions throu
 
 ### Pattern Detection
 
-SessionEnd hook scans for common secret patterns:
+**Note:** Pattern detection was originally planned for SessionEnd hook, but that hook's output cannot reach Claude. Future enhancement could add pattern scanning to PreToolUse or implement as a separate tool.
+
+Planned patterns to detect:
 - API key patterns (`api_key=`, `apikey:`)
 - Password patterns (`password:`, `passwd=`)
 - Secret/token patterns (`secret:`, `bearer`)
@@ -237,11 +228,8 @@ Brief note about what this enables.
 ### Automatically (via hooks):
 
 - **SessionStart:** Read state, validate current
-- **Every 10 tools:** Consider updating if work done
-- **PreCompact:** MUST update before context loss (save)
-- **PostCompact:** Read state to restore context (restore)
-- **PR merge:** Auto-archive and reset
-- **SessionEnd:** Finalize for next session
+- **Every 10 tools:** Consider updating if work done (PreToolUse reminder)
+- **PR merge:** Auto-archive and reset (PostToolUse detection)
 
 ### Proactively (as Claude):
 
@@ -357,12 +345,12 @@ which jq
 **Expected behavior:**
 - Hooks remind but don't force updates
 - Claude should proactively update after work
-- PreCompact is safety net, not primary mechanism
+- PreToolUse reminders keep state current (every 10 tools)
 
 **If context still lost:**
-- Check `.claude/session-state/current.md` was actually updated before compaction
-- Verify PreCompact hook is configured and firing
-- Consider updating more frequently (don't wait for PreCompact)
+- Check `.claude/session-state/current.md` is being updated regularly
+- Verify PreToolUse hook is configured and firing every 10 tool uses
+- State should never be more than 10 tool uses stale
 
 ### Git not available
 
@@ -430,12 +418,13 @@ If skill unavailable, copy these files from template repo:
 ### For Claude:
 
 1. **Read session state on SessionStart** - understand current context before starting work
-2. **Update proactively** - after meaningful work chunks, don't wait for reminders
-3. **PreCompact is critical** - always honour this hook, update immediately
+2. **Update proactively** - after meaningful work chunks, respond to PreToolUse reminders
+3. **Keep state current** - update every 10 tools or sooner, not just before compaction
 4. **Be specific in "Failed approaches"** - include enough detail to prevent retries
 5. **Capture decisions with reasoning** - not just "what" but "why"
 6. **Ask clarifications on resume** - if session state is stale or unclear
 7. **Suggest permanent doc moves** - when decisions are important enough
+8. **Archive on PR merge** - respond to PostToolUse reminder, create pr-[number].md
 
 ### For Users:
 
@@ -477,7 +466,7 @@ This is a **brand new experimental system**. While the design is thorough and im
 - Reveal edge cases not anticipated
 - Show whether the save/restore cycle is robust
 - Identify improvements to the session state structure
-- Test PostCompact hook reliability across Claude Code versions
+- Implement pattern detection (currently not functional without SessionEnd hook reaching Claude)
 
 **If you encounter issues:**
 - Check `.claude/session-state/current.md` was actually updated before compaction

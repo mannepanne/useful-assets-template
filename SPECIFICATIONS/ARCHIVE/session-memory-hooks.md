@@ -2,6 +2,25 @@
 
 **⚠️ EXPERIMENTAL FEATURE** - First implementation of automated context preservation using Claude Code hooks. Design is thorough but real-world usage will validate and refine the approach.
 
+---
+
+**⚠️ IMPORTANT - DESIGN CHANGED AFTER IMPLEMENTATION (2026-03-28)**
+
+This spec documents the **original design** with 5-6 hooks including PreCompact, PostCompact, and SessionEnd. After implementation and real-world testing, we discovered these hooks **cannot reach Claude** - their output is only for logging/metrics.
+
+**Current implementation uses 3 hooks:**
+- **SessionStart** - plain text output (works)
+- **PreToolUse** - JSON with additionalContext (works)
+- **PostToolUse** - JSON with additionalContext (works)
+
+**Strategy changed:** Instead of "save right before compaction," we now "keep state continuously updated via regular PreToolUse reminders (every 10 tools)."
+
+See current documentation: `.claude/skills/session-state/references/hooks-reference.md`
+
+This spec is preserved for historical context. The implementation evolved significantly from this original design.
+
+---
+
 ## Feature overview
 
 **Feature name:** Session State with Hook-Based Context Preservation

@@ -10,11 +10,11 @@ description: Maintains session working memory - tracks current task, decisions m
 ## What this does
 
 Maintains working memory across:
-- Context compaction (save/restore cycle via PreCompact hooks)
-- Session crashes or interruptions
+- Session crashes or interruptions (via SessionStart hook)
+- Context compaction (via regular updates, not last-minute saves)
 - Active work sessions (not cross-machine sync)
 
-**How:** 5 hooks fire at critical moments, reminding Claude to update `.claude/session-state/current.md`. On PR merge, current state archives to `.claude/session-state/pr-[number].md` (keeps last 5).
+**How:** 3 hooks fire at critical moments, reminding Claude to update `.claude/session-state/current.md`. Periodic reminders keep state current. On PR merge, current state archives to `.claude/session-state/pr-[number].md` (keeps last 5).
 
 **⚠️ Security:** Files are git-ignored by default. Never include API keys, passwords, PII, or sensitive business data. Pattern detection warns about potential secrets. See security guidelines below.
 
@@ -29,7 +29,7 @@ Set up session state system in current project.
 Installation:
 - [ ] Check if already installed
 - [ ] Create directories and copy files
-- [ ] Configure hooks in settings.json (5 hooks: SessionStart, PreToolUse, PreCompact, PostToolUse, SessionEnd)
+- [ ] Configure hooks in settings.json (3 hooks: SessionStart, PreToolUse, PostToolUse)
 - [ ] Initialize session-state/current.md
 - [ ] Validate with /doctor
 ```
@@ -46,7 +46,7 @@ Update:
 - [ ] Verify installation exists
 - [ ] Backup current session-state/current.md
 - [ ] Update template and hook script
-- [ ] Update hooks configuration (5 hooks, PostCompact not available in CLI yet)
+- [ ] Update hooks configuration (3 hooks: SessionStart, PreToolUse, PostToolUse)
 - [ ] Validate with /doctor
 ```
 
@@ -63,13 +63,11 @@ Check installation and validate configuration.
 **See:** [references/hooks-reference.md](references/hooks-reference.md) for complete details.
 
 **Quick summary:**
-1. **SessionStart** - Read state, validate
-2. **PreToolUse** (every 10 uses) - Gentle update reminder
-3. **PreCompact** - **Critical save before compaction** (reminder includes: re-read after compaction)
-4. **PostToolUse** - Detect PR merge, archive state
-5. **SessionEnd** - Finalize
+1. **SessionStart** - Read state on session start, validate file exists
+2. **PreToolUse** (every 10 uses) - Regular reminder to keep state current
+3. **PostToolUse** - Detect PR merge, trigger archival workflow
 
-**Note:** PostCompact hook exists in official docs but CLI validation rejects it. PreCompact reminder includes "re-read after compaction" as workaround.
+**Strategy:** Keep state updated regularly via PreToolUse reminders. If compaction happens, state won't be more than 10 tool uses stale. SessionStart restores whatever state exists when resuming.
 
 ## Portable design
 

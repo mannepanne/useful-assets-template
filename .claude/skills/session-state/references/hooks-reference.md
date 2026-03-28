@@ -1,252 +1,306 @@
 # Hooks Reference
 
-Complete details on all 5 hooks in the session state system.
+Complete technical documentation for the 3 hooks used by the session state system.
 
-**Note:** PostCompact is listed in [official docs](https://code.claude.com/docs/en/hooks) but CLI validation rejects it as of March 2026. Using 5 hooks with belt-and-suspenders approach: PreCompact reminder includes "re-read after compaction."
+## Overview
 
-## Hook events
+The session state system uses **3 Claude Code hooks** to maintain working memory:
 
-### SessionStart
+| Hook | Fires | Purpose | Output Format |
+|------|-------|---------|---------------|
+| **SessionStart** | Session begins | Read state, validate | Plain text |
+| **PreToolUse** | Every 10 tool uses | Regular update reminder | JSON |
+| **PostToolUse** | After `gh pr merge` | Archive workflow | JSON |
 
-**When:** First tool use in new session
+**Key insight:** Hooks keep state **continuously updated** via regular reminders, not last-minute saves before compaction.
 
-**Purpose:** Validate state exists, understand current context
+---
 
-**Reminder message:**
-```
-=== SESSION STATE: SESSION START ===
-ACTION: Read .claude/session-state/current.md to understand current context.
-Git status follows for branch/changes awareness.
-```
+## SessionStart Hook
 
-**What to do:**
-1. Read session-state.md to understand current work
-2. Note current branch from git status
-3. Check Recent PR history for context
-4. Resume work from "Next action" field
+**When it fires:** Once when Claude Code session begins or resumes
 
-### PreToolUse
-
-**When:** Every 10 tool uses (Read, Edit, Write, Bash)
-
-**Purpose:** Gentle reminder to update session state periodically
-
-**Reminder message:**
-```
-=== SESSION STATE: UPDATE REMINDER ===
-Consider updating .claude/session-state/current.md if work completed.
-[Tool count: X]
-```
-
-**What to do:**
-- Update "Work completed this session" if you finished something
-- Add to "Decisions made" if you made choices
-- Update "Failed approaches" if something didn't work
-- Update "Next action" if priorities changed
-
-**Not required every time** - only when meaningful work happened.
-
-### PreCompact
-
-**When:** Before context compaction (triggered automatically by system)
-
-**Purpose:** **CRITICAL** - Save state before losing context
-
-**Reminder message:**
-```
-=== SESSION STATE: CRITICAL - CONTEXT COMPACTION WARNING ===
-Context compaction imminent. You MUST update session state NOW.
-
-ACTION: Use Edit tool to update .claude/session-state/current.md NOW.
-
-Update these sections:
-- Current task (status, next action)
-- Work completed this session
-- Decisions made
-- Failed approaches
-- Uncommitted changes
-- Context for next session
-
-IMPORTANT: After compaction completes, immediately re-read
-.claude/session-state/current.md to restore the context you just saved.
-```
-
-**What to do:**
-1. **IMMEDIATELY** update session-state.md with current context
-2. Capture ALL important decisions and progress
-3. Note what you were about to do next
-4. After compaction: re-read session-state.md (belt-and-suspenders)
-
-**This is the most critical hook** - context loss prevention depends on it.
-
-### PostCompact (NOT AVAILABLE IN CLI)
-
-**Status:** Listed in [official docs](https://code.claude.com/docs/en/hooks) but CLI validation rejects it as of March 2026.
-
-**What it would do:** Read session-state/current.md after compaction to restore context.
-
-**Workaround:** PreCompact reminder includes explicit instruction:
-```
-IMPORTANT: After compaction completes, immediately re-read
-.claude/session-state/current.md to restore the context you just saved.
-```
-
-**Manual steps after compaction:**
-1. Read session-state/current.md to restore working memory
-2. Note current task and next action
-3. Continue work from where you left off
-
-**Future:** Hook script has PostCompact handler ready - just waiting for CLI validation support.
-
-### PostToolUse
-
-**When:** After Bash commands complete
-
-**Purpose:** Detect PR merges for automatic archival
-
-**Triggers on:** `gh pr merge` command detection
-
-**Reminder message:**
-```
-=== SESSION STATE: PR MERGE DETECTED ===
-A PR has been merged. Archive current session state.
-
-Steps:
-1. Extract PR number from merge commit
-2. Create .claude/session-state/pr-[number].md with simplified summary
-3. Reset session-state.md from template
-4. Prune old archives (keep last 5)
-5. Update session-state.md with new PR in history
-```
-
-**What to do:**
-1. Extract PR number: `git log -1 --oneline | grep -o '#[0-9]*'`
-2. Create simplified archive from current session-state.md
-3. Copy template to reset: `cp .claude/session-state-template.md .claude/session-state/current.md`
-4. Delete oldest archives if more than 5 exist
-5. Update "Recent PR history" section with new entry
-
-**Archive format:** See [pr-archive-format.md](pr-archive-format.md)
-
-### SessionEnd
-
-**When:** Session terminates (explicit /exit or crash)
-
-**Purpose:** Final state update opportunity
-
-**Reminder message:**
-```
-=== SESSION STATE: SESSION END ===
-Session ending. Final chance to update .claude/session-state/current.md.
-```
-
-**What to do:**
-- Quick final update if needed
-- Ensure "Context for next session" is clear
-- Note any blockers or next steps
-
-## Hook configuration
-
-All hooks configured in `.claude/settings.json`:
-
+**Configuration:**
 ```json
 {
-  "hooks": {
-    "SessionStart": [{
-      "hooks": [{
-        "type": "command",
-        "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/session-state-handler.sh",
-        "timeout": 10
-      }]
-    }],
-    "PreToolUse": [{
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $CLAUDE_PROJECT_DIR/.claude/skills/session-state/scripts/session-state-handler.sh",
+          "timeout": 10
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Input:** Minimal JSON with session context
+
+**Output format:** Plain text (stdout directly becomes context Claude can see)
+
+**What it does:**
+1. Initializes tool counter to 0
+2. Validates `.claude/session-state/current.md` exists
+3. Shows git branch and working tree status
+4. Reminds Claude to read session state
+
+**Example output:**
+```
+=== SESSION STATE: SESSION START ===
+Session state file: /path/to/.claude/session-state/current.md (exists)
+Git branch: main
+
+Git working tree has uncommitted changes:
+ M src/components/Login.tsx
+ M src/App.tsx
+
+REMINDER: Read session-state.md and verify it reflects current state.
+Ask user for clarification if there are discrepancies.
+
+ACTION: Read .claude/session-state/current.md to understand current context.
+=== END SESSION STATE ===
+```
+
+**Why plain text works:** SessionStart is one of the few hooks where stdout is automatically added as context.
+
+---
+
+## PreToolUse Hook
+
+**When it fires:** Before Read, Edit, Write, or Bash tool execution (with rate limiting)
+
+**Rate limiting:** Only outputs reminder every 10th tool use (via persistent counter)
+
+**Configuration:**
+```json
+{
+  "PreToolUse": [
+    {
       "matcher": "Read|Edit|Write|Bash",
-      "hooks": [{
-        "type": "command",
-        "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/session-state-handler.sh",
-        "timeout": 5
-      }]
-    }],
-    "PreCompact": [{
-      "hooks": [{
-        "type": "command",
-        "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/session-state-handler.sh",
-        "timeout": 10
-      }]
-    }],
-    "PostToolUse": [{
-      "matcher": "Bash",
-      "hooks": [{
-        "type": "command",
-        "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/session-state-handler.sh",
-        "timeout": 10
-      }]
-    }],
-    "SessionEnd": [{
-      "hooks": [{
-        "type": "command",
-        "command": "bash $CLAUDE_PROJECT_DIR/.claude/hooks/session-state-handler.sh",
-        "timeout": 10
-      }]
-    }]
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $CLAUDE_PROJECT_DIR/.claude/skills/session-state/scripts/session-state-handler.sh",
+          "timeout": 5
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Input:** Tool information (tool_name, tool_input, etc.)
+
+**Output format:** JSON with `additionalContext` (required for Claude to see it)
+
+**What it does:**
+1. Increments persistent tool counter (stored in `/tmp/claude-session-state-tool-count-<project-hash>`)
+2. Every 10th use, outputs JSON reminder
+3. Otherwise exits silently
+
+**Example output (every 10th call):**
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PreToolUse",
+    "permissionDecision": "allow",
+    "additionalContext": "=== SESSION STATE: UPDATE REMINDER ===\nConsider updating .claude/session-state/current.md if work completed.\n=== END SESSION STATE ==="
   }
 }
 ```
 
-## Hook script logic
+**Why JSON is required:** PreToolUse hook output only reaches Claude if formatted as JSON with `additionalContext`. Plain text stdout only appears in verbose mode (Ctrl+O).
 
-All hooks handled by `.claude/skills/session-state/scripts/session-state-handler.sh`
+**Tool counter persistence:** Uses project path hash (not PID) for stable filename across hook invocations in the same session.
 
-**Environment variables available:**
-- `$HOOK_EVENT` - Event name (SessionStart, PreToolUse, etc.)
-- `$TOOL_NAME` - Tool being used (for PreToolUse/PostToolUse)
-- `$COMMAND` - Command being run (for Bash tool)
-- `$CLAUDE_PROJECT_DIR` - Project root path
+---
 
-**Script tracks:**
-- Tool use count (for every-10-uses reminder)
-- PR merge detection
-- Git status for context
+## PostToolUse Hook
 
-## Matchers
+**When it fires:** After Bash tool execution succeeds
 
-**PreToolUse matcher:** `"Read|Edit|Write|Bash"`
-- Only triggers on file operations and bash commands
-- Avoids noise from other tools
-- Counts toward 10-use reminder
+**Trigger:** Detects `gh pr merge` commands in the Bash tool input
 
-**PostToolUse matcher:** `"Bash"`
-- Only watches bash commands
-- Specifically looks for `gh pr merge`
-- Triggers archival workflow
+**Configuration:**
+```json
+{
+  "PostToolUse": [
+    {
+      "matcher": "Bash",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bash $CLAUDE_PROJECT_DIR/.claude/skills/session-state/scripts/session-state-handler.sh",
+          "timeout": 10
+        }
+      ]
+    }
+  ]
+}
+```
 
-## Timeouts
+**Input:** Tool execution details including `tool_input.command`
 
-- **SessionStart/PreCompact/SessionEnd:** 10 seconds
-- **PreToolUse/PostToolUse:** 5 seconds
+**Output format:** JSON with `additionalContext` (required for Claude to see it)
 
-Hooks that take too long will be killed by Claude Code.
+**What it does:**
+1. Extracts command from `tool_input.command`
+2. Checks if command contains `gh pr merge`
+3. If match, outputs archival workflow reminder
+4. Otherwise exits silently
 
-## Best practices
+**Example output (when PR merge detected):**
+```json
+{
+  "hookSpecificOutput": {
+    "hookEventName": "PostToolUse",
+    "additionalContext": "=== SESSION STATE: PR MERGE DETECTED ===\n\nA PR merge was just completed. Archive current session state.\n\nACTIONS REQUIRED:\n1. Get PR number...\n2. Archive current session state...\n..."
+  }
+}
+```
 
-**Do:**
-- Always honour PreCompact - this is critical
-- Update state after meaningful work chunks
-- Be specific in "Next action" field
-- Capture failed approaches immediately
+**Why JSON is required:** PostToolUse hook output only reaches Claude if formatted as JSON with `additionalContext`. Plain text stdout only appears in verbose mode.
 
-**Don't:**
-- Ignore PreCompact warning (context loss risk)
-- Wait too long between updates
-- Overthink PreToolUse reminders (quick updates fine)
-- Skip archival when PR merges
+**Archival workflow:** Full instructions included in the reminder tell Claude exactly how to:
+- Extract PR number from merge commit
+- Create pr-[number].md archive
+- Reset session state from template
+- Prune old archives (keep last 5)
 
-## Experimental notes
+---
 
-**PostCompact not available:**
-- Official docs list PostCompact but CLI validation rejects it (March 2026)
-- Cannot be added to settings.json - blocks Claude Code startup
-- Solution: PreCompact reminder explicitly says "re-read after compaction"
-- Hook script has PostCompact handler ready for when CLI supports it
+## What About Compaction Hooks?
 
-**This system is experimental** - real usage may reveal needed improvements.
+**PreCompact, PostCompact, and SessionEnd hooks do NOT work** for this use case.
+
+### Why They Don't Work
+
+According to Claude Code documentation:
+
+> PreCompact hooks have no decision control. They cannot affect the compaction result but can perform follow-up tasks.
+>
+> PostCompact hooks have no decision control. They cannot affect the compaction result but can perform follow-up tasks.
+
+**Their output never reaches Claude.** These hooks are for:
+- Audit logging
+- Metrics collection
+- External notifications
+- Side effects only
+
+**SessionEnd** similarly cannot provide context to Claude.
+
+### Original Design vs Reality
+
+**Original intent:** Save state right before compaction (PreCompact), restore after (PostCompact)
+
+**Why it can't work:** Hook output doesn't reach Claude, defeating the entire purpose
+
+**Redesigned approach:** Keep state continuously updated via PreToolUse reminders (every 10 tools). If compaction happens, state is at most 10 tool uses stale. SessionStart reads whatever exists when resuming.
+
+---
+
+## Hook Output Visibility Table
+
+Comprehensive reference for which hooks can reach Claude:
+
+| Hook Event | Plain Text Stdout | JSON `additionalContext` | Decision Control |
+|------------|-------------------|--------------------------|------------------|
+| **SessionStart** | ✅ Yes (added as context) | ✅ Yes | ✅ Full |
+| **UserPromptSubmit** | ✅ Yes (added as context) | ✅ Yes | ✅ Full |
+| **PreToolUse** | ❌ No (verbose mode only) | ✅ Yes | ✅ Can block |
+| **PostToolUse** | ❌ No (verbose mode only) | ✅ Yes | ✅ Can block |
+| **PostToolUseFailure** | ❌ No (verbose mode only) | ✅ Yes | ✅ Can block |
+| **PreCompact** | ❌ No | ❌ No | ❌ None |
+| **PostCompact** | ❌ No | ❌ No | ❌ None |
+| **SessionEnd** | ❌ No | ❌ No | ❌ None |
+| **Stop** | ❌ No | ❌ No | ✅ Can block |
+
+**Source:** [Claude Code Hooks Documentation](https://code.claude.com/docs/en/hooks)
+
+---
+
+## Best Practices
+
+### For Hook Scripts
+
+1. **Always validate environment variables** - Check `$CLAUDE_PROJECT_DIR` exists
+2. **Use proper JSON output** - PreToolUse and PostToolUse require JSON with `additionalContext`
+3. **Handle missing files gracefully** - Don't crash if session state doesn't exist
+4. **Use stable filenames for persistence** - Project hash, not PID
+5. **Keep reminders concise** - Hook output becomes conversation context
+
+### For Tool Counter Persistence
+
+```bash
+# BAD: Uses $$ (PID) - counter resets every invocation
+TOOL_COUNT_FILE="/tmp/tool-count-$$"
+
+# GOOD: Uses project hash - persists across invocations
+PROJECT_HASH=$(echo "$CLAUDE_PROJECT_DIR" | shasum | cut -d' ' -f1)
+TOOL_COUNT_FILE="/tmp/tool-count-${PROJECT_HASH}"
+```
+
+### For JSON Output
+
+```bash
+# PreToolUse/PostToolUse - use JSON
+jq -n '{
+  hookSpecificOutput: {
+    hookEventName: "PreToolUse",
+    permissionDecision: "allow",
+    additionalContext: "Your message here"
+  }
+}'
+
+# SessionStart - plain text works
+echo "Your message here"
+```
+
+---
+
+## Debugging Hooks
+
+### Check if hooks are firing
+
+```bash
+# Run Claude Code in debug mode
+claude --debug
+
+# Then use Ctrl+O for verbose transcript mode to see hook output
+```
+
+### Manually test hook script
+
+```bash
+export CLAUDE_PROJECT_DIR="/path/to/project"
+
+# Test SessionStart
+echo '{"hook_event_name":"SessionStart"}' | bash .claude/skills/session-state/scripts/session-state-handler.sh
+
+# Test PreToolUse (10th call)
+# First set counter to 9
+echo "9" > /tmp/claude-session-state-tool-count-$(echo "$CLAUDE_PROJECT_DIR" | shasum | cut -d' ' -f1)
+echo '{"hook_event_name":"PreToolUse"}' | bash .claude/skills/session-state/scripts/session-state-handler.sh
+
+# Test PostToolUse
+echo '{"hook_event_name":"PostToolUse","tool_input":{"command":"gh pr merge 123"}}' | bash .claude/skills/session-state/scripts/session-state-handler.sh
+```
+
+### Verify JSON output is valid
+
+```bash
+echo '{"hook_event_name":"PreToolUse"}' | bash .claude/skills/session-state/scripts/session-state-handler.sh | jq .
+# Should parse without errors
+```
+
+---
+
+## Related Documentation
+
+- **Hook script implementation:** `.claude/skills/session-state/scripts/session-state-handler.sh`
+- **Hook configuration:** `.claude/settings.json`
+- **Complete system docs:** `references/session-state-system.md`
+- **Official Claude Code hooks:** [code.claude.com/docs/en/hooks](https://code.claude.com/docs/en/hooks)
