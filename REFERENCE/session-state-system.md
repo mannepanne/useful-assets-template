@@ -168,7 +168,7 @@ Write session state as if the repository might become public someday. If you wou
 - Reset from template after archival
 - Committed to git (survives across machines/crashes)
 
-### .claude/.claude/session-state/pr-[number].md
+### .claude/session-state/pr-[number].md
 
 **PR history** - simplified summaries of completed work.
 
@@ -268,7 +268,7 @@ When `gh pr merge` runs:
 
 3. **Archive current state:**
    - Read `.claude/session-state/current.md`
-   - Create `.claude/.claude/session-state/pr-[number].md` with summary:
+   - Create `.claude/session-state/pr-[number].md` with summary:
      - PR title, date, branch, GitHub link
      - 2-3 sentence summary
      - Key decisions
@@ -282,7 +282,7 @@ When `gh pr merge` runs:
    - Add link to new .claude/session-state/pr-[number].md in PR history section
 
 5. **Prune old history:**
-   - List all `.claude/.claude/session-state/pr-*.md` files
+   - List all `.claude/session-state/pr-*.md` files
    - Sort by number (descending)
    - Keep last 5
    - Delete older ones
@@ -412,7 +412,7 @@ This will:
 2. Update hook script (safe to overwrite)
 3. Update hooks configuration
 4. **Preserve** `.claude/session-state/current.md` (active work!)
-5. **Preserve** `.claude/.claude/session-state/pr-*.md` (history!)
+5. **Preserve** `.claude/session-state/pr-*.md` (history!)
 
 ### Manual installation:
 
