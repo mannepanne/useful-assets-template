@@ -9,11 +9,22 @@
 
 set -euo pipefail
 
+# Validate required environment variable
+if [ -z "${CLAUDE_PROJECT_DIR:-}" ]; then
+  echo "ERROR: CLAUDE_PROJECT_DIR environment variable not set"
+  echo "This script must be run by Claude Code with project context."
+  exit 1
+fi
+
 # Read hook event from stdin JSON
 EVENT_JSON=$(cat)
 HOOK_EVENT=$(echo "$EVENT_JSON" | jq -r '.hook_event_name // "unknown"')
 SESSION_FILE="$CLAUDE_PROJECT_DIR/.claude/session-state/current.md"
-TOOL_COUNT_FILE="/tmp/claude-session-state-tool-count-$$"
+
+# Use stable tool count file based on project path (not PID)
+# This ensures counter persists across hook invocations in the same session
+PROJECT_HASH=$(echo "$CLAUDE_PROJECT_DIR" | shasum | cut -d' ' -f1)
+TOOL_COUNT_FILE="/tmp/claude-session-state-tool-count-${PROJECT_HASH}"
 
 # ============================================================================
 # Security: Scan session state for potential secrets or sensitive data

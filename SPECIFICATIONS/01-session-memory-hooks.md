@@ -169,7 +169,7 @@ Implement a hook-based session memory system that:
       └── session-state.md          # Installable skill for other projects
 
 REFERENCE/
-  └── session-state-system.md       # Documentation of how this works
+  └── skills/session-state/references/session-state-system.md  # Documentation of how this works
 ```
 
 **Files to modify:**
@@ -439,7 +439,7 @@ User ends session
 6. Test PR archival: Merge PR, verify session-pr-[number].md created
 7. Test auto-pruning: Merge 6+ PRs, verify only last 5 kept
 8. Test full cycle: Start → Work → Compact → PR merge → Resume
-9. Create `REFERENCE/session-state-system.md` documenting:
+9. Create `.claude/skills/session-state/references/session-state-system.md` documenting:
    - How the system works
    - What gets saved in session state
    - When to move context to permanent docs

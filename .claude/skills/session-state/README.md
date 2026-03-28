@@ -78,7 +78,7 @@ Session state **is** for:
 
 ## Documentation
 
-- **Complete guide:** See project's `REFERENCE/session-state-system.md`
+- **Complete guide:** See [references/session-state-system.md](references/session-state-system.md)
 - **Security guidelines:** Comprehensive section in REFERENCE doc
 - **Installation:** `references/install-procedure.md`
 - **Troubleshooting:** `references/troubleshooting.md`

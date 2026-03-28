@@ -70,7 +70,7 @@ _Brief notes on what's been accomplished (reset on PR merge):_
 - Configured hooks in .claude/settings.json
 - Created initial session-state.md for this project
 - Built installable skill (.claude/skills/session-state/SKILL.md) following proper Claude skills structure with bundled scripts and assets
-- Created comprehensive documentation (REFERENCE/session-state-system.md)
+- Created comprehensive documentation (.claude/skills/session-state/references/session-state-system.md)
 - Updated root CLAUDE.md with session state references
 - Updated .claude/CLAUDE.md memory management section
 - Added PostCompact hook for restore after compaction (user suggestion)
@@ -178,7 +178,7 @@ _Track what didn't work to prevent retry loops:_
 - `.claude/skills/session-state/references/pr-archive-format.md` - Archive template
 - `.claude/skills/session-state/references/hooks-reference.md` - Hook details
 - `.claude/skills/session-state/references/troubleshooting.md` - Common issues
-- `REFERENCE/session-state-system.md` - Complete documentation
+- `.claude/skills/session-state/references/session-state-system.md` - Complete documentation
 
 ---
 
@@ -208,11 +208,11 @@ _Additional context that would help resume work later:_
 
 **Relevant documentation:**
 - SPECIFICATIONS/01-session-memory-hooks.md - Feature spec with all decisions
-- REFERENCE/session-state-system.md - How the system works
+- .claude/skills/session-state/references/session-state-system.md - How the system works
 - .claude/skills/session-state/SKILL.md - Install/update commands (proper skill structure)
 
 **Ready to move to permanent docs:**
-- All key decisions already documented in REFERENCE/session-state-system.md
+- All key decisions already documented in .claude/skills/session-state/references/session-state-system.md
 - Spec can move to ARCHIVE/ after PR merges
 
 ---
