@@ -465,7 +465,7 @@ Potential improvements to consider:
 - **Installation:** `.claude/skills/session-state/SKILL.md` - How to install/update
 - **Template:** `.claude/skills/session-state/assets/session-state-template.md` - Session state structure (also copied to `.claude/session-state-template.md`)
 - **Hook script:** `.claude/skills/session-state/scripts/session-state-handler.sh` - Implementation details (also copied to `.claude/skills/session-state/scripts/session-state-handler.sh`)
-- **Specification:** `SPECIFICATIONS/01-session-memory-hooks.md` - Original design (if still active)
+- **Specification:** `SPECIFICATIONS/ARCHIVE/session-memory-hooks.md` - Original design (archived)
 
 ---
 
