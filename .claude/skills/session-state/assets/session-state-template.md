@@ -1,9 +1,12 @@
 ---
-ABOUT: Session working memory - ephemeral notes for active work
+ABOUT: Session working memory - ephemeral notes for active work sessions
 ABOUT: Helps survive context compaction and session interruptions
 ABOUT: Reset/archive when PR merged - important decisions graduate to SPECIFICATIONS/REFERENCE/
 ABOUT: NOT permanent documentation - this is a running set of notes to stay on track
+ABOUT: NOT for cross-machine sync - use permanent docs for that
 ABOUT: EXPERIMENTAL: This is a brand new system - may evolve as we learn from real usage
+ABOUT: ⚠️ SECURITY WARNING - DO NOT include secrets, API keys, passwords, PII, or sensitive business data
+ABOUT: If removed from .gitignore, all content becomes visible to repository viewers
 ---
 
 # Session State

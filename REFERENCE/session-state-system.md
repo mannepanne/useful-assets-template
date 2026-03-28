@@ -10,12 +10,12 @@ How context preservation works across compaction, crashes, and session interrupt
 
 The session state system maintains working memory for Claude Code sessions through:
 
-1. **`.claude/session-state/current.md`** - Current work context (committed to git)
+1. **`.claude/session-state/current.md`** - Current work context (git-ignored by default for security)
 2. **Hook scripts** - Automatic reminders at critical moments
 3. **PR-based archival** - Auto-archive when PRs merge, keep last 5
 4. **Progressive disclosure** - Current work prominent, history available when needed
 
-**Purpose:** Bridge context loss during compaction or crashes, not replace permanent documentation.
+**Purpose:** Bridge context loss during compaction or crashes for active work sessions, not replace permanent documentation or provide cross-machine sync.
 
 ---
 
@@ -66,6 +66,83 @@ The session state system maintains working memory for Claude Code sessions throu
 - Scripts output structured reminders
 - Claude sees reminders and uses Edit tool to update files
 - This keeps scripts simple while leveraging Claude's understanding
+
+---
+
+## Security and Privacy Guidelines
+
+**⚠️ IMPORTANT:** Session state encourages capturing work context, but you must be careful what you include.
+
+### What NOT to Include in Session State
+
+**Never include:**
+- **Secrets:** API keys, passwords, tokens, credentials, authentication details
+- **Personal Data (PII):** Customer names, email addresses, phone numbers, addresses
+- **Sensitive Business Data:** Proprietary algorithms, confidential strategies, unreleased product details
+- **Infrastructure Details:** Database connection strings, server IPs, internal architecture (if repo is public)
+- **Security Information:** Failed security approaches, vulnerability details, penetration test results
+- **Compliance-Sensitive Data:** Health records (HIPAA), financial data, anything subject to regulatory requirements
+
+**Why:** Even though session state is git-ignored by default, removing files from .gitignore could expose sensitive content. Pattern detection helps catch obvious secrets, but you're the final safeguard.
+
+### Safe to Include
+
+**Generally safe:**
+- **High-level task descriptions:** "Implementing user search feature", "Refactoring authentication module"
+- **Architectural decisions:** "Chose Postgres over MySQL because better JSON support"
+- **Failed technical approaches:** "Tried library X, incompatible with our TypeScript version"
+- **Non-sensitive blockers:** "Waiting for API documentation", "Need to install jq"
+- **File paths and code structure:** "Modified src/components/UserProfile.tsx"
+- **Abstract decisions:** "Decided to use factory pattern for widget creation"
+
+### Git Ignore Status
+
+**By default:** Session state files are git-ignored for security:
+- `.claude/session-state/current.md`
+- `.claude/session-state/pr-*.md`
+
+**Why git-ignored:**
+- Prevents accidental secret commits
+- Avoids GDPR violations (PII in git history)
+- Reduces information disclosure risk
+- Makes security the default behavior
+
+**If you want cross-machine sync:**
+1. **Not recommended** for active development work
+2. Session state is for active sessions, not long-term sync
+3. Use permanent docs (SPECIFICATIONS/, REFERENCE/) for cross-machine knowledge
+4. If you must: Remove patterns from .gitignore, manually commit, review carefully
+
+### Pattern Detection
+
+SessionEnd hook scans for common secret patterns:
+- API key patterns (`api_key=`, `apikey:`)
+- Password patterns (`password:`, `passwd=`)
+- Secret/token patterns (`secret:`, `bearer`)
+- Email addresses (potential PII)
+- Known secret formats (Stripe keys, GitHub tokens, AWS keys)
+
+**Warnings don't block** - you can continue, but review carefully before committing.
+
+### GDPR Considerations
+
+If working with EU user data:
+- **Do not** include customer names, emails, or identifiable information
+- Session state is **not encrypted** at rest
+- If committed to git, consider personal data **retention obligations**
+- Using default (git-ignored) configuration is safest
+
+### Repository Visibility
+
+**If working on public repos:**
+- Be extra cautious about business logic details
+- Architectural decisions are usually fine
+- Avoid anything that reveals competitive advantage
+- Remember: if repo becomes public later, old git history is exposed
+
+### Best Practice: Assume Public
+
+Write session state as if the repository might become public someday. If you wouldn't want it on GitHub's explore page, don't include it.
 
 ---
 

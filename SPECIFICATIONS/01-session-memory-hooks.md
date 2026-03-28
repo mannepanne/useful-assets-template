@@ -73,21 +73,24 @@ Implement a hook-based session memory system that:
 
 ### Architecture decisions
 
-**Decision 1: Committed Session State with PR-Based History**
+**Decision 1: Git-Ignored Session State with Optional Commit** (REVISED)
 - Choice:
-  - `session-state.md` committed to git (current work)
-  - `session-pr-[number].md` for completed PRs (last 5 kept)
-  - Auto-archive on PR merge
+  - `.claude/session-state/*.md` git-ignored by default
+  - Users can manually commit for cross-machine sync (not recommended)
+  - Strong security warnings in template and documentation
+  - Pattern detection scans for secrets at SessionEnd
+  - PR-based archival still works (archives also git-ignored)
 - Rationale:
-  - Survives across machines/sessions/crashes
-  - Progressive disclosure (current work prominent, history available if needed)
-  - Natural lifecycle tied to PRs (work units)
-  - Auto-pruning prevents unbounded growth
-  - Frontmatter explains ephemeral nature
+  - **Security by default** - prevents accidental secret commits
+  - **GDPR compliance** - avoids PII in git history
+  - **Information disclosure prevention** - no sensitive business logic in commits
+  - Survives local crashes even when git-ignored
+  - Users make informed choice if they want to commit
+  - Session state is for **active work sessions**, not cross-machine sync
 - Alternatives considered:
-  - Git-ignored - Would lose state across machines/crashes
-  - Rolling 5-day window - Too complex, confusing which section is current
-  - Single file no history - Lose context after PR merge
+  - Committed by default (original design) - **Too risky**, users might not realize content is public
+  - Always git-ignored, no option - Removes flexibility for users who understand risks
+  - Encrypted before commit - Complex, keys become new secret to manage
 
 **Decision 2: Hook Scripts Are Read-Only**
 - Choice: Scripts output reminders, Claude updates files

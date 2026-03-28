@@ -16,6 +16,62 @@ SESSION_FILE="$CLAUDE_PROJECT_DIR/.claude/session-state/current.md"
 TOOL_COUNT_FILE="/tmp/claude-session-state-tool-count-$$"
 
 # ============================================================================
+# Security: Scan session state for potential secrets or sensitive data
+# ============================================================================
+scan_for_sensitive_content() {
+  if [ ! -f "$SESSION_FILE" ]; then
+    return 0
+  fi
+
+  local warnings=()
+
+  # Pattern detection (case-insensitive)
+  if grep -iq -E '(api[_-]?key|apikey)[[:space:]]*[:=]' "$SESSION_FILE"; then
+    warnings+=("Potential API key pattern detected")
+  fi
+
+  if grep -iq -E '(password|passwd|pwd)[[:space:]]*[:=]' "$SESSION_FILE"; then
+    warnings+=("Potential password pattern detected")
+  fi
+
+  if grep -iq -E '(secret|token|bearer)[[:space:]]*[:=]' "$SESSION_FILE"; then
+    warnings+=("Potential secret/token pattern detected")
+  fi
+
+  if grep -iq -E '[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}' "$SESSION_FILE"; then
+    warnings+=("Email address detected (potential PII)")
+  fi
+
+  if grep -iq -E '(sk|pk)_[a-z]{4,}_[a-zA-Z0-9]{20,}' "$SESSION_FILE"; then
+    warnings+=("Stripe-like key pattern detected")
+  fi
+
+  if grep -iq -E 'ghp_[a-zA-Z0-9]{36}' "$SESSION_FILE"; then
+    warnings+=("GitHub personal access token pattern detected")
+  fi
+
+  if grep -iq -E 'AKIA[0-9A-Z]{16}' "$SESSION_FILE"; then
+    warnings+=("AWS access key pattern detected")
+  fi
+
+  # Report warnings if any found
+  if [ ${#warnings[@]} -gt 0 ]; then
+    echo ""
+    echo "⚠️  SECURITY WARNING - Potential sensitive content detected:"
+    for warning in "${warnings[@]}"; do
+      echo "   - $warning"
+    done
+    echo ""
+    echo "Review .claude/session-state/current.md before committing to git."
+    echo "Remember: Session state is git-ignored by default for security."
+    echo ""
+    return 1
+  fi
+
+  return 0
+}
+
+# ============================================================================
 # SessionStart: Validate state exists and show current context
 # ============================================================================
 if [ "$HOOK_EVENT" = "SessionStart" ]; then
@@ -192,6 +248,10 @@ elif [ "$HOOK_EVENT" = "SessionEnd" ]; then
   echo ""
   echo "3. Noted any blockers or context needed for next session"
   echo ""
+
+  # Security scan for sensitive content
+  scan_for_sensitive_content || true  # Don't block on warnings
+
   echo "=== END SESSION STATE ==="
   exit 0
 fi

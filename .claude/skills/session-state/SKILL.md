@@ -10,11 +10,13 @@ description: Maintains session working memory - tracks current task, decisions m
 ## What this does
 
 Maintains working memory across:
-- Context compaction (save/restore cycle via PreCompact/PostCompact hooks)
+- Context compaction (save/restore cycle via PreCompact hooks)
 - Session crashes or interruptions
-- Switching between projects
+- Active work sessions (not cross-machine sync)
 
 **How:** 5 hooks fire at critical moments, reminding Claude to update `.claude/session-state/current.md`. On PR merge, current state archives to `.claude/session-state/pr-[number].md` (keeps last 5).
+
+**⚠️ Security:** Files are git-ignored by default. Never include API keys, passwords, PII, or sensitive business data. Pattern detection warns about potential secrets. See security guidelines below.
 
 ## Commands
 
@@ -116,6 +118,26 @@ PR Merge Archival:
 - Context still lost → [references/troubleshooting.md](references/troubleshooting.md#context-loss)
 
 **Full guide:** [references/troubleshooting.md](references/troubleshooting.md)
+
+## Security guidelines
+
+Session state files are **git-ignored by default** to prevent accidental secret commits.
+
+**Never include:**
+- API keys, passwords, tokens, credentials
+- Customer names, emails, or PII (GDPR risk)
+- Sensitive business logic or proprietary details
+- Database connection strings or infrastructure secrets
+
+**Safe to include:**
+- High-level task descriptions
+- Architectural decisions and reasoning
+- Failed technical approaches (not security vulnerabilities)
+- File paths and code structure decisions
+
+**Pattern detection:** SessionEnd hook scans for common secret patterns and warns if detected.
+
+**Complete guide:** See [Security and Privacy Guidelines](../../REFERENCE/session-state-system.md#security-and-privacy-guidelines) in REFERENCE doc.
 
 ## Experimental status
 
