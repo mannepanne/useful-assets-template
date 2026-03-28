@@ -140,7 +140,7 @@ Hooks configured (5 events):
    Session state is git-ignored by default (see .gitignore).
    Do NOT include API keys, passwords, PII, or sensitive business data.
    Pattern detection warns about potential secrets at SessionEnd.
-   See REFERENCE/session-state-system.md for complete security guidelines.
+   See references/session-state-system.md for complete security guidelines.
 
 Check .claude/session-state/current.md to track your work.
 Hooks will activate on next tool use.

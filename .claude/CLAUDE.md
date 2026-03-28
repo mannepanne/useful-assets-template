@@ -257,7 +257,7 @@ The goal is tracking our work and enabling collaboration, not perfect git aesthe
   - **CRITICAL:** Always honour PreCompact hook - update immediately before compaction
   - Capture decisions, failed approaches, blockers, next actions
   - Read on SessionStart to understand current context
-  - See [session-state-system.md](../REFERENCE/session-state-system.md) for complete details
+  - See [session-state-system.md](skills/session-state/references/session-state-system.md) for complete details
 
 ## Problem Solving and Debugging
 

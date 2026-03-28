@@ -169,7 +169,7 @@ Implement a hook-based session memory system that:
       └── session-state.md          # Installable skill for other projects
 
 REFERENCE/
-  └── session-state-system.md       # Documentation of how this works
+  └── skills/session-state/references/session-state-system.md  # Documentation of how this works
 ```
 
 **Files to modify:**
@@ -439,7 +439,7 @@ User ends session
 6. Test PR archival: Merge PR, verify session-pr-[number].md created
 7. Test auto-pruning: Merge 6+ PRs, verify only last 5 kept
 8. Test full cycle: Start → Work → Compact → PR merge → Resume
-9. Create `REFERENCE/session-state-system.md` documenting:
+9. Create `.claude/skills/session-state/references/session-state-system.md` documenting:
    - How the system works
    - What gets saved in session state
    - When to move context to permanent docs
@@ -541,6 +541,49 @@ User ends session
 - [ ] Hook outputs appear in Claude's context during session
 - [ ] Claude can successfully update session state via Edit tool
 - [ ] Session state helps resume work after interruption
+
+### Testing limitations and strategic decisions
+
+**What can be tested automatically:**
+- ✅ Script syntax validation (bash -n)
+- ✅ Dependency checks (jq availability)
+- ✅ File structure verification (skill files, directories, permissions)
+- ✅ Hook configuration validation (settings.json structure)
+- ✅ Pattern detection (security scanning with mock secrets)
+- ✅ Individual hook outputs (JSON input → expected reminder output)
+
+**What requires real Claude Code sessions:**
+- ❌ Actual hook timing (PreCompact firing before real compaction)
+- ❌ Tool counter persistence (requires 10+ tool uses in one session)
+- ❌ PR archival workflow (requires actual PR merge via gh CLI)
+- ❌ Claude's behavioral response (whether Claude actually updates state when reminded)
+- ❌ Save/restore cycle effectiveness (whether context truly survives compaction)
+
+**Decision: No complex integration tests**
+
+**Rationale:**
+1. **Infrastructure limitations** - Hooks fire during real sessions only. Mocking Claude Code's hook system would require extensive infrastructure that doesn't exist.
+2. **Diminishing returns** - Core logic is simple (bash script outputs reminders, Claude responds). Complex test harness would be larger than the implementation.
+3. **Real-world validation more valuable** - Dogfooding the system in actual development work will reveal real issues faster than synthetic tests.
+4. **Validation testing complete** - All testable aspects verified (see PR #1 validation test results):
+   - Script syntax: ✅ PASS
+   - Dependencies: ✅ PASS (jq installed)
+   - File structure: ✅ PASS
+   - Hook configuration: ✅ PASS (5 hooks correctly configured)
+   - Pattern detection: ✅ PASS (all 7 secret types detected)
+   - Hook events: ✅ PASS (all produce expected output)
+
+**Testing approach:**
+- **Phase 1:** Validation testing (completed) - verify all testable components work
+- **Phase 2:** Real-world dogfooding (ongoing) - use system during actual development
+- **Phase 3:** Iterate based on findings - fix issues discovered through real usage
+
+**Documentation:**
+- Validation test results: PR #1 comment (comprehensive test report)
+- Testing limitations acknowledged: This section
+- Real-world validation: Ongoing as system is used
+
+This decision prevents getting stuck on untestable aspects while ensuring core functionality is verified.
 
 ---
 

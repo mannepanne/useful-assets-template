@@ -58,7 +58,7 @@ _No PR history yet - this is the first feature being implemented in this templat
 
 _Brief notes on what's been accomplished (reset on PR merge):_
 
-- Created comprehensive feature spec in SPECIFICATIONS/01-session-memory-hooks.md
+- Created comprehensive feature spec in SPECIFICATIONS/ARCHIVE/session-memory-hooks.md
 - Implemented session state template with frontmatter explaining ephemeral nature (.claude/session-state-template.md)
 - Built hook script handling all 6 events (.claude/hooks/session-state-handler.sh):
   - SessionStart: validate state, show git status
@@ -70,7 +70,7 @@ _Brief notes on what's been accomplished (reset on PR merge):_
 - Configured hooks in .claude/settings.json
 - Created initial session-state.md for this project
 - Built installable skill (.claude/skills/session-state/SKILL.md) following proper Claude skills structure with bundled scripts and assets
-- Created comprehensive documentation (REFERENCE/session-state-system.md)
+- Created comprehensive documentation (.claude/skills/session-state/references/session-state-system.md)
 - Updated root CLAUDE.md with session state references
 - Updated .claude/CLAUDE.md memory management section
 - Added PostCompact hook for restore after compaction (user suggestion)
@@ -165,7 +165,7 @@ _Track what didn't work to prevent retry loops:_
 - `.claude/settings.json` - Added hook configuration
 
 **New files:**
-- `SPECIFICATIONS/01-session-memory-hooks.md` - Feature spec
+- `SPECIFICATIONS/ARCHIVE/session-memory-hooks.md` - Feature spec (archived)
 - `.claude/session-state-template.md` - Template for initializing state
 - `.claude/hooks/session-state-handler.sh` - Hook script (executable)
 - `.claude/session-state/current.md` - This file
@@ -178,7 +178,7 @@ _Track what didn't work to prevent retry loops:_
 - `.claude/skills/session-state/references/pr-archive-format.md` - Archive template
 - `.claude/skills/session-state/references/hooks-reference.md` - Hook details
 - `.claude/skills/session-state/references/troubleshooting.md` - Common issues
-- `REFERENCE/session-state-system.md` - Complete documentation
+- `.claude/skills/session-state/references/session-state-system.md` - Complete documentation
 
 ---
 
@@ -207,12 +207,12 @@ _Additional context that would help resume work later:_
 - May discover improvements needed during actual use
 
 **Relevant documentation:**
-- SPECIFICATIONS/01-session-memory-hooks.md - Feature spec with all decisions
-- REFERENCE/session-state-system.md - How the system works
+- SPECIFICATIONS/ARCHIVE/session-memory-hooks.md - Feature spec with all decisions (archived)
+- .claude/skills/session-state/references/session-state-system.md - How the system works
 - .claude/skills/session-state/SKILL.md - Install/update commands (proper skill structure)
 
 **Ready to move to permanent docs:**
-- All key decisions already documented in REFERENCE/session-state-system.md
+- All key decisions already documented in .claude/skills/session-state/references/session-state-system.md
 - Spec can move to ARCHIVE/ after PR merges
 
 ---

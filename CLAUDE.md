@@ -152,7 +152,7 @@ npm run test:coverage     # Coverage report
 - **Testing strategy?** → [testing-strategy.md](./REFERENCE/testing-strategy.md)
 - **Known issues?** → [technical-debt.md](./REFERENCE/technical-debt.md)
 - **Getting unstuck?** → [troubleshooting.md](./REFERENCE/troubleshooting.md)
-- **Session state system?** → [session-state-system.md](./REFERENCE/session-state-system.md)
+- **Session state system?** → [session-state-system.md](./.claude/skills/session-state/references/session-state-system.md)
 
 **Session State:**
 - **Current work** → [.claude/session-state/current.md](./.claude/session-state/current.md) - Active task context, survives compaction
