@@ -86,7 +86,7 @@ Session state **is** for:
 
 ## Experimental Status
 
-This is a brand new system. Thoroughly designed, but real usage will validate and refine the approach. Feedback welcome!
+This is a brand new system. Real usage will validate and refine the approach. Feedback welcome!
 
 ## License
 
