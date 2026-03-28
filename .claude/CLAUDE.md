@@ -73,6 +73,7 @@ You'll still maintain all core collaboration principles (Swedish directness, no 
 - **Keep it simple** - We prefer simple, clean, maintainable solutions over clever or complex ones. Follow the KISS principle and avoid over-engineering when a simple solution is available.
 - **Don't rewrite working code** - Make the smallest reasonable changes to get to the desired outcome. Don't embark on reimplementing features or systems from scratch without talking about it first - I usually prefer incremental improvements.
 - **Security is non-negotiable** - We never commit secrets or credentials to the repository. Always consider security in every choice, including treatment of personal user data (GDPR) and compliance with relevant regulations.
+- **NEVER push to main directly** - ALL changes (code, docs, anything) require a feature branch + PR. This is as critical as not committing secrets. Zero exceptions. Check your branch BEFORE making any changes.
 - **Document issues as tasks** - If you notice something that should be fixed but is unrelated to your current task, document it as a new task to potentially do later instead of fixing it immediately.
 - **Keep documentation current** - When making significant changes to architecture, APIs, or core functionality, proactively update project documentation to reflect the new reality. Use the designated documentation folders for implementation details.
 - **Don't waste tokens** - Be succinct and concise.
@@ -157,6 +158,19 @@ Tests serve dual purposes: **Validation** (verify code works) and **Directional 
 
 **Complete testing guide:** See project-specific testing-strategy.md in REFERENCE/ (loaded when working on tests)
 
+### Pre-Implementation Checklist
+
+**Before ANY changes (code, docs, anything), verify:**
+
+- [ ] On feature branch (not main)
+- [ ] Branch follows naming convention (feature/, fix/, refactor/)
+- [ ] Read relevant specifications
+- [ ] Have clear acceptance criteria
+
+**If you cannot check all boxes, STOP and ask the user before proceeding.**
+
+**Checking your branch is NOT optional. It's the FIRST thing you do before any work.**
+
 ## Version Control and Repository Management
 
 ### Repository Configuration
@@ -166,7 +180,21 @@ Tests serve dual purposes: **Validation** (verify code works) and **Directional 
 - Structure projects with clear separation of concerns.
 - Document use of API keys and configuration requirements, but never save secrets in the repository.
 
-### Git Operations and Workflow
+### Git Operations and Workflow - CRITICAL
+
+**⚠️ BEFORE ANY CHANGES - VERIFY YOUR BRANCH:**
+
+1. Verify you're on a feature branch (NOT main)
+2. If on main: create feature branch first (feature/, fix/, refactor/)
+3. Only then proceed with changes
+
+**Zero exceptions. ALL file modifications require feature branch + PR.**
+
+**CRITICAL RULES:**
+- **NEVER work on main directly**
+- **NEVER merge to main directly**
+- **ALL changes MUST go through pull request**
+
 I value clean git history, but not at the expense of losing work or slowing down progress.
 
 **During active development:**
@@ -187,11 +215,11 @@ I value clean git history, but not at the expense of losing work or slowing down
 - See project-specific pr-review-workflow.md in REFERENCE/ for complete guide
 
 **Branch strategy:**
-- Keep main/master clean and deployable
-- Use feature branches for anything non-trivial
-- WIP branches are fine for exploration and experimentation
-- Final commits to shared branches need my explicit approval - this helps me stay aware of what's changing
-- When finishing up a project milestone, with a code base that is clean and functional, suggest we set a release flag to easily find it and mark our progress
+- Keep main clean and deployable
+- Use feature branches for ALL changes
+- WIP branches fine for exploration
+- PR required before merging to main
+- Suggest release tags at project milestones
 
 **Commit message style:**
 - First line: brief summary of what changed
@@ -224,6 +252,12 @@ The goal is tracking our work and enabling collaboration, not perfect git aesthe
 - Before starting complex tasks, search the project documentation for relevant past experiences and lessons learned.
 - Document architectural decisions and their outcomes for future reference.
 - Track patterns in user feedback to improve collaboration over time.
+- **Session state system:** Maintain `.claude/session-state.md` to survive context compaction and crashes:
+  - Update proactively after meaningful work chunks
+  - **CRITICAL:** Always honour PreCompact hook - update immediately before compaction
+  - Capture decisions, failed approaches, blockers, next actions
+  - Read on SessionStart to understand current context
+  - See [session-state-system.md](../REFERENCE/session-state-system.md) for complete details
 
 ## Problem Solving and Debugging
 
