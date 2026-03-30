@@ -252,12 +252,12 @@ The goal is tracking our work and enabling collaboration, not perfect git aesthe
 - Before starting complex tasks, search the project documentation for relevant past experiences and lessons learned.
 - Document architectural decisions and their outcomes for future reference.
 - Track patterns in user feedback to improve collaboration over time.
-- **Session state system:** Maintain `.claude/session-state.md` to survive context compaction and crashes:
-  - Update proactively after meaningful work chunks
-  - **CRITICAL:** Always honour PreCompact hook - update immediately before compaction
-  - Capture decisions, failed approaches, blockers, next actions
-  - Read on SessionStart to understand current context
-  - See [session-state-system.md](skills/session-state/references/session-state-system.md) for complete details
+- **Architecture Decision Records (ADRs):** When making decisions that affect architecture beyond today's PR (library choice, architectural pattern, API design, deciding NOT to do something):
+  - Prompt user: "This decision affects future architecture. Should I create an ADR in REFERENCE/decisions/?"
+  - If confirmed, create ADR documenting: decision, context, alternatives considered, reasoning, trade-offs accepted
+  - Before making similar decisions, search `REFERENCE/decisions/` for precedent
+  - Follow existing ADRs unless new information invalidates the reasoning
+  - See [REFERENCE/decisions/CLAUDE.md](../REFERENCE/decisions/CLAUDE.md) for complete ADR guidance
 
 ## Problem Solving and Debugging
 
@@ -289,7 +289,11 @@ We value documentation - it enables picking up projects later and communicating 
 - Documentation should explain how everything works and how to use/extend it
 - Preferred format: Markdown (.md)
 - Always maintain README.md in project root
-- Use lifecycle-based structure: ../SPECIFICATIONS/ (active),  ../SPECIFICATIONS/ARCHIVE/ (completed), ../REFERENCE/ (implementation)
+- Use lifecycle-based structure:
+  - SPECIFICATIONS/ (active work)
+  - SPECIFICATIONS/ARCHIVE/ (completed)
+  - REFERENCE/ (implementation how-it-works)
+  - REFERENCE/decisions/ (Architecture Decision Records - why it's this way)
 - Keep documentation current alongside code changes
 - Focus on clarity, completeness, and actionability
 
