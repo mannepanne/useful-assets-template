@@ -21,10 +21,10 @@ This guide shows how to add Architecture Decision Records (ADRs) to another proj
 
 ### Step 1: Copy ADR files
 
-Copy these files to the target project:
+Copy these files from the useful-assets-template repository to your target project:
 
 ```bash
-# From this template repo:
+# From useful-assets-template:
 REFERENCE/decisions/CLAUDE.md
 REFERENCE/decisions/TEMPLATE-adr.md
 
@@ -40,7 +40,9 @@ mkdir -p REFERENCE/decisions
 
 ### Step 2: Integrate into `.claude/CLAUDE.md`
 
-Add this section to the **"Learning and Memory Management"** section (usually around line 250):
+Add this section to the **"Learning and Memory Management"** section:
+
+*Note: Line numbers below are approximate based on the template - search by section name if not found at expected location.*
 
 ```markdown
 - **Architecture Decision Records (ADRs):** When making decisions that affect architecture beyond today's PR (library choice, architectural pattern, API design, deciding NOT to do something):
@@ -58,7 +60,7 @@ Add this section to the **"Learning and Memory Management"** section (usually ar
 
 ### Step 3: Integrate into `SPECIFICATIONS/CLAUDE.md`
 
-**Location 1: Technical Approach section (around line 40)**
+**Location 1: Technical Approach section**
 
 Find the "Technical Approach" section in the phase template and update to:
 
@@ -70,7 +72,7 @@ Find the "Technical Approach" section in the phase template and update to:
    - Database schema changes (if applicable)
 ```
 
-**Location 2: Supporting documentation section (around line 153)**
+**Location 2: Supporting documentation section**
 
 Add this subsection after the ARCHIVE section:
 
@@ -143,6 +145,12 @@ After installation, Claude will:
 
 **Scenario A - No precedent:**
 "I don't see existing ADRs about authentication. We need to choose between JWT, sessions, or OAuth. This decision affects future architecture. Should I create an ADR in REFERENCE/decisions/?"
+
+**User:** "Yes, let's use JWT"
+
+**Claude:** "I'll create an ADR documenting this decision..."
+*Creates `REFERENCE/decisions/2026-03-30-jwt-authentication.md` with decision, context, alternatives, reasoning, and trade-offs*
+"ADR created. I'll now implement JWT authentication following the documented approach."
 
 **Scenario B - Precedent exists:**
 "Found ADR from 2026-01-15: we chose JWT for authentication due to stateless API requirements. I'll follow that precedent unless you want to reconsider based on new information."
