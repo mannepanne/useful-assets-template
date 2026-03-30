@@ -37,8 +37,8 @@ Break your project into numbered sequential phases (e.g., 01-foundation.md, 02-a
    - Acceptance criteria
 
 3. **Technical Approach**
-   - Architecture decisions
-   - Technology choices
+   - Architecture decisions (document significant choices as ADRs in REFERENCE/decisions/)
+   - Technology choices (check existing ADRs for precedent before deciding)
    - Key files and components
    - Database schema changes (if applicable)
 
@@ -149,6 +149,12 @@ Development is organised into [X] sequential phases. Each phase includes scope, 
 
 **[ARCHIVE/](./ARCHIVE/)**
 - Completed specifications (moved here when phase is done)
+
+**[REFERENCE/decisions/](../REFERENCE/decisions/)** - Architecture Decision Records
+- Search here BEFORE making architectural decisions (library choice, patterns, API design)
+- Follow existing ADRs unless new information invalidates reasoning
+- Document new architectural decisions here (prevents re-debating settled choices)
+- See [ADR guidance](../REFERENCE/decisions/CLAUDE.md) for when and how to create ADRs
 
 ## When specs move to archive
 
