@@ -28,6 +28,7 @@ This project uses automated PR review skills powered by agent teams. Reviews use
 
 **Time:** 1-2 minutes
 **Reviewer:** Single full-stack developer with fresh context
+**Model:** Sonnet (fast, capable)
 
 ### Use `/review-pr-team` for:
 ✅ Critical infrastructure changes
@@ -39,6 +40,7 @@ This project uses automated PR review skills powered by agent teams. Reviews use
 
 **Time:** 5-10 minutes
 **Reviewers:** Security Specialist, Product Manager, Senior Architect (agent team with collaborative discussion)
+**Model:** Opus for all three reviewers (more thorough reasoning)
 
 ---
 
@@ -246,23 +248,17 @@ git diff                 # Review your own changes first
 
 ---
 
-## Agent Teams Feature
+## Sub-agent architecture
 
-**Status:** Enabled in this project via `settings.json`
+Reviewer agents are defined as named sub-agents in `.claude/agents/` using YAML frontmatter. Each agent file registers a persona, toolset, and model — the skill invokes them by name.
 
-The `/review-pr-team` skill uses Claude Code's experimental **agent teams** feature, which enables:
-- Multiple agents working in parallel
-- Direct inter-agent communication (`message`, `broadcast`)
-- Shared task list coordination
-- Collaborative discussion and debate
+**Agent definitions:**
+- `code-reviewer.md` — used by `/review-pr` (Sonnet)
+- `security-specialist.md` — used by `/review-pr-team` (Opus)
+- `product-reviewer.md` — used by `/review-pr-team` (Opus)
+- `architect-reviewer.md` — used by `/review-pr-team` (Opus)
 
-**Key capabilities:**
-- Agents have independent context windows
-- They can challenge and question each other
-- Discussion surfaces insights individual reviewers miss
-- Lead synthesizes collaborative findings
-
-**See:** [Agent Teams Documentation](https://code.claude.com/docs/en/agent-teams)
+**Why separate files?** Agent definitions are reusable and evolvable independently from skill orchestration logic. Update reviewer behaviour once; all skills that use it benefit automatically.
 
 ---
 

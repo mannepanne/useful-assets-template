@@ -28,3 +28,8 @@ Common issues and solutions for local development, deployment, and API integrati
 **When to read:** Creating PRs or running code reviews.
 
 How to use `/review-pr` and `/review-pr-team` skills for automated code review.
+
+### [decisions/](./decisions/)
+**When to read:** Making architectural decisions, choosing between alternatives, or looking up why something was built the way it was.
+
+Architecture Decision Records (ADRs) — permanent log of significant technical choices, alternatives considered, and trade-offs accepted.
