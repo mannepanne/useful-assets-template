@@ -46,16 +46,16 @@ Create an agent team for reviewing PR #$ARGUMENTS with the following instruction
 
 **Team Structure:**
 
-Spawn **3 teammates** with these roles:
+Spawn **3 teammates** using these named subagents:
 
-**1. Security Specialist** (Teammate name: `security-reviewer`)
-Read `.claude/agents/security-specialist.md` for your role and instructions. Replace [PR_NUMBER] with $ARGUMENTS.
+**1. Security Specialist** (Subagent: `security-specialist`, Teammate name: `security-reviewer`)
+Your task: conduct a security-focused review of PR #$ARGUMENTS. Follow your review checklist and output format.
 
-**2. Product Manager** (Teammate name: `product-reviewer`)
-Read `.claude/agents/product-reviewer.md` for your role and instructions. Replace [PR_NUMBER] with $ARGUMENTS.
+**2. Product Manager** (Subagent: `product-reviewer`, Teammate name: `product-reviewer`)
+Your task: conduct a product-focused review of PR #$ARGUMENTS. Follow your review checklist and output format.
 
-**3. Senior Architect** (Teammate name: `architect-reviewer`)
-Read `.claude/agents/architect-reviewer.md` for your role and instructions. Replace [PR_NUMBER] with $ARGUMENTS.
+**3. Senior Architect** (Subagent: `architect-reviewer`, Teammate name: `architect-reviewer`)
+Your task: conduct an architecture-focused review of PR #$ARGUMENTS. Follow your review checklist and output format.
 
 ---
 
