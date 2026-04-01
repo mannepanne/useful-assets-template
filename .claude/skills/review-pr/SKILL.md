@@ -75,7 +75,7 @@ This will:
 
 ## When to Use Which Review
 
-**Use \****`/review-pr`**\*\*:**
+**Use `/review-pr`:**
 - Regular implementation PRs
 - Quick sanity checks
 - You want fast feedback
