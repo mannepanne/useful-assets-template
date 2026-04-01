@@ -78,14 +78,14 @@ Your task: conduct an architecture-focused review of PR #$ARGUMENTS. Follow your
 
 **Team Mission - Two Phases:**
 
-**PHASE 1: Independent Review (30 minutes max per reviewer)**
+**PHASE 1: Independent Review**
 
 Each teammate:
 1. Follow your agent definition instructions to gather context and conduct review
 2. Document findings as specified in your agent definition
 3. Focus on your specialized perspective
 
-**PHASE 2: Collaborative Discussion (20 minutes max)**
+**PHASE 2: Collaborative Discussion**
 
 After all three reviewers complete their independent analysis:
 
@@ -125,11 +125,9 @@ After the collaborative discussion, each teammate should have refined their find
 ---
 
 **Team Coordination:**
-- All teammates work from the shared task list
-- Security reviews first, then broadcasts findings
-- Product reviews second, responds to security, broadcasts findings
-- Architect reviews third, responds to both, broadcasts findings
-- Then open discussion for debate and consensus-building
+- All teammates work from the shared task list in parallel
+- Each reviewer conducts their independent review simultaneously
+- Once all three are done, open discussion begins for debate and consensus-building
 
 Start the review process now."
 
