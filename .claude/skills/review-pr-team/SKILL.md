@@ -30,6 +30,22 @@ This is fundamentally different from independent reviews - the **discussion phas
 
 ---
 
+## Prerequisites
+
+Agent teams are **experimental and disabled by default**. This skill requires the feature flag to be enabled in `.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+This project has it enabled. When copying this skill to a new project, add the flag to that project's `.claude/settings.json`.
+
+---
+
 ## Instructions for Claude
 
 When this skill is invoked with a PR number (e.g., `/review-pr-team 1`):
