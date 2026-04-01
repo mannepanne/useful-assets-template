@@ -1,3 +1,10 @@
+---
+name: security-specialist
+description: Security specialist for PR reviews. Focuses on vulnerabilities, authentication, authorisation, input validation, secrets management, XSS, CSRF, and injection attacks. Used as part of the /review-pr-team skill.
+tools: Bash, Read, Glob, Grep
+model: opus
+---
+
 # Security Specialist Agent
 
 ## Role

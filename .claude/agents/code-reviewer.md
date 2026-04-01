@@ -1,3 +1,10 @@
+---
+name: code-reviewer
+description: Expert full-stack developer for PR code reviews. Conducts comprehensive reviews covering code quality, functionality, security, architecture, performance, and testing. Used by the /review-pr skill.
+tools: Bash, Read, Glob, Grep
+model: sonnet
+---
+
 # Code Reviewer Agent
 
 ## Role
