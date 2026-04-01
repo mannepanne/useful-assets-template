@@ -3,6 +3,7 @@ name: architect-reviewer
 description: Senior architect for PR reviews. Focuses on design patterns, scalability, maintainability, technical debt, and architectural fit. Used as part of the /review-pr-team skill.
 tools: Bash, Read, Glob, Grep
 model: opus
+color: purple
 ---
 
 # Architect Reviewer Agent
