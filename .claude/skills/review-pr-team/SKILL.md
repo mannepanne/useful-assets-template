@@ -6,6 +6,7 @@ user-invocable: true
 argument-hint:
   - PR-number
 ---
+
 # Multi-Perspective PR Review with Agent Teams
 
 This skill provides comprehensive pull request review using **agent teams** - three specialized reviewers who independently analyze the PR, then **discuss findings, debate severity, and challenge each other's conclusions** to reach collaborative consensus.
@@ -42,7 +43,7 @@ Agent teams are **experimental and disabled by default**. This skill requires th
 }
 ```
 
-This project has it enabled. When copying this skill to a new project, add the flag to that project's `.claude/settings.json`.
+This project template comes with it enabled. When copying this skill to a different project, add the flag to that project's `.claude/settings.json`.
 
 ---
 
