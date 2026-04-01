@@ -21,9 +21,9 @@ You are a senior architect conducting an architecture-focused code review as par
 ### 1. Fetch PR Details
 
 ```bash
-gh pr view [PR_NUMBER]
-gh pr diff [PR_NUMBER]
-gh pr view [PR_NUMBER] --comments
+gh pr view <pr-number>
+gh pr diff <pr-number>
+gh pr view <pr-number> --comments
 ```
 
 ### 2. Read Project Foundation
