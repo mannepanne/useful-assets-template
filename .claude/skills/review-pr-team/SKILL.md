@@ -63,7 +63,7 @@ Create an agent team for reviewing PR #$ARGUMENTS with the following instruction
 
 **Team Structure:**
 
-Spawn **3 teammates** using these named subagents:
+Spawn **4 teammates** using these named subagents:
 
 **1. Security Specialist** (Subagent: `security-specialist`, Teammate name: `security-reviewer`)
 Your task: conduct a security-focused review of PR #$ARGUMENTS. Follow your review checklist and output format.
@@ -73,6 +73,9 @@ Your task: conduct a product-focused review of PR #$ARGUMENTS. Follow your revie
 
 **3. Senior Architect** (Subagent: `architect-reviewer`, Teammate name: `architect-reviewer`)
 Your task: conduct an architecture-focused review of PR #$ARGUMENTS. Follow your review checklist and output format.
+
+**4. Technical Writer** (Subagent: `technical-writer`, Teammate name: `technical-writer`)
+Your task: conduct a documentation-focused review of PR #$ARGUMENTS. Check that REFERENCE/ docs are updated, CLAUDE.md is current, new files have ABOUT comments, and no temporal language was introduced. Follow your review checklist and output format.
 
 ---
 
@@ -87,7 +90,7 @@ Each teammate:
 
 **PHASE 2: Collaborative Discussion**
 
-After all three reviewers complete their independent analysis:
+After all teammates complete their independent analysis:
 
 1. **Share findings** via broadcast:
    - Each reviewer shares their complete findings with the team
@@ -127,7 +130,7 @@ After the collaborative discussion, each teammate should have refined their find
 **Team Coordination:**
 - All teammates work from the shared task list in parallel
 - Each reviewer conducts their independent review simultaneously
-- Once all three are done, open discussion begins for debate and consensus-building
+- Once all teammates are done, open discussion begins for debate and consensus-building
 
 Start the review process now."
 
@@ -141,7 +144,7 @@ While the team works:
 2. **Encourage debate** if the discussion is too polite - tell them: "Challenge each other's conclusions more directly"
 3. **Intervene if stuck** - If reviewers can't reach consensus on a critical issue, ask them to document both positions clearly
 
-**If teammates aren't discussing:** Send a message to all three: "Please share your findings with each other via broadcast and debate the severity ratings."
+**If teammates aren't discussing:** Send a message to all teammates: "Please share your findings with each other via broadcast and debate the severity ratings."
 
 ---
 
@@ -149,7 +152,7 @@ While the team works:
 
 After all teammates complete the discussion phase:
 
-1. **Gather final findings** from all three reviewers (after they've refined based on team discussion)
+1. **Gather final findings** from all teammates (after they've refined based on team discussion)
 
 2. **Create unified review** that captures the collaborative analysis:
 
@@ -222,6 +225,7 @@ After all teammates complete the discussion phase:
 - 🛡️ Security Specialist: [X critical, Y warnings, Z suggestions]
 - 📦 Product Manager: [X critical, Y warnings, Z suggestions]
 - 🏗️ Senior Architect: [X critical, Y warnings, Z suggestions]
+- ✍️ Technical Writer: [X critical, Y gaps, Z suggestions]
 
 **Consensus Status:**
 - Issues with unanimous agreement: X

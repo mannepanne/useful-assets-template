@@ -108,9 +108,10 @@ How-it-works documentation for implemented features:
 **Implementation steps:**
 1. Create feature branch (feature/, fix/, refactor/)
 2. Check SPECIFICATIONS/ for relevant specs
-3. Implement with tests (run tests + type checking)
-4. Create PR for review:
-  - **`/review-pr`** - Fast single-reviewer (1-2 min)
+3. Review spec with **`/review-spec`** before starting non-trivial features
+4. Implement with tests (run tests + type checking)
+5. Create PR for review:
+  - **`/review-pr`** - Fast single-reviewer (2-4 min)
   - **`/review-pr-team`** - Multi-perspective team (5-10 min)
   - **See:** [pr-review-workflow.md](./REFERENCE/pr-review-workflow.md)
 

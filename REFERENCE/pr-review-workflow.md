@@ -1,22 +1,37 @@
-# Pull Request Review Workflow
+# Review Workflow
 
 **Related Documents:**
 - [Development Workflow](../CLAUDE.md#development-workflow)
 - [Testing Strategy](./testing-strategy.md)
 
 **Skills Available:**
-- `/review-pr` - Fast single-reviewer (1-2 min)
-- `/review-pr-team` - Collaborative multi-perspective (5-10 min)
+- `/review-spec` - Pre-implementation spec review (5-10 min) ← run before writing code
+- `/review-pr` - Fast PR review (2-4 min)
+- `/review-pr-team` - Collaborative multi-perspective PR review (5-10 min)
 
 ---
 
 ## Overview
 
-This project uses automated PR review skills powered by agent teams. Reviews use fresh context (not biased by main session) and provide comprehensive, actionable feedback.
+This project uses automated review skills powered by agent teams. Reviews use fresh context (not biased by main session) and provide comprehensive, actionable feedback.
+
+There are two review phases in the workflow:
+1. **Before implementation** — `/review-spec` catches wrong assumptions, missing requirements, and feasibility risks before any code is written
+2. **Before merge** — `/review-pr` or `/review-pr-team` verify the implementation is correct, secure, and well-documented
 
 ---
 
 ## Quick Reference
+
+### Use `/review-spec` for:
+✅ Any non-trivial feature before implementation starts
+✅ When the spec has been written but not yet reviewed
+✅ When you want to catch wrong assumptions before writing code
+✅ When the approach feels uncertain or under-specified
+
+**Time:** 5-10 minutes
+**Reviewers:** Requirements Auditor, Technical Skeptic, Devil's Advocate (agent team)
+**Outputs to:** Conversation (not a PR comment)
 
 ### Use `/review-pr` for:
 ✅ Regular implementation PRs
@@ -41,6 +56,32 @@ This project uses automated PR review skills powered by agent teams. Reviews use
 **Time:** 5-10 minutes
 **Reviewers:** Security Specialist, Product Manager, Senior Architect (agent team with collaborative discussion)
 **Model:** Opus for all three reviewers (more thorough reasoning)
+
+---
+
+## How `/review-spec` Works
+
+**Three reviewers analyze the spec independently, then debate:**
+
+1. **Requirements Auditor** — completeness: edge cases, error states, missing flows, undefined behaviour
+2. **Technical Skeptic** — feasibility: DB implications, blast radius, hidden complexity, integration risks
+3. **Devil's Advocate** — strategy: is this the right thing to build? Simpler alternatives? Wrong assumptions?
+
+**Phase 1:** Independent review — each reviewer reads the spec and relevant codebase context simultaneously
+**Phase 2:** Collaborative discussion — reviewers share findings, challenge each other's conclusions, reach consensus
+**Phase 3:** Synthesis — unified output with overall recommendation (APPROVED / APPROVED WITH CONDITIONS / NEEDS REVISION)
+
+**Output goes to conversation** (not a PR comment) so you can act on it before writing any code.
+
+**Recommendation guide:**
+- **APPROVED** — Proceed with implementation
+- **APPROVED WITH CONDITIONS** — Implementation can start once specific gaps are addressed
+- **NEEDS REVISION** — Spec has blocking issues; revise before starting
+
+```
+/review-spec SPECIFICATIONS/07-new-feature.md
+/review-spec 07-new-feature          # partial name also works
+```
 
 ---
 
@@ -203,25 +244,27 @@ git diff                 # Review your own changes first
 
 1. Create feature branch: `git checkout -b feature/feature-name`
 2. Check relevant specs in `SPECIFICATIONS/`
-3. Implement with tests: `npm test && npx tsc --noEmit`
-4. Create PR
-5. **Run `/review-pr`** for quick validation
-6. Address feedback
-7. Merge when approved
+3. **Run `/review-spec`** if the feature is non-trivial
+4. Implement with tests: `npm test && npx tsc --noEmit`
+5. Create PR
+6. **Run `/review-pr`** for quick validation
+7. Address feedback
+8. Merge when approved
 
 ### Critical Changes Workflow
 
 1. Create feature branch
 2. Review specs and architectural guidelines
-3. Consider using EnterPlanMode for complex features
-4. Implement with comprehensive tests
-5. Self-review: `git diff`, verify no secrets/debug code
-6. Create PR with detailed description
-7. **Run `/review-pr-team`** for multi-perspective analysis
-8. Reviewers discuss findings collaboratively
-9. Address critical issues and consensus concerns
-10. Document decisions on split opinions
-11. Merge when approved
+3. **Run `/review-spec`** — debate assumptions before writing a line of code
+4. Consider using EnterPlanMode for complex features
+5. Implement with comprehensive tests
+6. Self-review: `git diff`, verify no secrets/debug code
+7. Create PR with detailed description
+8. **Run `/review-pr-team`** for multi-perspective analysis
+9. Reviewers discuss findings collaboratively
+10. Address critical issues and consensus concerns
+11. Document decisions on split opinions
+12. Merge when approved
 
 ---
 
@@ -252,11 +295,17 @@ git diff                 # Review your own changes first
 
 Reviewer agents are defined as named sub-agents in `.claude/agents/` using YAML frontmatter. Each agent file registers a persona, toolset, and model — the skill invokes them by name.
 
-**Agent definitions:**
-- `code-reviewer.md` — used by `/review-pr` (Sonnet)
+**PR review agents:**
+- `code-reviewer.md` — used by `/review-pr` step 1 (Sonnet)
+- `technical-writer.md` — used by `/review-pr` step 2 and `/review-pr-team` (Opus)
 - `security-specialist.md` — used by `/review-pr-team` (Opus)
 - `product-reviewer.md` — used by `/review-pr-team` (Opus)
 - `architect-reviewer.md` — used by `/review-pr-team` (Opus)
+
+**Spec review agents:**
+- `requirements-auditor.md` — used by `/review-spec` (Opus)
+- `technical-skeptic.md` — used by `/review-spec` (Opus)
+- `devils-advocate.md` — used by `/review-spec` (Opus)
 
 **Why separate files?** Agent definitions are reusable and evolvable independently from skill orchestration logic. Update reviewer behaviour once; all skills that use it benefit automatically.
 

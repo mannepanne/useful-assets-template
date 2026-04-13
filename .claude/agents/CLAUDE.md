@@ -13,12 +13,19 @@ Agents define personas, roles, and behaviors that can be spawned by skills. Sepa
 
 ## Available Agents
 
-### Code Review Agents
+### Code Review Agents (PR reviews)
 
 - **[code-reviewer.md](./code-reviewer.md)** - Full-stack developer for comprehensive PR reviews
 - **[security-specialist.md](./security-specialist.md)** - Security-focused reviewer for vulnerabilities and threats
 - **[product-reviewer.md](./product-reviewer.md)** - Product manager perspective on UX and requirements
 - **[architect-reviewer.md](./architect-reviewer.md)** - Senior architect for design patterns and scalability
+- **[technical-writer.md](./technical-writer.md)** - Documentation reviewer: REFERENCE/ docs, ABOUT comments, temporal language
+
+### Spec Review Agents (pre-implementation)
+
+- **[requirements-auditor.md](./requirements-auditor.md)** - Completeness: edge cases, error states, missing flows, unstated assumptions
+- **[technical-skeptic.md](./technical-skeptic.md)** - Feasibility: DB implications, blast radius, hidden complexity, integration risks
+- **[devils-advocate.md](./devils-advocate.md)** - Strategy: is this the right solution? Simpler alternatives? Wrong assumptions?
 
 ## Usage Pattern
 
@@ -41,10 +48,23 @@ You are a [role]. Your focus: [domain]. Review by checking: [checklist]...
 Spawn the `code-reviewer` subagent with task: "Review PR #$ARGUMENTS..."
 ```
 
+## Agent-to-skill mapping
+
+| Agent | Used by |
+|-------|---------|
+| `code-reviewer` | `/review-pr` (step 1) |
+| `technical-writer` | `/review-pr` (step 2), `/review-pr-team` (team member) |
+| `security-specialist` | `/review-pr-team` |
+| `product-reviewer` | `/review-pr-team` |
+| `architect-reviewer` | `/review-pr-team` |
+| `requirements-auditor` | `/review-spec` |
+| `technical-skeptic` | `/review-spec` |
+| `devils-advocate` | `/review-spec` |
+
 ## Common Patterns
 
 All reviewer agents share:
-- **Context gathering protocol** - How to fetch PR details, read CLAUDE.md, discover specs
+- **Context gathering protocol** - How to fetch PR/spec details, read CLAUDE.md, discover related files
 - **Completion requirements verification** - Must check tests, documentation, code quality
 - **Output format standards** - Consistent structure across all reviews
 
