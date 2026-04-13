@@ -8,11 +8,13 @@ argument-hint:
 ---
 # Full-Stack Developer PR Review
 
-This skill provides a comprehensive pull request review from an experienced full-stack developer perspective, covering code quality, security, functionality, and best practices.
+This skill provides a comprehensive pull request review from an experienced full-stack developer perspective, covering code quality, security, functionality, and best practices — plus a dedicated documentation pass.
 
 ## How This Works
 
-A single expert full-stack developer reviews the PR and provides actionable feedback.
+Two independent reviewers in sequence:
+1. A full-stack developer reviews code quality, functionality, security, testing, and architecture
+2. A technical writer reviews documentation completeness — REFERENCE/ docs, CLAUDE.md currency, ABOUT comments, and temporal language
 
 ---
 
@@ -32,18 +34,28 @@ Wait for the review to complete.
 
 ---
 
-### Step 2: Post Results
+### Step 2: Spawn Documentation Reviewer Agent
 
-After the review is complete:
+After the code review completes, spawn the **`technical-writer`** subagent with this task:
 
-Post the review as a comment on the PR using:
+**Task:** "Conduct a documentation review of PR #$ARGUMENTS. Follow your review checklist and output format. Post nothing — return your full findings when done."
+
+Wait for the documentation review to complete.
+
+---
+
+### Step 3: Post Combined Results
+
+After both reviews are complete, combine their findings and post as a single comment on the PR:
 
 ```bash
-gh pr comment $ARGUMENTS --body "[markdown content from review]"
+gh pr comment $ARGUMENTS --body "[combined markdown from both reviews]"
 ```
 
+Structure the combined comment with code review findings first, documentation findings second. If the documentation reviewer found no issues, a brief "✅ Documentation: No issues found" is sufficient.
+
 Provide user summary:
-- Total issues found (critical vs suggestions)
+- Total issues found (critical vs suggestions), split by code vs documentation
 - Clear recommendation (approve/request changes)
 - Key action items
 - Link to PR comment
@@ -60,15 +72,17 @@ This will:
 1. Spawn independent full-stack developer reviewer
 2. Reviewer gathers their own context (PR details, CLAUDE.md, specs, changed files)
 3. Reviewer conducts comprehensive review
-4. Post review to PR #2
+4. Spawn independent technical writer reviewer
+5. Technical writer checks documentation completeness
+6. Post combined review to PR #2
 
 ---
 
 ## Tips for Best Results
 
-- **Use for all implementation PRs** - Quick sanity check
-- **Faster than multi-perspective** - ~1-2 minutes vs 3-5 minutes
-- **Broad coverage** - Catches most common issues
+- **Use for all implementation PRs** - Quick sanity check with documentation verification
+- **Faster than multi-perspective** - ~2-4 minutes vs 5-10 minutes
+- **Broad coverage** - Catches most common issues plus documentation drift
 - **Upgrade to /review-pr-team** - For critical/complex PRs needing deep analysis
 
 ---
@@ -81,7 +95,7 @@ This will:
 - You want fast feedback
 - Standard feature work
 
-**Use \****`/review-pr-team`**\*\*:**
+**Use `/review-pr-team`:**
 - Critical infrastructure changes
 - Security-sensitive features
 - Major architectural decisions

@@ -165,6 +165,7 @@ Tests serve dual purposes: **Validation** (verify code works) and **Directional 
 - [ ] On feature branch (not main)
 - [ ] Branch follows naming convention (feature/, fix/, refactor/)
 - [ ] Read relevant specifications
+- [ ] Spec reviewed with `/review-spec` (non-trivial features — run if not already done)
 - [ ] Have clear acceptance criteria
 
 **If you cannot check all boxes, STOP and ask the user before proceeding.**

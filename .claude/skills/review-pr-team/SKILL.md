@@ -63,7 +63,7 @@ Create an agent team for reviewing PR #$ARGUMENTS with the following instruction
 
 **Team Structure:**
 
-Spawn **3 teammates** using these named subagents:
+Spawn **4 teammates** using these named subagents:
 
 **1. Security Specialist** (Subagent: `security-specialist`, Teammate name: `security-reviewer`)
 Your task: conduct a security-focused review of PR #$ARGUMENTS. Follow your review checklist and output format.
@@ -73,6 +73,9 @@ Your task: conduct a product-focused review of PR #$ARGUMENTS. Follow your revie
 
 **3. Senior Architect** (Subagent: `architect-reviewer`, Teammate name: `architect-reviewer`)
 Your task: conduct an architecture-focused review of PR #$ARGUMENTS. Follow your review checklist and output format.
+
+**4. Technical Writer** (Subagent: `technical-writer`, Teammate name: `technical-writer`)
+Your task: conduct a documentation-focused review of PR #$ARGUMENTS. Check that REFERENCE/ docs are updated, CLAUDE.md is current, new files have ABOUT comments, and no temporal language was introduced. Follow your review checklist and output format.
 
 ---
 
@@ -222,6 +225,7 @@ After all teammates complete the discussion phase:
 - 🛡️ Security Specialist: [X critical, Y warnings, Z suggestions]
 - 📦 Product Manager: [X critical, Y warnings, Z suggestions]
 - 🏗️ Senior Architect: [X critical, Y warnings, Z suggestions]
+- ✍️ Technical Writer: [X critical, Y gaps, Z suggestions]
 
 **Consensus Status:**
 - Issues with unanimous agreement: X

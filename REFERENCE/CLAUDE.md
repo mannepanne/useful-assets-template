@@ -25,9 +25,9 @@ Environment variables, API key configuration, third-party service setup (Supabas
 Common issues and solutions for local development, deployment, and API integrations.
 
 ### [pr-review-workflow.md](./pr-review-workflow.md)
-**When to read:** Creating PRs or running code reviews.
+**When to read:** Starting a new feature, creating PRs, or running any kind of review.
 
-How to use `/review-pr` and `/review-pr-team` skills for automated code review.
+How to use `/review-spec` (pre-implementation), `/review-pr`, and `/review-pr-team` skills.
 
 ### [decisions/](./decisions/)
 **When to read:** Making architectural decisions, choosing between alternatives, or looking up why something was built the way it was.
