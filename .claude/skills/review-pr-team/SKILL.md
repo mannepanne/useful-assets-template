@@ -90,7 +90,7 @@ Each teammate:
 
 **PHASE 2: Collaborative Discussion**
 
-After all three reviewers complete their independent analysis:
+After all teammates complete their independent analysis:
 
 1. **Share findings** via broadcast:
    - Each reviewer shares their complete findings with the team
@@ -130,7 +130,7 @@ After the collaborative discussion, each teammate should have refined their find
 **Team Coordination:**
 - All teammates work from the shared task list in parallel
 - Each reviewer conducts their independent review simultaneously
-- Once all three are done, open discussion begins for debate and consensus-building
+- Once all teammates are done, open discussion begins for debate and consensus-building
 
 Start the review process now."
 
@@ -144,7 +144,7 @@ While the team works:
 2. **Encourage debate** if the discussion is too polite - tell them: "Challenge each other's conclusions more directly"
 3. **Intervene if stuck** - If reviewers can't reach consensus on a critical issue, ask them to document both positions clearly
 
-**If teammates aren't discussing:** Send a message to all three: "Please share your findings with each other via broadcast and debate the severity ratings."
+**If teammates aren't discussing:** Send a message to all teammates: "Please share your findings with each other via broadcast and debate the severity ratings."
 
 ---
 
@@ -152,7 +152,7 @@ While the team works:
 
 After all teammates complete the discussion phase:
 
-1. **Gather final findings** from all three reviewers (after they've refined based on team discussion)
+1. **Gather final findings** from all teammates (after they've refined based on team discussion)
 
 2. **Create unified review** that captures the collaborative analysis:
 

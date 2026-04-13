@@ -74,7 +74,7 @@ This will:
 3. Reviewer conducts comprehensive review
 4. Spawn independent technical writer reviewer
 5. Technical writer checks documentation completeness
-6. Post combined review to PR #2
+6. Post combined review to the PR
 
 ---
 

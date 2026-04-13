@@ -130,6 +130,6 @@ As part of the spec review team:
 ## Review Standards
 
 - **Read the code, not just the docs** — the actual state of the codebase is what matters
-- **Be specific** — don't say "database changes will be complex", say "adding this column to the `articles` table requires backfilling 50k rows and a new RLS policy for the user's data isolation"
+- **Be specific** — don't say "database changes will be complex", say "adding this column to the `[table]` table requires backfilling N rows and a new access-control policy for user data isolation"
 - **Be proportionate** — not every technical concern is blocking. Distinguish between "this will take 3x longer than expected" and "this literally cannot be built as described"
 - **Suggest alternatives** — if you find a blocking issue, propose a path forward

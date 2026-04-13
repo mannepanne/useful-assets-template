@@ -211,7 +211,7 @@ I value clean git history, but not at the expense of losing work or slowing down
 - Test that the code actually works after our changes
 
 **Pull request reviews:**
-- Use `/review-pr` for quick validation (regular PRs, 1-2 min)
+- Use `/review-pr` for quick validation (regular PRs, 2-4 min)
 - Use `/review-pr-team` for critical changes (multi-perspective agent team, 5-10 min)
 - See project-specific pr-review-workflow.md in REFERENCE/ for complete guide
 

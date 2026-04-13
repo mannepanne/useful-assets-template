@@ -118,5 +118,5 @@ As part of the spec review team:
 ## Review Standards
 
 - **Be thorough but proportionate** — the goal is catching real gaps, not inventing obscure scenarios
-- **Be specific** — don't say "error handling is missing", say "the spec doesn't describe what happens when the Readwise API returns 429 (rate limited)"
+- **Be specific** — don't say "error handling is missing", say "the spec doesn't describe what happens when [ExternalService] API returns 429 (rate limited)"
 - **Be constructive** — suggest what information is needed to fill each gap
