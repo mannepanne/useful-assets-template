@@ -28,8 +28,8 @@ Reference guide for selecting technologies across projects.
 | Web frontend design | TailWind CSS for styling with shadcn/ui as component library | Great starting point |
 | Hosting of websites and web apps | CloudFlare.com | I already have an account |
 | CDN / DNS / Basic data storage | Cloudflare KV | Key-value storage, then other CF options |
-| Database and authentication | Supabase.com | I already have an account |
-| Email communication | Resend.com | I already have an account |
-| Authentication | Magic link systems | Simple and secure |
+| Database, Storage | CloudFlare D1, CloudFlare R2, CloudFlare Images or Supabase where CloudFlare falls short | I already have an account |
+| Email communication | CloudFlare Email Sending (Beta) or Resend.com where CloudFlare falls short | I already have an account |
+| Authentication | Magic link systems (or CloudFlare ZeroTrust) | Simple and secure |
 | Payment processing | Stripe.com | Industry leader |
 | Web analytics | Cloudflare Web Analytics | Privacy-focused, cookie-free analytics |
