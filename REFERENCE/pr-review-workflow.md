@@ -6,8 +6,8 @@
 
 **Skills Available:**
 - `/review-spec` - Pre-implementation spec review (5-10 min) ← run before writing code
-- `/review-pr` - Fast PR review (2-4 min)
-- `/review-pr-team` - Collaborative multi-perspective PR review (5-10 min)
+- `/review-pr` - Smart PR review dispatcher — triages the change and routes to light / standard / team (1-10 min depending on tier)
+- `/review-pr-team` - Forces full multi-perspective team review, skipping triage (5-10 min)
 
 ---
 
@@ -34,28 +34,36 @@ There are two review phases in the workflow:
 **Outputs to:** Conversation (not a PR comment)
 
 ### Use `/review-pr` for:
-✅ Regular implementation PRs
-✅ Quick sanity checks
-✅ Small, straightforward changes
-✅ Non-critical bug fixes
-✅ Documentation updates
-✅ When you want fast feedback
+✅ **Almost every PR.** This is the default — the dispatcher picks the right depth automatically.
 
-**Time:** 1-2 minutes
-**Reviewer:** Single full-stack developer with fresh context
-**Model:** Sonnet (fast, capable)
+`/review-pr` runs a fast triage pass first (path signals, size, secret-scan) and announces its decision in plain language before any deeper reviewer runs. You'll see something like:
+
+```
+🎯 Triage: light
+   Docs-only change in REFERENCE/ with no code paths touched.
+   Small (23 lines across 2 files)
+```
+
+It then routes to one of three tiers:
+
+| Tier | What runs | Typical case | Time |
+|---|---|---|---|
+| **light** | 1 reviewer, narrow scope | Docs, tests, styling, comment-only diffs | ~1 min |
+| **standard** | Code review + doc review | Typical feature work, business logic, utilities | ~2-4 min |
+| **team** | Multi-perspective team with debate | Data-layer / Supabase migrations / RLS, auth, CI, deps, secrets | ~5-10 min |
+
+If the triage decision looks wrong, you can interrupt and force a deeper tier with `/review-pr-team N`.
 
 ### Use `/review-pr-team` for:
-✅ Critical infrastructure changes
-✅ Security-sensitive features
-✅ Major architectural decisions
-✅ Complex multi-file changes
-✅ When multiple perspectives add real value
-✅ When you want thorough collaborative analysis
+✅ When you **already know** it's critical and want to skip triage
+✅ Re-running deeper analysis after a `light` or `standard` pass surfaced concerns
+✅ Situations where you want all three specialist perspectives (security, product, architect) regardless of what the rubric says
 
 **Time:** 5-10 minutes
-**Reviewers:** Security Specialist, Product Manager, Senior Architect (agent team with collaborative discussion)
-**Model:** Opus for all three reviewers (more thorough reasoning)
+**Reviewers:** Security Specialist, Product Manager, Senior Architect, Technical Writer (agent team with collaborative discussion)
+**Model:** Opus for all reviewers (more thorough reasoning)
+
+*Note: `/review-pr` will auto-escalate to the team tier when triage flags high-risk paths. You don't need to invoke `/review-pr-team` just to "be safe" — the dispatcher handles that.*
 
 ---
 
@@ -87,27 +95,51 @@ There are two review phases in the workflow:
 
 ## How `/review-pr` Works
 
-**Fresh context approach:**
-1. Spawns independent subagent (not main session)
-2. Agent loads project context (CLAUDE.md, relevant specs)
-3. Reviews PR comprehensively across all dimensions
-4. Posts findings as PR comment
+`/review-pr` is a **dispatcher**. It does not review the PR itself — it classifies risk first, then hands off to the reviewer (or team) best suited to the change. The goal: use the cheapest review that's still safe.
 
-**Review dimensions:**
-- Code quality (readability, naming, error handling)
-- Functionality (bugs, edge cases, correctness)
-- Security (vulnerabilities, secrets management)
-- Architecture & design (fit, patterns, extensibility)
-- Performance (optimization, caching, queries)
-- Testing (coverage, quality of tests)
-- TypeScript/types (type safety, proper usage)
-- Best practices (conventions, no deprecated patterns)
+**The three phases:**
 
-**Output format:**
-- ✅ **Well Done** - What's good
-- 🔴 **Critical Issues** - Must fix (blocking)
-- ⚠️ **Suggestions** - Should consider (not blocking)
-- 💡 **Nice-to-Haves** - Optional improvements
+1. **Triage** — a lightweight classifier reads the PR's changed paths, size, and a couple of targeted greps (for secret-shaped strings and Supabase RLS keywords). It does not read file contents in depth. ~30 seconds.
+2. **Announce** — the dispatcher tells you the tier and rationale in plain language *before* spawning the reviewer, so you can intervene if it got it wrong.
+3. **Review** — the appropriate reviewer runs, posts to the PR with the triage decision visible in the comment header, and a summary appears in chat.
+
+### The triage rubric (summary)
+
+| Signal | Tier |
+|---|---|
+| Supabase migration, RLS policy change, or any `*.sql` | **team** |
+| `package.json`, `package-lock.json`, or other lockfile changes | **team** |
+| `.env*` files, CI workflows, `middleware.ts`, public API routes | **team** |
+| Secret-shaped strings in diff | **team** |
+| Only docs, tests, CSS, or comment-only diffs (and small/medium size) | **light** |
+| Everything else | **standard** |
+
+**Safety posture:** when the classifier is uncertain between two tiers, it picks the higher one. A false-positive `team` review costs tokens; a false-negative `light` on a risky change costs trust.
+
+**The full rubric** lives in [`.claude/agents/triage-reviewer.md`](../.claude/agents/triage-reviewer.md) — edit it there if the defaults don't suit your project.
+
+### What each tier actually does
+
+**Light tier (1 reviewer, narrow scope):**
+- Obvious bugs or broken logic
+- Typos or factual errors
+- Accidentally committed debug / secrets
+- Broken doc links, missing ABOUT headers
+- *Skips* architecture, performance, test coverage, threat modelling
+
+Output is terse: either `✅ No issues` or 1–3 specific comments.
+
+**Standard tier (2 reviewers):**
+- Full code review: quality, functionality, security, architecture, performance, testing, types, conventions
+- Documentation review: REFERENCE/ currency, CLAUDE.md updates, ABOUT comments, no temporal language
+
+Output format:
+- ✅ **Well Done** – What's good
+- 🔴 **Critical Issues** – Must fix (blocking)
+- ⚠️ **Suggestions** – Should consider (not blocking)
+- 💡 **Nice-to-Haves** – Optional improvements
+
+**Team tier:** See the `/review-pr-team` section below.
 
 ---
 
@@ -152,18 +184,17 @@ There are two review phases in the workflow:
 
 ## Usage Examples
 
-### Running a Quick Review
+### Running the default dispatcher
 ```bash
-# In your PR description or as a comment
 /review-pr 42
 ```
 
 The skill will:
-1. Fetch PR #42 details
-2. Intelligently gather relevant context (CLAUDE.md, matching specs)
-3. Spawn fresh reviewer
-4. Post comprehensive review
-5. Provide summary with recommendation
+1. Classify risk (paths, size, secret-scan) — ~30 seconds
+2. Announce the tier + rationale in chat so you can override if needed
+3. Run the appropriate review (light / standard / team)
+4. Post findings to the PR with the triage decision in the comment header
+5. Summarise in chat with a recommendation
 
 ### Running Team Review
 ```bash
@@ -247,7 +278,7 @@ git diff                 # Review your own changes first
 3. **Run `/review-spec`** if the feature is non-trivial
 4. Implement with tests: `npm test && npx tsc --noEmit`
 5. Create PR
-6. **Run `/review-pr`** for quick validation
+6. **Run `/review-pr`** — the dispatcher picks the right depth automatically (light / standard / team)
 7. Address feedback
 8. Merge when approved
 
@@ -260,7 +291,7 @@ git diff                 # Review your own changes first
 5. Implement with comprehensive tests
 6. Self-review: `git diff`, verify no secrets/debug code
 7. Create PR with detailed description
-8. **Run `/review-pr-team`** for multi-perspective analysis
+8. **Run `/review-pr`** — for most critical changes the dispatcher will auto-route to team tier (Supabase, auth, deps, CI, secrets all trigger team). Use `/review-pr-team` directly only if you want to skip triage entirely.
 9. Reviewers discuss findings collaboratively
 10. Address critical issues and consensus concerns
 11. Document decisions on split opinions
@@ -296,8 +327,9 @@ git diff                 # Review your own changes first
 Reviewer agents are defined as named sub-agents in `.claude/agents/` using YAML frontmatter. Each agent file registers a persona, toolset, and model — the skill invokes them by name.
 
 **PR review agents:**
-- `code-reviewer.md` — used by `/review-pr` step 1 (Sonnet)
-- `technical-writer.md` — used by `/review-pr` step 2 and `/review-pr-team` (Opus)
+- `triage-reviewer.md` — used by `/review-pr` as the first step to classify risk and pick tier (Sonnet, cheapest pass)
+- `code-reviewer.md` — used by `/review-pr` for `light` (narrowed prompt) and `standard` (default prompt) tiers (Sonnet)
+- `technical-writer.md` — used by `/review-pr` standard tier and `/review-pr-team` (Opus)
 - `security-specialist.md` — used by `/review-pr-team` (Opus)
 - `product-reviewer.md` — used by `/review-pr-team` (Opus)
 - `architect-reviewer.md` — used by `/review-pr-team` (Opus)

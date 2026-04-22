@@ -1,102 +1,194 @@
 ---
 name: review-pr
-description: Full-Stack Developer PR Review - use for reviewing changes of a non critical or non architectural nature, for large changes with potential security and architecture impact use the skill /review-pr-team instead.
+description: Smart PR review dispatcher — triages the change for risk, then routes to a light, standard, or team review. Explains every decision in plain language so you can override if it got it wrong.
 disable-model-invocation: false
 user-invocable: true
 argument-hint:
   - PR-number
 ---
-# Full-Stack Developer PR Review
 
-This skill provides a comprehensive pull request review from an experienced full-stack developer perspective, covering code quality, security, functionality, and best practices — plus a dedicated documentation pass.
+# Smart PR Review (Dispatcher)
 
-## How This Works
+This skill reviews a PR at the right level of depth — not too shallow, not token-wasteful. It first runs a cheap triage pass, announces what it decided and why, then hands off to one of three review tiers.
 
-Two independent reviewers in sequence:
-1. A full-stack developer reviews code quality, functionality, security, testing, and architecture
-2. A technical writer reviews documentation completeness — REFERENCE/ docs, CLAUDE.md currency, ABOUT comments, and temporal language
+## The Three Tiers
+
+| Tier | What runs | Good for | Approx. time |
+|---|---|---|---|
+| **light** | One reviewer, narrow scope | Docs, tests, styling, comment-only changes | ~1 min |
+| **standard** | Code review + documentation review | Typical feature work, core logic, utilities | ~2–4 min |
+| **team** | Multi-perspective team (security, product, architect, docs) with debate | Data layer (Supabase migrations, RLS), auth, CI, dependencies, secrets | ~5–10 min |
+
+Team is auto-selected when the change touches high-blast-radius paths. You can always force team directly with `/review-pr-team N`.
 
 ---
 
 ## Instructions for Claude
 
-When this skill is invoked with a PR number (e.g., `/review-pr 2`):
+When invoked with a PR number (e.g. `/review-pr 42`):
 
-### Step 1: Spawn Code Reviewer Agent
+### Step 1: Triage
 
-**CRITICAL:** You must spawn an independent subagent for this review. DO NOT review the PR yourself in this session. The reviewer needs fresh, unbiased context.
+Spawn the **`triage-reviewer`** subagent:
 
-Spawn the **`code-reviewer`** subagent with this task:
+**Task:** `Classify PR #$ARGUMENTS for review tier. Follow your rubric and output format exactly. Return only the classification block.`
 
-**Task:** "Conduct a comprehensive code review of PR #$ARGUMENTS. Follow your review checklist and output format. Post nothing — return your full findings when done."
+Wait for the classification. It will be a four-line block: `TIER:`, `RATIONALE:`, `FLAGGED_PATHS:`, `SIZE:`.
 
-Wait for the review to complete.
+### Step 2: Announce the decision (before running the review)
 
----
+**CRITICAL:** Tell the user the decision in plain language *before* spawning any reviewer. This lets them catch a mis-triage early instead of paying for a wrong-tier review.
 
-### Step 2: Spawn Documentation Reviewer Agent
+Use this format:
 
-After the code review completes, spawn the **`technical-writer`** subagent with this task:
+```
+🎯 Triage: <tier>
+   <rationale>
+   <size>
 
-**Task:** "Conduct a documentation review of PR #$ARGUMENTS. Follow your review checklist and output format. Post nothing — return your full findings when done."
+Running <tier> review now.
+If this looks wrong — e.g. the change is riskier than the rationale suggests —
+interrupt and run /review-pr-team <N> to force the deepest tier.
+```
 
-Wait for the documentation review to complete.
+Example:
 
----
+```
+🎯 Triage: light
+   Docs-only change in REFERENCE/ with no code paths touched.
+   Small (23 lines across 2 files)
 
-### Step 3: Post Combined Results
+Running light review now.
+If this looks wrong — e.g. the change is riskier than the rationale suggests —
+interrupt and run /review-pr-team 42 to force the deepest tier.
+```
 
-After both reviews are complete, combine their findings and post as a single comment on the PR:
+### Step 3: Route to the right reviewer
+
+**If `TIER: light`:**
+
+Spawn the **`code-reviewer`** subagent with this *narrowed* task (the narrowing is the whole point of the light tier — don't send the default prompt):
+
+**Task:**
+```
+LIGHT TIER REVIEW of PR #$ARGUMENTS.
+
+**IMPORTANT — this is a light tier review. Override your default review
+protocol as follows:**
+- DO NOT run your "Completion Requirements Verification" step
+- DO NOT flag missing tests or low coverage as critical issues
+- DO NOT produce the standard ✅/🔴/⚠️/💡 structured output
+- The triage reviewer has already confirmed this PR is low-risk
+  (docs / tests / styling / comments only). Trust that classification.
+
+Focus ONLY on:
+- Obvious bugs or broken logic
+- Typos or factual errors in code, comments, or docs
+- Accidentally committed debug statements, console.logs, or secret-shaped strings
+- Broken links or stale refs in docs
+- ABOUT headers present on any NEW code files
+
+Skip: architecture critique, performance analysis, test coverage gaps,
+style nits, threat modelling, deep security review, completion-requirements
+checklist.
+
+Output: terse. Either the single line "✅ No issues" or 1–3 specific
+comments with file:line references. Do not write long-form analysis,
+headings, or structured sections. Post nothing — return your findings.
+```
+
+Then post the result as a PR comment with this header prefix:
 
 ```bash
-gh pr comment $ARGUMENTS --body "[combined markdown from both reviews]"
+gh pr comment $ARGUMENTS --body "$(cat <<'EOF'
+**Triage: light** — <rationale from step 1>
+
+<reviewer findings>
+EOF
+)"
 ```
 
-Structure the combined comment with code review findings first, documentation findings second. If the documentation reviewer found no issues, a brief "✅ Documentation: No issues found" is sufficient.
+No technical-writer pass in the light tier — the narrowed code reviewer already covers doc basics.
 
-Provide user summary:
-- Total issues found (critical vs suggestions), split by code vs documentation
-- Clear recommendation (approve/request changes)
-- Key action items
-- Link to PR comment
+**If `TIER: standard`:**
+
+Follow the two-reviewer flow:
+
+1. Spawn **`code-reviewer`** with its default task: `Conduct a comprehensive code review of PR #$ARGUMENTS. Follow your review checklist and output format. Post nothing — return your findings.`
+2. Spawn **`technical-writer`** with: `Conduct a documentation review of PR #$ARGUMENTS. Follow your review checklist and output format. Post nothing — return your findings.`
+3. Combine findings (code review first, documentation second). If the doc reviewer found nothing, `✅ Documentation: No issues found` is sufficient.
+4. Post with this header prefix:
+
+```
+**Triage: standard** — <rationale from step 1>
+
+<combined findings>
+```
+
+**If `TIER: team`:**
+
+1. Emit one user-facing line in chat:
+
+   ```
+   Auto-escalating to team review. This takes 5–10 minutes. You can cancel
+   any time with Ctrl-C and run /review-pr-team <N> separately.
+   ```
+
+2. Post a **separate triage marker comment** to the PR *before* invoking the team skill (the team skill can't receive extra arguments, so the header is posted directly):
+
+   ```bash
+   gh pr comment $ARGUMENTS --body "$(cat <<'EOF'
+   **Triage: team (auto-escalated)** — <rationale from step 1>
+
+   *Flagged paths: <flagged_paths from step 1>*
+
+   Full team review follows in the next comment.
+   EOF
+   )"
+   ```
+
+3. Invoke the `review-pr-team` skill using the Skill tool, passing the same PR number as `args`. That skill owns its own orchestration, team setup, discussion phase, and clean-up. Its review posts as a second, larger comment.
+
+(The team skill is user-invocable on its own, so if you prefer to skip the dispatcher entirely, just run `/review-pr-team N` directly — no triage runs and no marker comment is posted.)
+
+### Step 4: User summary
+
+After posting, always end with a short summary in chat:
+
+- **Tier that ran** and why (one line)
+- **Issues found** (critical count / suggestions count)
+- **Recommendation** (approve / request changes / block)
+- **Link** to the posted PR comment
+- If tier was `light` or `standard`: one-line reminder — *"Run `/review-pr-team N` if you want deeper multi-perspective analysis."*
 
 ---
 
-## Example Usage
+## Override & escape hatches
 
-```
-/review-pr 2
-```
-
-This will:
-1. Spawn independent full-stack developer reviewer
-2. Reviewer gathers their own context (PR details, CLAUDE.md, specs, changed files)
-3. Reviewer conducts comprehensive review
-4. Spawn independent technical writer reviewer
-5. Technical writer checks documentation completeness
-6. Post combined review to the PR
+| Situation | What to do |
+|---|---|
+| Want to skip triage entirely | Run `/review-pr-team N` directly |
+| Triage chose wrong tier (too shallow) | Interrupt during Step 2 and run `/review-pr-team N` |
+| Triage flagged something unexpected | Read the rationale — if wrong, let Magnus know; the rubric lives in `.claude/agents/triage-reviewer.md` |
+| Want a deeper look after a `light` or `standard` review | Run `/review-pr-team N` on the same PR — reviews stack fine |
 
 ---
 
-## Tips for Best Results
+## Example usage
 
-- **Use for all implementation PRs** - Quick sanity check with documentation verification
-- **Faster than multi-perspective** - ~2-4 minutes vs 5-10 minutes
-- **Broad coverage** - Catches most common issues plus documentation drift
-- **Upgrade to /review-pr-team** - For critical/complex PRs needing deep analysis
+```
+/review-pr 42
+```
+
+The dispatcher will:
+1. Classify risk — paths, size, secret-scan (~30 sec)
+2. Announce the tier + rationale to you
+3. Run the appropriate review
+4. Post results with the triage decision visible in the comment header
 
 ---
 
-## When to Use Which Review
+## When to use which skill
 
-**Use `/review-pr`:**
-- Regular implementation PRs
-- Quick sanity checks
-- You want fast feedback
-- Standard feature work
-
-**Use `/review-pr-team`:**
-- Critical infrastructure changes
-- Security-sensitive features
-- Major architectural decisions
-- Need multiple expert perspectives
+- **`/review-pr N`** — default. The dispatcher picks the right tier automatically and explains why.
+- **`/review-pr-team N`** — skip triage. Use when you *already know* the change is critical, or when a lighter tier surfaced something that needs deeper analysis.

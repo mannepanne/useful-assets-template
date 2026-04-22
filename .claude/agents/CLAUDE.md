@@ -15,6 +15,7 @@ Agents define personas, roles, and behaviors that can be spawned by skills. Sepa
 
 ### Code Review Agents (PR reviews)
 
+- **[triage-reviewer.md](./triage-reviewer.md)** - Lightweight risk classifier: decides whether a PR needs light, standard, or team review
 - **[code-reviewer.md](./code-reviewer.md)** - Full-stack developer for comprehensive PR reviews
 - **[security-specialist.md](./security-specialist.md)** - Security-focused reviewer for vulnerabilities and threats
 - **[product-reviewer.md](./product-reviewer.md)** - Product manager perspective on UX and requirements
@@ -52,8 +53,9 @@ Spawn the `code-reviewer` subagent with task: "Review PR #$ARGUMENTS..."
 
 | Agent | Used by |
 |-------|---------|
-| `code-reviewer` | `/review-pr` (step 1) |
-| `technical-writer` | `/review-pr` (step 2), `/review-pr-team` (team member) |
+| `triage-reviewer` | `/review-pr` (triage step — classifies tier) |
+| `code-reviewer` | `/review-pr` (light tier, narrowed prompt; standard tier, default prompt) |
+| `technical-writer` | `/review-pr` (standard tier only), `/review-pr-team` (team member) |
 | `security-specialist` | `/review-pr-team` |
 | `product-reviewer` | `/review-pr-team` |
 | `architect-reviewer` | `/review-pr-team` |
