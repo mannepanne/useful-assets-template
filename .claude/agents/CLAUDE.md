@@ -16,6 +16,7 @@ Agents define personas, roles, and behaviors that can be spawned by skills. Sepa
 ### Code Review Agents (PR reviews)
 
 - **[triage-reviewer.md](./triage-reviewer.md)** - Lightweight risk classifier: decides whether a PR needs light, standard, or team review
+- **[light-reviewer.md](./light-reviewer.md)** - Narrow-scope sanity check for low-risk PRs (docs, tests, styling, comment-only changes)
 - **[code-reviewer.md](./code-reviewer.md)** - Full-stack developer for comprehensive PR reviews
 - **[security-specialist.md](./security-specialist.md)** - Security-focused reviewer for vulnerabilities and threats
 - **[product-reviewer.md](./product-reviewer.md)** - Product manager perspective on UX and requirements
@@ -54,8 +55,9 @@ Spawn the `code-reviewer` subagent with task: "Review PR #$ARGUMENTS..."
 | Agent | Used by |
 |-------|---------|
 | `triage-reviewer` | `/review-pr` (triage step — classifies tier) |
-| `code-reviewer` | `/review-pr` (light tier, narrowed prompt; standard tier, default prompt) |
-| `technical-writer` | `/review-pr` (standard tier only), `/review-pr-team` (team member) |
+| `light-reviewer` | `/review-pr` (light tier — narrow-scope sanity check) |
+| `code-reviewer` | `/review-pr` (standard tier — default prompt) |
+| `technical-writer` | `/review-pr` (light tier, standard tier), `/review-pr-team` (team member) |
 | `security-specialist` | `/review-pr-team` |
 | `product-reviewer` | `/review-pr-team` |
 | `architect-reviewer` | `/review-pr-team` |

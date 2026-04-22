@@ -57,7 +57,7 @@ If the triage decision looks wrong, you can interrupt and force a deeper tier wi
 ### Use `/review-pr-team` for:
 ✅ When you **already know** it's critical and want to skip triage
 ✅ Re-running deeper analysis after a `light` or `standard` pass surfaced concerns
-✅ Situations where you want all three specialist perspectives (security, product, architect) regardless of what the rubric says
+✅ Situations where you want all four specialist perspectives (security, product, architect, docs) regardless of what the rubric says
 
 **Time:** 5-10 minutes
 **Reviewers:** Security Specialist, Product Manager, Senior Architect, Technical Writer (agent team with collaborative discussion)
@@ -99,7 +99,7 @@ If the triage decision looks wrong, you can interrupt and force a deeper tier wi
 
 **The three phases:**
 
-1. **Triage** — a lightweight classifier reads the PR's changed paths, size, and a couple of targeted greps (for secret-shaped strings and Supabase RLS keywords). It does not read file contents in depth. ~30 seconds.
+1. **Triage** — a lightweight classifier reads the PR's changed paths, size, and a couple of targeted greps (for secret-shaped strings and Supabase RLS keywords). It does not read file contents in depth. ~30 seconds on its own; adds ~30 seconds of overhead to the total review time quoted in the tier table above.
 2. **Announce** — the dispatcher tells you the tier and rationale in plain language *before* spawning the reviewer, so you can intervene if it got it wrong.
 3. **Review** — the appropriate reviewer runs, posts to the PR with the triage decision visible in the comment header, and a summary appears in chat.
 
@@ -108,26 +108,40 @@ If the triage decision looks wrong, you can interrupt and force a deeper tier wi
 | Signal | Tier |
 |---|---|
 | Supabase migration, RLS policy change, or any `*.sql` | **team** |
-| `package.json`, `package-lock.json`, or other lockfile changes | **team** |
+| `package.json` or non-JS manifest (`Cargo.toml`, `go.mod`, `pyproject.toml`, `requirements.txt`, etc.) changes | **team** |
 | `.env*` files, CI workflows, `middleware.ts`, public API routes | **team** |
-| Secret-shaped strings in diff | **team** |
+| Build configs (`next.config.*`, `vite.config.*`, `Dockerfile`, etc.) | **team** |
+| Secret-material files (`*.pem`, `*.key`, `*.p12`, `id_rsa*`, `.ssh/**`) | **team** |
+| Secret-shaped strings in diff (vendor token formats: `sk-…`, `gh[pousr]_…`, `AKIA…`, PEM blocks, JWTs) | **team** |
+| `.claude/**` changes touching `agents/` AND `skills/`, or >3 files | **team** |
+| `.claude/**` smaller changes (agent or skill tweaks) | **standard** |
 | Only docs, tests, CSS, or comment-only diffs (and small/medium size) | **light** |
+| Lockfile-only changes without manifest changes | **standard** |
 | Everything else | **standard** |
 
-**Safety posture:** when the classifier is uncertain between two tiers, it picks the higher one. A false-positive `team` review costs tokens; a false-negative `light` on a risky change costs trust.
+**Safety posture:** when the classifier is uncertain between two tiers, it picks the higher one. The same applies to tool failures — if `gh pr view` fails or the triage output doesn't parse, the dispatcher falls back to `team`. A false-positive `team` review costs tokens; a false-negative `light` on a risky change costs trust.
+
+**`.claude/**` is never `light`** — changes to agent definitions and skill prompts modify how every future review runs, so the rubric treats them as MEDIUM at minimum.
 
 **The full rubric** lives in [`.claude/agents/triage-reviewer.md`](../.claude/agents/triage-reviewer.md) — edit it there if the defaults don't suit your project.
 
 ### What each tier actually does
 
-**Light tier (1 reviewer, narrow scope):**
-- Obvious bugs or broken logic
-- Typos or factual errors
-- Accidentally committed debug / secrets
-- Broken doc links, missing ABOUT headers
-- *Skips* architecture, performance, test coverage, threat modelling
+**Light tier (2 reviewers, narrow scope):**
+- `light-reviewer` — obvious bugs, typos, factual errors, accidentally committed debug/secrets, broken links, ABOUT headers on new code files
+- `technical-writer` — temporal language in docs ("recently added", "now works by…"), REFERENCE/ currency, British English, headline capitalisation
 
-Output is terse: either `✅ No issues` or 1–3 specific comments.
+Output is terse: either `✅ No issues` / `✅ Documentation: no issues`, or 1–3 specific comments.
+
+**What the light tier explicitly does NOT catch** (by design — safety rests on accurate triage, not defence in depth):
+- Architecture critique, design-pattern drift, or scalability concerns
+- Performance analysis
+- Missing tests or low coverage (triage confirmed the change is low-risk)
+- Threat modelling or deep security review
+- Dependency / supply-chain risk (triage catches this via HIGH paths)
+- Cross-cutting documentation strategy beyond the narrow checks above
+
+If a change lands in `light` that deserves deeper review, the failure mode is *silent missed analysis*, not a wrong verdict — the user can always follow up with `/review-pr-team N` on the same PR.
 
 **Standard tier (2 reviewers):**
 - Full code review: quality, functionality, security, architecture, performance, testing, types, conventions
@@ -146,15 +160,15 @@ Output format:
 ## How `/review-pr-team` Works
 
 **Agent team collaboration:**
-1. Creates agent team with 3 specialized reviewers
+1. Creates agent team with 4 specialised reviewers
 2. **Phase 1: Independent Review** - Each reviews from their perspective
 3. **Phase 2: Collaborative Discussion** - Reviewers debate, challenge, reach consensus
-4. Posts synthesized findings with discussion highlights
+4. Posts synthesised findings with discussion highlights
 
-**The three reviewers:**
+**The four reviewers:**
 
 **Security Specialist** 🛡️
-- Authentication, authorization, secrets
+- Authentication, authorisation, secrets
 - XSS, CSRF, SQL injection, input validation
 - Session security, dependency vulnerabilities
 
@@ -168,11 +182,17 @@ Output format:
 - Scalability, maintainability, testing
 - Technical debt, performance, architectural fit
 
+**Technical Writer** ✍️
+- REFERENCE/ currency and CLAUDE.md consistency
+- ABOUT headers on new code files
+- Temporal language ("recently added", "was changed"), British English, headline capitalisation
+- Documentation completeness for new features
+
 **Key difference from `/review-pr`:**
 - Reviewers **actually discuss** findings with each other
 - They **challenge** each other's severity assessments
 - They **debate** tradeoffs and propose solutions together
-- Lead synthesizes collaborative insights (not just 3 independent reports)
+- Lead synthesises collaborative insights (not just four independent reports)
 
 **Output includes:**
 - Team consensus on critical issues
@@ -205,10 +225,10 @@ The skill will:
 The skill will:
 1. Fetch PR #42 details
 2. Gather project context
-3. Create agent team (3 reviewers)
+3. Create agent team (4 reviewers)
 4. Reviewers independently analyse
 5. Reviewers discuss and debate findings
-6. Lead synthesizes collaborative analysis
+6. Lead synthesises collaborative analysis
 7. Post unified review with discussion highlights
 8. Clean up team
 
@@ -328,8 +348,9 @@ Reviewer agents are defined as named sub-agents in `.claude/agents/` using YAML 
 
 **PR review agents:**
 - `triage-reviewer.md` — used by `/review-pr` as the first step to classify risk and pick tier (Sonnet, cheapest pass)
-- `code-reviewer.md` — used by `/review-pr` for `light` (narrowed prompt) and `standard` (default prompt) tiers (Sonnet)
-- `technical-writer.md` — used by `/review-pr` standard tier and `/review-pr-team` (Opus)
+- `light-reviewer.md` — used by `/review-pr` for the `light` tier (Sonnet, narrow-scope sanity check)
+- `code-reviewer.md` — used by `/review-pr` for the `standard` tier (Sonnet, full default prompt)
+- `technical-writer.md` — used by `/review-pr` light and standard tiers, and `/review-pr-team` (Opus in team tier; Sonnet elsewhere)
 - `security-specialist.md` — used by `/review-pr-team` (Opus)
 - `product-reviewer.md` — used by `/review-pr-team` (Opus)
 - `architect-reviewer.md` — used by `/review-pr-team` (Opus)

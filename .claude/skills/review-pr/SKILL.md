@@ -15,8 +15,8 @@ This skill reviews a PR at the right level of depth — not too shallow, not tok
 
 | Tier | What runs | Good for | Approx. time |
 |---|---|---|---|
-| **light** | One reviewer, narrow scope | Docs, tests, styling, comment-only changes | ~1 min |
-| **standard** | Code review + documentation review | Typical feature work, core logic, utilities | ~2–4 min |
+| **light** | `light-reviewer` (narrow sanity check) + `technical-writer` (temporal-language + REFERENCE/ currency) | Docs, tests, styling, comment-only changes | ~1–2 min |
+| **standard** | `code-reviewer` (full default prompt) + `technical-writer` | Typical feature work, core logic, utilities | ~2–4 min |
 | **team** | Multi-perspective team (security, product, architect, docs) with debate | Data layer (Supabase migrations, RLS), auth, CI, dependencies, secrets | ~5–10 min |
 
 Team is auto-selected when the change touches high-blast-radius paths. You can always force team directly with `/review-pr-team N`.
@@ -35,6 +35,12 @@ Spawn the **`triage-reviewer`** subagent:
 
 Wait for the classification. It will be a four-line block: `TIER:`, `RATIONALE:`, `FLAGGED_PATHS:`, `SIZE:`.
 
+**Parsing fallback (fail-closed):** If the response is not a parseable classification block, or `TIER:` is missing, or its value is not one of `{light, standard, team}` (including casing drift like `Tier: light` or out-of-vocabulary values like `medium`), **default to `team`** — the same safety posture the rubric uses for classification ambiguity. Also announce the fallback explicitly in Step 2 so the user can see what happened:
+
+> `🎯 Triage: team (fallback — triage output did not parse). Escalating to team review so a human decides.`
+
+Do not improvise a tier. Do not re-prompt the triage agent — treat the malformed output as a signal that something is off, and let the team tier catch it.
+
 ### Step 2: Announce the decision (before running the review)
 
 **CRITICAL:** Tell the user the decision in plain language *before* spawning any reviewer. This lets them catch a mis-triage early instead of paying for a wrong-tier review.
@@ -46,9 +52,8 @@ Use this format:
    <rationale>
    <size>
 
-Running <tier> review now.
-If this looks wrong — e.g. the change is riskier than the rationale suggests —
-interrupt and run /review-pr-team <N> to force the deepest tier.
+Running <tier> review now. If this looks wrong, stop me and run
+/review-pr-team <N> directly to force the deepest tier.
 ```
 
 Example:
@@ -58,57 +63,37 @@ Example:
    Docs-only change in REFERENCE/ with no code paths touched.
    Small (23 lines across 2 files)
 
-Running light review now.
-If this looks wrong — e.g. the change is riskier than the rationale suggests —
-interrupt and run /review-pr-team 42 to force the deepest tier.
+Running light review now. If this looks wrong, stop me and run
+/review-pr-team 42 directly to force the deepest tier.
 ```
+
+**Note on interruption:** Ctrl-C behaviour during a running sub-agent spawn is not guaranteed to land cleanly on every Claude Code version. If Ctrl-C doesn't take effect immediately, let the current tier finish, then run `/review-pr-team <N>` — reviews stack fine (see override table below).
 
 ### Step 3: Route to the right reviewer
 
 **If `TIER: light`:**
 
-Spawn the **`code-reviewer`** subagent with this *narrowed* task (the narrowing is the whole point of the light tier — don't send the default prompt):
+Spawn two reviewers in parallel (the narrowed scope is built into the `light-reviewer` agent definition — you do not need to pass override instructions):
 
-**Task:**
-```
-LIGHT TIER REVIEW of PR #$ARGUMENTS.
+1. **`light-reviewer`** with task: `Light-tier review of PR #$ARGUMENTS. Follow your agent definition. Post nothing — return your findings.`
+2. **`technical-writer`** with task: `Documentation pass for PR #$ARGUMENTS. Follow your default checklist. Output terse — either "✅ Documentation: no issues" or a short bulleted list with file:line references. Post nothing — return your findings.`
 
-**IMPORTANT — this is a light tier review. Override your default review
-protocol as follows:**
-- DO NOT run your "Completion Requirements Verification" step
-- DO NOT flag missing tests or low coverage as critical issues
-- DO NOT produce the standard ✅/🔴/⚠️/💡 structured output
-- The triage reviewer has already confirmed this PR is low-risk
-  (docs / tests / styling / comments only). Trust that classification.
+Combine findings in this order: light-reviewer output, then technical-writer output (only include the tech-writer block if it found issues; otherwise a single line `✅ Documentation: no issues`).
 
-Focus ONLY on:
-- Obvious bugs or broken logic
-- Typos or factual errors in code, comments, or docs
-- Accidentally committed debug statements, console.logs, or secret-shaped strings
-- Broken links or stale refs in docs
-- ABOUT headers present on any NEW code files
+**Heredoc templates below are not literal strings.** The placeholders in angle brackets (`<rationale from step 1>`, `<combined findings>`, etc.) must be substituted with real values before running the `gh pr comment` command — the single-quoted heredoc only prevents shell expansion, not placeholder substitution.
 
-Skip: architecture critique, performance analysis, test coverage gaps,
-style nits, threat modelling, deep security review, completion-requirements
-checklist.
-
-Output: terse. Either the single line "✅ No issues" or 1–3 specific
-comments with file:line references. Do not write long-form analysis,
-headings, or structured sections. Post nothing — return your findings.
-```
-
-Then post the result as a PR comment with this header prefix:
+Post the result as a PR comment with this header prefix:
 
 ```bash
 gh pr comment $ARGUMENTS --body "$(cat <<'EOF'
 **Triage: light** — <rationale from step 1>
 
-<reviewer findings>
+<combined findings>
 EOF
 )"
 ```
 
-No technical-writer pass in the light tier — the narrowed code reviewer already covers doc basics.
+Why two agents in light tier: the triage routes docs-only PRs to `light`, and docs PRs are exactly the case where temporal-language and REFERENCE/ currency checks matter most. Keeping `technical-writer` in this tier closes that gap without bloating the light-reviewer prompt with doc-specific rules.
 
 **If `TIER: standard`:**
 
@@ -130,8 +115,9 @@ Follow the two-reviewer flow:
 1. Emit one user-facing line in chat:
 
    ```
-   Auto-escalating to team review. This takes 5–10 minutes. You can cancel
-   any time with Ctrl-C and run /review-pr-team <N> separately.
+   Auto-escalating to team review. This takes 5–10 minutes. If you want to
+   abort, try Ctrl-C; if that doesn't land cleanly, wait for the team review
+   to finish (it posts to the PR regardless).
    ```
 
 2. Post a **separate triage marker comment** to the PR *before* invoking the team skill (the team skill can't receive extra arguments, so the header is posted directly):
@@ -168,9 +154,10 @@ After posting, always end with a short summary in chat:
 | Situation | What to do |
 |---|---|
 | Want to skip triage entirely | Run `/review-pr-team N` directly |
-| Triage chose wrong tier (too shallow) | Interrupt during Step 2 and run `/review-pr-team N` |
+| Triage chose wrong tier (too shallow) — caught during announce | Try Ctrl-C; if the interrupt doesn't land, let the current tier finish and then run `/review-pr-team N` — reviews stack fine |
 | Triage flagged something unexpected | Read the rationale — if wrong, let Magnus know; the rubric lives in `.claude/agents/triage-reviewer.md` |
 | Want a deeper look after a `light` or `standard` review | Run `/review-pr-team N` on the same PR — reviews stack fine |
+| Triage output didn't parse / `gh` command failed | Dispatcher falls back to `team` tier automatically (see Step 1 fallback) |
 
 ---
 
