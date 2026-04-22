@@ -36,7 +36,7 @@ REFERENCE/                  # How implemented features work
 └── troubleshooting.md
 ```
 
-**Automated PR reviews are opt-in.** The first time you invoke `/review-pr`, `/review-pr-team`, or `/review-spec` (or the first review-adjacent moment in conversation with Claude), you'll be asked whether to enable the review system for this project. Your answer persists in `.claude/project-config.json`. For throwaway experiments where reviews are overkill, answer `no` once — all `/review-*` skills become no-ops. You can change your mind later by editing the file.
+**Automated reviews are opt-in.** The first time you invoke `/review-pr`, `/review-pr-team`, or `/review-spec` (or the first review-adjacent moment in conversation with Claude), you'll be asked whether to enable the review system for this project. Your answer persists in `.claude/project-config.json`. For throwaway experiments where reviews are overkill, answer `no` once — all `/review-*` skills become no-ops. You can change your mind later by editing the file.
 
 ## If you want to try using this as a template
 

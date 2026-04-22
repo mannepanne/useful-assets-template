@@ -27,18 +27,9 @@ Team is auto-selected when the change touches high-blast-radius paths. You can a
 
 When invoked with a PR number (e.g. `/review-pr 42`):
 
-### Step 0a: Check project review-mode configuration
+### Step 0a: Review-mode gate
 
-Read `.claude/project-config.json`.
-
-- **File missing OR `prReviewMode` missing** → treat as `"prompt-on-first-use"` (fresh-clone default).
-- **`prReviewMode: "disabled"`** → reply *"PR review system is disabled for this project (see `.claude/project-config.json`, flag `prReviewMode`). Not running `/review-pr`."* Stop. Do not proceed.
-- **`prReviewMode: "enabled"`** → proceed to Step 0b.
-- **`prReviewMode: "prompt-on-first-use"`** → present the pitch from `.claude/CLAUDE.md` → "Automated PR review system" (use the verbatim text there). Wait for `yes` / `no` / `later`:
-  - `yes` / affirmative → write `"enabled"` to the config (preserve `_meta` and other fields), then proceed.
-  - `no` / negative → write `"disabled"`, emit the disabled message above, stop.
-  - `later` → do NOT modify the file. Proceed with this invocation only.
-- **Any other value** → warn the user the flag is malformed, present the pitch as if it were `prompt-on-first-use`, persist the chosen answer.
+Run the gate defined in `.claude/CLAUDE.md` → "Automated PR review system" → "Gate logic". When rendering the disabled message, substitute this skill's name: `review-pr`. If the gate tells you to stop (disabled, or user answered `no`), stop. If it tells you to proceed, continue to Step 0b.
 
 ### Step 0b: Input validation
 

@@ -51,20 +51,11 @@ This project template comes with it enabled. When copying this skill to a differ
 
 When this skill is invoked with a PR number (e.g., `/review-pr-team 1`):
 
-### Step 0: Check project review-mode configuration
+### Step 0: Review-mode gate
 
-Read `.claude/project-config.json`.
+Run the gate defined in `.claude/CLAUDE.md` → "Automated PR review system" → "Gate logic". When rendering the disabled message, substitute this skill's name: `review-pr-team`. If the gate tells you to stop, stop. If it tells you to proceed, continue to Step 1.
 
-- **File missing OR `prReviewMode` missing** → treat as `"prompt-on-first-use"` (fresh-clone default).
-- **`prReviewMode: "disabled"`** → reply *"PR review system is disabled for this project (see `.claude/project-config.json`, flag `prReviewMode`). Not running `/review-pr-team`."* Stop. Do not proceed.
-- **`prReviewMode: "enabled"`** → proceed to Step 1.
-- **`prReviewMode: "prompt-on-first-use"`** → present the pitch from `.claude/CLAUDE.md` → "Automated PR review system" (use the verbatim text there). Wait for `yes` / `no` / `later`:
-  - `yes` / affirmative → write `"enabled"` to the config (preserve `_meta` and other fields), then proceed.
-  - `no` / negative → write `"disabled"`, emit the disabled message above, stop.
-  - `later` → do NOT modify the file. Proceed with this invocation only.
-- **Any other value** → warn the user the flag is malformed, present the pitch as if it were `prompt-on-first-use`, persist the chosen answer.
-
-*(Note: if you were invoked by `/review-pr` auto-escalating to team tier, the dispatcher has already passed this check — the flag will be `"enabled"` when you get here, and this step becomes a fast no-op.)*
+*(If you were invoked by `/review-pr` auto-escalating to team tier, the dispatcher has already passed this check — the resolved flag will be `"enabled"` when you get here, and the gate is a fast no-op.)*
 
 ### Step 1: Create Agent Team
 
