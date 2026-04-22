@@ -129,7 +129,15 @@ This template ships with three review skills gated by a single project-level fla
 
 **Config flag:** `prReviewMode` in [`.claude/project-config.json`](./project-config.json). Three values: `enabled`, `disabled`, `prompt-on-first-use` (the template default).
 
-**The pitch (use this text verbatim when prompting the user):**
+**The pitch (use this text verbatim when prompting the user — preserve the `>` blockquote markers, they produce the indented visual styling):**
+
+Lead-in line (always render *before* the blockquote, on its own line, plain text — not part of the quote):
+
+> The project's `prReviewMode` is set to `"prompt-on-first-use"`, so before I {{action}}, I need to ask:
+
+Where `{{action}}` is the smallest natural description of what triggered the prompt — e.g. *"run the review on PR 15"*, *"open this PR"*, *"continue with the review skills"*. If no specific action is in flight, fall back to *"go any further"*.
+
+The blockquote pitch itself:
 
 > This template ships with an automated PR review system:
 > - `/review-pr` triages each PR (~30s) then runs a light/standard/team review (1–5 min). Catches bugs, security issues, and doc gaps.
@@ -144,6 +152,10 @@ This template ships with three review skills gated by a single project-level fla
 > - **yes** → I'll persist `"enabled"` to `.claude/project-config.json` and run this review now
 > - **no** → I'll persist `"disabled"` — all `/review-*` skills will become no-ops from now
 > - **later** → I'll run this one now and ask again next time
+
+Closing question (always render *after* the blockquote, on its own line, plain text — not part of the quote):
+
+> Which would you like — yes / no / later?
 
 ### Claude: when to surface this to the user (Layer 1 — contextual)
 
