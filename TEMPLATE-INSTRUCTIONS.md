@@ -124,7 +124,7 @@ A handful of prompts for common moments:
 | Need to remember something later | *"Remember that [fact / preference / constraint]."* |
 | Documentation might be stale | *"Do a quick sweep of the docs and tell me what's drifted."* |
 
-You can't really break anything by asking. If a prompt doesn't get the result you wanted, tell Claude what you actually meant.
+You can't really break anything by asking. If a prompt didn't produce the result you wanted, revert it (using /rewind or by going back to a previous commit), then tell Claude what you actually meant.
 
 ---
 
@@ -152,10 +152,10 @@ For the curious — here's roughly what gets customised during the orientation c
 
 **"The conversation has gone in circles."** Ask Claude to summarise the decisions made so far and what's still open. Often that re-anchors things.
 
-**"I want to start over with a section."** Just say so. Files are in git; nothing is permanent.
+**"I want to start over with a section."** Just say so. Files are in git; nothing is permanent. You can always go back to a previous commit. You did do regular commits, right? ;)
 
 **"I want a real human."** Fair. The template's source repo has a README with contact info, or ask Claude to point you at the right help.
 
 ---
 
-**That's it.** Don't try to read this whole guide before starting — open Claude, drop in your notes, and start talking. The rest will fall into place.
+**That's it.** Don't try to read this whole repo before starting — open Claude, drop in your notes, and start talking. The rest will fall into place.
