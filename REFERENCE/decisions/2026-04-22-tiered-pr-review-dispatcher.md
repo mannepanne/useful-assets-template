@@ -76,6 +76,14 @@ Architecture critique, performance analysis, deep security review, and full test
 **Regex-based secret detection has edges.**
 The triage rubric uses grep patterns for modern token shapes (`sk-…`, `gh[pousr]_…`, PEM blocks, JWT structure, AWS keys) plus keyword-anchored patterns. It cannot catch every secret format ever invented, and it will produce false-positives on docs that *describe* secrets (tier-up — harmless). Accepted: the rule's purpose is tier-escalation, not content redaction; false-positives are the safe failure mode.
 
+**Misclassification user-defer is a deliberate exception to the fail-closed posture.**
+Everywhere else in the dispatcher, ambiguity escalates: parse errors → `team`, tool failures → `team`, tier ambiguity → UP. One path does not follow this rule. When `light-reviewer` emits `MISCLASSIFICATION SUSPECTED:` (a valid, first-line-anchored signal with a reason sentence), the dispatcher *stops and surfaces the reason to the user* rather than auto-escalating to team tier. This exception is load-bearing for two reasons:
+
+1. **User cost preference.** The user chose `/review-pr` over `/review-pr-team` — they expressed a preference for the cheaper path. Auto-escalating past that preference based on a signal consumes team-tier tokens the user didn't ask for.
+2. **Signal provenance.** The misclassification signal originates from a reviewer that reads untrusted PR content (title, description, diff). Even with the hardened untrusted-input contract in `.claude/agents/CLAUDE.md`, a belt-and-braces stance treats this specific signal as "prompt the user" rather than "trigger expensive action automatically." Auto-escalating would give an attacker who forged the signal (despite the hardening) the ability to burn the user's team-tier budget at will.
+
+Contrast with the other fail-closed paths: parse-failure and `gh`-failure fire on *tool errors*, not on model judgement. They fill gaps the user didn't choose; they don't override a user preference. If a future editor is tempted to "make the misclassification path consistent with the rest" — re-read this bullet. The exception is intentional.
+
 ## Implications
 
 **Enables:**

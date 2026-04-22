@@ -108,8 +108,10 @@ If the triage decision looks wrong, you can interrupt and force a deeper tier wi
 | Signal | Tier |
 |---|---|
 | Supabase migration, RLS policy change, or any `*.sql` | **team** |
+| Cloudflare D1 config (`wrangler.{toml,jsonc,json}`), D1 bindings (`[[d1_databases]]`), `.dev.vars*` | **team** |
 | `package.json` or non-JS manifest (`Cargo.toml`, `go.mod`, `pyproject.toml`, `requirements.txt`, etc.) changes | **team** |
 | `.env*` files, CI workflows, `middleware.ts`, public API routes | **team** |
+| `SECURITY.md`, `SECURITY.txt`, `.well-known/security.txt` | **team** |
 | Build configs (`next.config.*`, `vite.config.*`, `Dockerfile`, etc.) | **team** |
 | Secret-material files (`*.pem`, `*.key`, `*.p12`, `id_rsa*`, `.ssh/**`) | **team** |
 | Secret-shaped strings in diff (vendor token formats: `sk-…`, `gh[pousr]_…`, `AKIA…`, PEM blocks, JWTs) | **team** |
@@ -140,7 +142,7 @@ Output is terse: either `✅ No issues` / `✅ Documentation: no issues`, or 1�
 - Threat modelling or deep security review
 - Dependency / supply-chain risk (triage catches this via HIGH paths)
 - Cross-cutting documentation strategy beyond the narrow checks above
-- Security-relevant content in `*.md` files — e.g. a `SECURITY.md` change, a README install snippet like `curl … | sh`, or a docs page describing an auth flow. The triage classifies these as LOW because the file extension is markdown, but the content can still warrant scrutiny. If you're touching these specifically, run `/review-pr-team N` directly.
+- Security-relevant *content* in ordinary `*.md` files — e.g. a README install snippet like `curl … | sh`, or a docs page describing an auth flow. The triage classifies these as LOW because the file extension is markdown and the path isn't a recognised security-policy location. (Path-based matches — `SECURITY.md`, `SECURITY.txt`, `.well-known/security.txt` — are now caught by the rubric and routed to team.) If you're touching arbitrary docs that describe security-relevant behaviour, run `/review-pr-team N` directly.
 - Stale cross-references where the *target* doc was moved or deleted in a prior PR but the link isn't in the current diff. Light tier reads the diff only — it won't notice that an unchanged link in your file now points at a moved target.
 
 If a change lands in `light` that deserves deeper review, the failure mode is *silent missed analysis*, not a wrong verdict — the user can always follow up with `/review-pr-team N` on the same PR.
