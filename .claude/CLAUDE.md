@@ -132,11 +132,13 @@ This template ships with three review skills gated by a single project-level fla
 **The pitch (use this text verbatim when prompting the user):**
 
 > This template ships with an automated PR review system:
-> - `/review-pr` triages each PR (~30s) then runs a light/standard/team review (1–10 min). Catches bugs, security issues, and doc gaps.
-> - `/review-pr-team` forces a full multi-perspective team review (5–10 min) for critical changes.
-> - `/review-spec` reviews a feature spec before you write code (5–10 min).
+> - `/review-pr` triages each PR (~30s) then runs a light/standard/team review (1–5 min). Catches bugs, security issues, and doc gaps.
+> - `/review-pr-team` forces a full multi-perspective team review (2–7 min) for critical changes.
+> - `/review-spec` reviews a feature spec before you write code (2–7 min).
 >
-> These cost tokens. For throwaway experiments they're overkill; for meaningful or long-lasting projects they pay back the first time they catch a real issue.
+> These cost tokens. For throwaway experiments they're overkill;  
+> for meaningful or long-lasting projects they pay back the first time  
+> they catch a real issue.
 >
 > Enable for this project?
 > - **yes** → I'll persist `"enabled"` to `.claude/project-config.json` and run this review now
