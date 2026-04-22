@@ -8,17 +8,17 @@ You don't need to be technical. You need an idea and a willingness to chat about
 
 ## A note before you start
 
-The collaboration style baked into this template (in `.claude/CLAUDE.md` and the `.claude/COLLABORATION/` files) is quite Magnus-flavoured — Swedish directness, particular tech preferences, a specific way of working. That works for me. If you want it to feel like *yours*, just say so to Claude early on ("rewrite the collaboration files to fit how I want to work") and have a chat about how you'd like to be treated. Or leave it as-is and inherit a slightly opinionated Swedish 50-something for a co-pilot. Up to you.
+The collaboration style baked into this template (in `.claude/CLAUDE.md` and the `.claude/COLLABORATION/` files) is quite Magnus-flavoured — Swedish directness, particular tech preferences, a specific way of working. That works for me. If you want it to feel like *yours*, just say so to Claude early on ("rewrite the collaboration files to fit how I want to work") and have a chat about how you'd like to be treated. Or leave it as-is and inherit a slightly opinionated Swedish 50-something SciFi-geek for a co-pilot. Up to you.
 
 ---
 
 ## The shape of what should happen
 
-If you get lost, this is the rhythm:
+If you get lost, this is the basic outline:
 
 1. Unzip the template and rename the folder to your project name.
 2. Drop any existing notes, design files, or sketches into `SPECIFICATIONS/ORIGINAL_IDEA/` or `REFERENCE/`.
-3. Open Claude in the folder and have a conversation about your project.
+3. Open Claude in the project folder and have a conversation about your project.
 4. Ask Claude to update all the templated docs based on what you discussed.
 5. Start building, one phase at a time, with a PR for every change.
 
