@@ -11,7 +11,7 @@ argument-hint:
 
 This skill reviews a PR at the right level of depth — not too shallow, not token-wasteful. It first runs a cheap triage pass, announces what it decided and why, then hands off to one of three review tiers.
 
-## The Three Tiers
+## The three tiers
 
 | Tier | What runs | Good for | Approx. time |
 |---|---|---|---|
@@ -67,7 +67,7 @@ Running light review now. If this looks wrong, stop me and run
 /review-pr-team 42 directly to force the deepest tier.
 ```
 
-**Note on interruption:** Ctrl-C behaviour during a running sub-agent spawn is not guaranteed to land cleanly on every Claude Code version. If Ctrl-C doesn't take effect immediately, let the current tier finish, then run `/review-pr-team <N>` — reviews stack fine (see override table below).
+**Note on interruption:** ESC behaviour during a running sub-agent spawn is not guaranteed to land cleanly on every Claude Code version. If ESC doesn't take effect immediately, let the current tier finish, then run `/review-pr-team <N>` — reviews stack fine (see override table below).
 
 ### Step 3: Route to the right reviewer
 
@@ -76,22 +76,33 @@ Running light review now. If this looks wrong, stop me and run
 Spawn two reviewers in parallel (the narrowed scope is built into the `light-reviewer` agent definition — you do not need to pass override instructions):
 
 1. **`light-reviewer`** with task: `Light-tier review of PR #$ARGUMENTS. Follow your agent definition. Post nothing — return your findings.`
-2. **`technical-writer`** with task: `Documentation pass for PR #$ARGUMENTS. Follow your default checklist. Output terse — either "✅ Documentation: no issues" or a short bulleted list with file:line references. Post nothing — return your findings.`
+2. **`technical-writer`** with task: `Light-mode documentation pass for PR #$ARGUMENTS. Operate in light-mode (see your agent definition). Post nothing — return your findings.`
+
+   The `light-mode` keyword is recognised by `technical-writer.md` and switches it to terse output. Do not pass an inline output-format override — the format lives in the agent definition so that future changes to `technical-writer` propagate to both light and standard tiers automatically.
 
 Combine findings in this order: light-reviewer output, then technical-writer output (only include the tech-writer block if it found issues; otherwise a single line `✅ Documentation: no issues`).
 
-**Heredoc templates below are not literal strings.** The placeholders in angle brackets (`<rationale from step 1>`, `<combined findings>`, etc.) must be substituted with real values before running the `gh pr comment` command — the single-quoted heredoc only prevents shell expansion, not placeholder substitution.
+**Misclassification handling.** If `light-reviewer`'s output begins with `MISCLASSIFICATION SUSPECTED:` (one-line signal it emits when the diff includes something the triage missed that looks risky), do NOT post a light-tier comment. Instead:
 
-Post the result as a PR comment with this header prefix:
+1. Print the misclassification line to chat verbatim.
+2. Tell the user: *"Light reviewer suspects this PR was misclassified. Recommend re-running as `/review-pr-team <N>` for deeper analysis. I have not posted a PR comment."*
+3. Stop. Do not auto-escalate — the user decides.
+
+**Posting the comment.** Build the body as a string, write it to a temp file via the Write tool (path `/tmp/review-pr-<N>-light.md`), then post with `--body-file`:
 
 ```bash
-gh pr comment $ARGUMENTS --body "$(cat <<'EOF'
+gh pr comment $ARGUMENTS --body-file /tmp/review-pr-$ARGUMENTS-light.md
+```
+
+The body must contain:
+
+```
 **Triage: light** — <rationale from step 1>
 
 <combined findings>
-EOF
-)"
 ```
+
+Using `--body-file` avoids the brittle heredoc-quoting pattern (where a substituted rationale containing the literal token `EOF` on its own line would terminate the heredoc early and either mangle the comment or run unintended shell). Write-then-post also makes the substitution step explicit.
 
 Why two agents in light tier: the triage routes docs-only PRs to `light`, and docs PRs are exactly the case where temporal-language and REFERENCE/ currency checks matter most. Keeping `technical-writer` in this tier closes that gap without bloating the light-reviewer prompt with doc-specific rules.
 
@@ -102,13 +113,21 @@ Follow the two-reviewer flow:
 1. Spawn **`code-reviewer`** with its default task: `Conduct a comprehensive code review of PR #$ARGUMENTS. Follow your review checklist and output format. Post nothing — return your findings.`
 2. Spawn **`technical-writer`** with: `Conduct a documentation review of PR #$ARGUMENTS. Follow your review checklist and output format. Post nothing — return your findings.`
 3. Combine findings (code review first, documentation second). If the doc reviewer found nothing, `✅ Documentation: No issues found` is sufficient.
-4. Post with this header prefix:
+4. Build the body as a string, write to `/tmp/review-pr-$ARGUMENTS-standard.md` via the Write tool, then post:
 
-```
-**Triage: standard** — <rationale from step 1>
+   ```bash
+   gh pr comment $ARGUMENTS --body-file /tmp/review-pr-$ARGUMENTS-standard.md
+   ```
 
-<combined findings>
-```
+   The body must start with:
+
+   ```
+   **Triage: standard** — <rationale from step 1>
+
+   <combined findings>
+   ```
+
+   Same reasoning as light tier: `--body-file` avoids the brittle heredoc-quoting pattern.
 
 **If `TIER: team`:**
 
@@ -116,22 +135,27 @@ Follow the two-reviewer flow:
 
    ```
    Auto-escalating to team review. This takes 5–10 minutes. If you want to
-   abort, try Ctrl-C; if that doesn't land cleanly, wait for the team review
+   abort, press ESC; if that doesn't land cleanly, wait for the team review
    to finish (it posts to the PR regardless).
    ```
 
-2. Post a **separate triage marker comment** to the PR *before* invoking the team skill (the team skill can't receive extra arguments, so the header is posted directly):
+2. Post a **separate triage marker comment** to the PR *before* invoking the team skill (the team skill can't receive extra arguments, so the header is posted directly). Build the body as a string, write to `/tmp/review-pr-$ARGUMENTS-triage.md` via the Write tool, then post:
 
    ```bash
-   gh pr comment $ARGUMENTS --body "$(cat <<'EOF'
+   gh pr comment $ARGUMENTS --body-file /tmp/review-pr-$ARGUMENTS-triage.md
+   ```
+
+   The body must contain:
+
+   ```
    **Triage: team (auto-escalated)** — <rationale from step 1>
 
    *Flagged paths: <flagged_paths from step 1>*
 
    Full team review follows in the next comment.
-   EOF
-   )"
    ```
+
+   Same reasoning as light/standard tier: `--body-file` avoids the brittle heredoc-quoting pattern.
 
 3. Invoke the `review-pr-team` skill using the Skill tool, passing the same PR number as `args`. That skill owns its own orchestration, team setup, discussion phase, and clean-up. Its review posts as a second, larger comment.
 
@@ -154,7 +178,7 @@ After posting, always end with a short summary in chat:
 | Situation | What to do |
 |---|---|
 | Want to skip triage entirely | Run `/review-pr-team N` directly |
-| Triage chose wrong tier (too shallow) — caught during announce | Try Ctrl-C; if the interrupt doesn't land, let the current tier finish and then run `/review-pr-team N` — reviews stack fine |
+| Triage chose wrong tier (too shallow) — caught during announce | Press ESC; if the interrupt doesn't land, let the current tier finish and then run `/review-pr-team N` — reviews stack fine |
 | Triage flagged something unexpected | Read the rationale — if wrong, let Magnus know; the rubric lives in `.claude/agents/triage-reviewer.md` |
 | Want a deeper look after a `light` or `standard` review | Run `/review-pr-team N` on the same PR — reviews stack fine |
 | Triage output didn't parse / `gh` command failed | Dispatcher falls back to `team` tier automatically (see Step 1 fallback) |

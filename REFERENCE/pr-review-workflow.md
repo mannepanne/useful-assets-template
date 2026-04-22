@@ -48,7 +48,7 @@ It then routes to one of three tiers:
 
 | Tier | What runs | Typical case | Time |
 |---|---|---|---|
-| **light** | 1 reviewer, narrow scope | Docs, tests, styling, comment-only diffs | ~1 min |
+| **light** | 2 reviewers, narrow scope (light-reviewer + technical-writer in light-mode) | Docs, tests, styling, comment-only diffs | ~1 min |
 | **standard** | Code review + doc review | Typical feature work, business logic, utilities | ~2-4 min |
 | **team** | Multi-perspective team with debate | Data-layer / Supabase migrations / RLS, auth, CI, deps, secrets | ~5-10 min |
 
@@ -69,7 +69,7 @@ If the triage decision looks wrong, you can interrupt and force a deeper tier wi
 
 ## How `/review-spec` Works
 
-**Three reviewers analyze the spec independently, then debate:**
+**Three reviewers analyse the spec independently, then debate:**
 
 1. **Requirements Auditor** — completeness: edge cases, error states, missing flows, undefined behaviour
 2. **Technical Skeptic** — feasibility: DB implications, blast radius, hidden complexity, integration risks
@@ -140,6 +140,8 @@ Output is terse: either `✅ No issues` / `✅ Documentation: no issues`, or 1�
 - Threat modelling or deep security review
 - Dependency / supply-chain risk (triage catches this via HIGH paths)
 - Cross-cutting documentation strategy beyond the narrow checks above
+- Security-relevant content in `*.md` files — e.g. a `SECURITY.md` change, a README install snippet like `curl … | sh`, or a docs page describing an auth flow. The triage classifies these as LOW because the file extension is markdown, but the content can still warrant scrutiny. If you're touching these specifically, run `/review-pr-team N` directly.
+- Stale cross-references where the *target* doc was moved or deleted in a prior PR but the link isn't in the current diff. Light tier reads the diff only — it won't notice that an unchanged link in your file now points at a moved target.
 
 If a change lands in `light` that deserves deeper review, the failure mode is *silent missed analysis*, not a wrong verdict — the user can always follow up with `/review-pr-team N` on the same PR.
 
@@ -199,6 +201,8 @@ Output format:
 - Documented disagreements (valuable signal)
 - Discussion highlights (how debate changed ratings)
 - Collaborative solutions that emerged
+
+**Two-comment audit pattern (team tier only):** when team tier runs via the dispatcher, you'll see *two* PR comments — first a short triage marker (`Triage: team (auto-escalated)` + flagged paths), then a second larger comment containing the full team review. This is by design: the marker preserves the dispatcher's audit trail even if the team review later fails or is amended. Running `/review-pr-team N` directly skips the marker and posts only the full review.
 
 ---
 

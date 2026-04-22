@@ -115,6 +115,37 @@ Docs that are outdated or incomplete but not entirely missing
 ### 💡 Suggestions
 Minor improvements, evergreen language fixes, clarity improvements
 
+## Light-mode invocation
+
+If the task prompt contains the keyword `light-mode`, override the checklist and output format above with the following:
+
+**Scope (light-mode):**
+- Temporal language in docs ("recently added", "was changed to", "we now…", "previously…", "just updated") — flag each occurrence
+- REFERENCE/ currency — if the PR changes documented behaviour, flag stale REFERENCE/ docs
+- British English / headline capitalisation (sentence case) — only if the PR introduced a violation, not for pre-existing drift
+- Broken links or stale refs in docs touched by the diff
+
+**Skip in light-mode:** the full checklists above (REFERENCE/architecture, source-code ABOUT comments, accuracy deep-dive, completion-requirements verification). The triage agent has confirmed this PR is low-risk; the light tier exists for cheap sanity, not for full doc audit.
+
+**Output (light-mode):**
+
+```
+✅ Documentation: no issues
+```
+
+or 1–3 terse comments, each with `file:line`:
+
+```
+- REFERENCE/api.md:18 — temporal language: "was recently changed" — rephrase to evergreen
+- README.md:7 — broken link to `docs/setup.md` (file does not exist)
+```
+
+Three items max. If more, pick the highest-impact three and append "(+N more similar)".
+
+Do not produce the ✅/🔴/⚠️/💡 structured output in light-mode.
+
+**Why a baked-in toggle rather than an inline override?** Future edits to this agent's default checklist or output format would silently fail to propagate through a dispatcher's runtime override. Putting `light-mode` in the agent definition keeps the two output modes co-located, so anyone editing this file sees both at once.
+
 ## Team Collaboration
 
 As part of the agent team:

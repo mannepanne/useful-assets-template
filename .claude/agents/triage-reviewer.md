@@ -150,6 +150,10 @@ FLAGGED_PATHS: <comma-separated HIGH-trigger paths, or "none">
 SIZE: <small|medium|large> (<LOC> lines across <N> files)
 ```
 
+**Format constraints (parser-critical):**
+- `RATIONALE:` must be a single line. No newlines. Max ~200 characters. The dispatcher line-parses this block and a multi-line rationale will break parsing (and fall back to `team` tier per the safety posture).
+- Do not include the literal token `EOF` on its own line in any field — historical safety against shell-quoting issues in downstream comment posting. Rephrase if needed.
+
 ### Examples
 
 **Light:**
