@@ -27,7 +27,11 @@ Team is auto-selected when the change touches high-blast-radius paths. You can a
 
 When invoked with a PR number (e.g. `/review-pr 42`):
 
-### Step 0: Input validation
+### Step 0a: Review-mode gate
+
+Run the gate defined in `.claude/CLAUDE.md` → "Automated PR review system" → "Gate logic". When rendering the disabled message, substitute this skill's name: `review-pr`. If the gate tells you to stop (disabled, or user answered `no`), stop. If it tells you to proceed, continue to Step 0b.
+
+### Step 0b: Input validation
 
 `$ARGUMENTS` MUST match `^[0-9]+$` (a positive integer, no whitespace, no shell metacharacters) before any tool call that substitutes it. If not, refuse with a one-line chat message and stop:
 

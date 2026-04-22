@@ -5,9 +5,39 @@
 - [Testing Strategy](./testing-strategy.md)
 
 **Skills Available:**
-- `/review-spec` - Pre-implementation spec review (5-10 min) ← run before writing code
-- `/review-pr` - Smart PR review dispatcher — triages the change and routes to light / standard / team (1-10 min depending on tier)
-- `/review-pr-team` - Forces full multi-perspective team review, skipping triage (5-10 min)
+- `/review-spec` - Pre-implementation spec review (2-7 min) ← run before writing code
+- `/review-pr` - Smart PR review dispatcher — triages the change and routes to light / standard / team (1-5 min end-to-end; longer when auto-escalated to team tier)
+- `/review-pr-team` - Forces full multi-perspective team review, skipping triage (2-7 min)
+
+---
+
+## Configuration
+
+The review system is **opt-in per project**, gated by a single flag in [`.claude/project-config.json`](../.claude/project-config.json):
+
+```json
+{ "prReviewMode": "enabled" | "disabled" | "prompt-on-first-use" }
+```
+
+- **`"prompt-on-first-use"`** (template default): Claude asks you at the first review-adjacent moment — the first time you invoke any `/review-*` skill, the first time you mention creating a PR or finishing a feature, or the first time you ask what the template provides. Your answer persists.
+- **`"enabled"`**: all three review skills (`/review-pr`, `/review-pr-team`, `/review-spec`) run normally.
+- **`"disabled"`**: every review skill becomes a no-op, replying with a one-line "disabled" message that includes how to re-enable. Useful for throwaway experiments where the token cost isn't worth it.
+
+To change the setting, edit the file directly. The flag applies to all three review skills — all-or-nothing by design.
+
+### Local override — `.claude/project-config.local.json`
+
+The committed `.claude/project-config.json` governs what cloners inherit. For template maintainers or individual contributors who want to run reviews locally while keeping a different committed default, a gitignored `.claude/project-config.local.json` may override the committed value:
+
+```json
+{ "prReviewMode": "enabled" }
+```
+
+When the local file exists, the gate merges its top-level keys on top of the committed file — local wins. When the gate persists a new value (e.g. the user answers the pitch), the write goes to the local file if it exists, otherwise to the committed file. This means dogfooding the review system on the template repo itself won't accidentally flip the default for cloners.
+
+If a local override has the same value as the committed file, it's a no-op and can be deleted.
+
+The canonical gate logic (read order, branch rules, persist semantics, malformed-JSON handling) lives in [`.claude/CLAUDE.md`](../.claude/CLAUDE.md) under "Automated PR review system" → "Gate logic". Each `/review-*` skill's Step 0 is a one-line reference to that section.
 
 ---
 
@@ -29,7 +59,7 @@ There are two review phases in the workflow:
 ✅ When you want to catch wrong assumptions before writing code
 ✅ When the approach feels uncertain or under-specified
 
-**Time:** 5-10 minutes
+**Time:** 2-7 minutes
 **Reviewers:** Requirements Auditor, Technical Skeptic, Devil's Advocate (agent team)
 **Outputs to:** Conversation (not a PR comment)
 
@@ -59,7 +89,7 @@ If the triage decision looks wrong, you can interrupt and force a deeper tier wi
 ✅ Re-running deeper analysis after a `light` or `standard` pass surfaced concerns
 ✅ Situations where you want all four specialist perspectives (security, product, architect, docs) regardless of what the rubric says
 
-**Time:** 5-10 minutes
+**Time:** 2-7 minutes
 **Reviewers:** Security Specialist, Product Manager, Senior Architect, Technical Writer (agent team with collaborative discussion)
 **Model:** Opus for all reviewers (more thorough reasoning)
 

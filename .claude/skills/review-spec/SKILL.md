@@ -45,6 +45,10 @@ Agent teams require the feature flag to be enabled in `.claude/settings.json`:
 
 When this skill is invoked with a spec file path or name (e.g., `/review-spec SPECIFICATIONS/07-new-feature.md`):
 
+### Step 0: Review-mode gate
+
+Run the gate defined in `.claude/CLAUDE.md` → "Automated PR review system" → "Gate logic". When rendering the disabled message, substitute this skill's name: `review-spec`. If the gate tells you to stop, stop. If it tells you to proceed, continue to Step 1.
+
 ### Step 1: Locate the Spec
 
 Resolve the spec file:
