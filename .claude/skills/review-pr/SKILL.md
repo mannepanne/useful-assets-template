@@ -17,7 +17,7 @@ This skill reviews a PR at the right level of depth — not too shallow, not tok
 |---|---|---|---|
 | **light** | `light-reviewer` (narrow sanity check) + `technical-writer` (temporal-language + REFERENCE/ currency) | Docs, tests, styling, comment-only changes | ~1–2 min |
 | **standard** | `code-reviewer` (full default prompt) + `technical-writer` | Typical feature work, core logic, utilities | ~2–4 min |
-| **team** | Multi-perspective team (security, product, architect, docs) with debate | Data layer (Supabase migrations, RLS), auth, CI, dependencies, secrets | ~5–10 min |
+| **team** | Multi-perspective team (security, product, architect, docs) with debate | Data layer (Supabase migrations, RLS), auth, CI, dependencies, secrets | ~2–7 min |
 
 Team is auto-selected when the change touches high-blast-radius paths. You can always force team directly with `/review-pr-team N`.
 
@@ -148,7 +148,7 @@ Follow the two-reviewer flow:
 1. Emit one user-facing line in chat:
 
    ```
-   Auto-escalating to team review. This takes 5–10 minutes. If you want to
+   Auto-escalating to team review. This takes 2–7 minutes. If you want to
    abort, press ESC; if that doesn't land cleanly, wait for the team review
    to finish (it posts to the PR regardless).
    ```

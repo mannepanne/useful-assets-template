@@ -80,7 +80,7 @@ It then routes to one of three tiers:
 |---|---|---|---|
 | **light** | 2 reviewers, narrow scope (light-reviewer + technical-writer in light-mode) | Docs, tests, styling, comment-only diffs | ~1 min |
 | **standard** | Code review + doc review | Typical feature work, business logic, utilities | ~2-4 min |
-| **team** | Multi-perspective team with debate | Data-layer / Supabase migrations / RLS, auth, CI, deps, secrets | ~5-10 min |
+| **team** | Multi-perspective team with debate | Data-layer / Supabase migrations / RLS, auth, CI, deps, secrets | ~2-7 min |
 
 If the triage decision looks wrong, you can interrupt and force a deeper tier with `/review-pr-team N`.
 

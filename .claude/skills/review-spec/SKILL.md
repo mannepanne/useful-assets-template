@@ -249,7 +249,7 @@ After presenting the review:
 /review-spec interest-signals
 ```
 
-Expected time: 5-10 minutes depending on spec size and discussion depth.
+Expected time: 2-7 minutes depending on spec size and discussion depth.
 
 ---
 

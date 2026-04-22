@@ -290,7 +290,7 @@ This will:
 6. Post comprehensive review to PR #1
 7. Clean up team
 
-Expected time: 5-10 minutes (depending on PR size and discussion depth)
+Expected time: 2-7 minutes (depending on PR size and discussion depth)
 
 ---
 
@@ -319,7 +319,7 @@ Expected time: 5-10 minutes (depending on PR size and discussion depth)
 - Major architectural decisions
 - Complex multi-file changes
 - When multiple perspectives add real value
-- You want thorough collaborative analysis (5-10 minutes)
+- You want thorough collaborative analysis (2-7 minutes)
 
 ---
 
