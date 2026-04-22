@@ -211,8 +211,8 @@ I value clean git history, but not at the expense of losing work or slowing down
 - Test that the code actually works after our changes
 
 **Pull request reviews:**
-- Use `/review-pr` for quick validation (regular PRs, 2-4 min)
-- Use `/review-pr-team` for critical changes (multi-perspective agent team, 5-10 min)
+- Use `/review-pr` as the default — it triages the change and routes to light, standard, or team review (1-10 min). Announces its decision in plain language first, so you can override if the triage looks wrong.
+- Use `/review-pr-team` when you want to skip triage and force a full multi-perspective team review (5-10 min)
 - See project-specific pr-review-workflow.md in REFERENCE/ for complete guide
 
 **Branch strategy:**

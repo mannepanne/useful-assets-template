@@ -286,8 +286,8 @@ Once customisation is complete:
    - Commit often
 
 4. **Use PR reviews**
-   - When phase complete: `/review-pr`
-   - For critical changes: `/review-pr-team`
+   - Default: `/review-pr` — dispatcher triages the change and routes to light, standard, or team
+   - Force team review: `/review-pr-team` (skips triage; use only when you already know it's critical)
    - Address feedback
    - Merge to main
 
