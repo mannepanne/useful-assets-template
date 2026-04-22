@@ -27,7 +27,20 @@ Team is auto-selected when the change touches high-blast-radius paths. You can a
 
 When invoked with a PR number (e.g. `/review-pr 42`):
 
-### Step 0: Input validation
+### Step 0a: Check project review-mode configuration
+
+Read `.claude/project-config.json`.
+
+- **File missing OR `prReviewMode` missing** → treat as `"prompt-on-first-use"` (fresh-clone default).
+- **`prReviewMode: "disabled"`** → reply *"PR review system is disabled for this project (see `.claude/project-config.json`, flag `prReviewMode`). Not running `/review-pr`."* Stop. Do not proceed.
+- **`prReviewMode: "enabled"`** → proceed to Step 0b.
+- **`prReviewMode: "prompt-on-first-use"`** → present the pitch from `.claude/CLAUDE.md` → "Automated PR review system" (use the verbatim text there). Wait for `yes` / `no` / `later`:
+  - `yes` / affirmative → write `"enabled"` to the config (preserve `_meta` and other fields), then proceed.
+  - `no` / negative → write `"disabled"`, emit the disabled message above, stop.
+  - `later` → do NOT modify the file. Proceed with this invocation only.
+- **Any other value** → warn the user the flag is malformed, present the pitch as if it were `prompt-on-first-use`, persist the chosen answer.
+
+### Step 0b: Input validation
 
 `$ARGUMENTS` MUST match `^[0-9]+$` (a positive integer, no whitespace, no shell metacharacters) before any tool call that substitutes it. If not, refuse with a one-line chat message and stop:
 

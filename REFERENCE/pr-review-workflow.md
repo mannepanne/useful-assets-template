@@ -11,6 +11,22 @@
 
 ---
 
+## Configuration
+
+The review system is **opt-in per project**, gated by a single flag in [`.claude/project-config.json`](../.claude/project-config.json):
+
+```json
+{ "prReviewMode": "enabled" | "disabled" | "prompt-on-first-use" }
+```
+
+- **`"prompt-on-first-use"`** (template default): Claude asks you at the first review-adjacent moment — the first time you invoke any `/review-*` skill, the first time you mention creating a PR or finishing a feature, or the first time you ask what the template provides. Your answer persists.
+- **`"enabled"`**: all three review skills (`/review-pr`, `/review-pr-team`, `/review-spec`) run normally.
+- **`"disabled"`**: every review skill becomes a no-op, replying with a one-line "disabled" message. Useful for throwaway experiments where the token cost isn't worth it.
+
+To change the setting, edit the file directly. The flag applies to all three review skills — all-or-nothing by design.
+
+---
+
 ## Overview
 
 This project uses automated review skills powered by agent teams. Reviews use fresh context (not biased by main session) and provide comprehensive, actionable feedback.

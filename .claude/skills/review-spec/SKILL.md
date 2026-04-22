@@ -45,6 +45,19 @@ Agent teams require the feature flag to be enabled in `.claude/settings.json`:
 
 When this skill is invoked with a spec file path or name (e.g., `/review-spec SPECIFICATIONS/07-new-feature.md`):
 
+### Step 0: Check project review-mode configuration
+
+Read `.claude/project-config.json`.
+
+- **File missing OR `prReviewMode` missing** → treat as `"prompt-on-first-use"` (fresh-clone default).
+- **`prReviewMode: "disabled"`** → reply *"Review system is disabled for this project (see `.claude/project-config.json`, flag `prReviewMode`). Not running `/review-spec`."* Stop. Do not proceed.
+- **`prReviewMode: "enabled"`** → proceed to Step 1.
+- **`prReviewMode: "prompt-on-first-use"`** → present the pitch from `.claude/CLAUDE.md` → "Automated PR review system" (use the verbatim text there). Wait for `yes` / `no` / `later`:
+  - `yes` / affirmative → write `"enabled"` to the config (preserve `_meta` and other fields), then proceed.
+  - `no` / negative → write `"disabled"`, emit the disabled message above, stop.
+  - `later` → do NOT modify the file. Proceed with this invocation only.
+- **Any other value** → warn the user the flag is malformed, present the pitch as if it were `prompt-on-first-use`, persist the chosen answer.
+
 ### Step 1: Locate the Spec
 
 Resolve the spec file:

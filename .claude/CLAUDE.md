@@ -118,6 +118,50 @@ Projects use **lifecycle-based documentation** to minimise token usage:
 
 **See project root CLAUDE.md for complete pattern details.**
 
+## Automated PR review system
+
+This template ships with three review skills gated by a single project-level flag.
+
+**Skills:**
+- `/review-pr` — triages each PR (~30s) then runs a light/standard/team review (1–10 min end-to-end). Default choice for most PRs.
+- `/review-pr-team` — forces a full multi-perspective team review (5–10 min). For critical changes when you want to skip triage.
+- `/review-spec` — reviews a feature specification before you write any code (5–10 min). Catches wrong assumptions early.
+
+**Config flag:** `prReviewMode` in [`.claude/project-config.json`](./project-config.json). Three values: `enabled`, `disabled`, `prompt-on-first-use` (the template default).
+
+**The pitch (use this text verbatim when prompting the user):**
+
+> This template ships with an automated PR review system:
+> - `/review-pr` triages each PR (~30s) then runs a light/standard/team review (1–10 min). Catches bugs, security issues, and doc gaps.
+> - `/review-pr-team` forces a full multi-perspective team review (5–10 min) for critical changes.
+> - `/review-spec` reviews a feature spec before you write code (5–10 min).
+>
+> These cost tokens. For throwaway experiments they're overkill; for meaningful or long-lasting projects they pay back the first time they catch a real issue.
+>
+> Enable for this project?
+> - **yes** → I'll persist `"enabled"` to `.claude/project-config.json` and run this review now
+> - **no** → I'll persist `"disabled"` — all `/review-*` skills will become no-ops from now
+> - **later** → I'll run this one now and ask again next time
+
+### Claude: when to surface this to the user (Layer 1 — contextual)
+
+**If and only if** `prReviewMode` in `.claude/project-config.json` is `"prompt-on-first-use"` (or the file is missing entirely — which means a fresh clone), proactively surface the pitch at the first *review-adjacent moment* in conversation:
+
+- User is about to create, push, or open a PR
+- User says they've "finished" a feature, phase, or task
+- User asks about code review, testing quality, or "how do I review this?"
+- User asks what the template provides
+- User invokes any `/review-*` skill (the skill's own Step 0 will handle it — you don't need to duplicate)
+
+**Do not** surface it:
+- On the very first conversational turn for an unrelated question (too pushy / out-of-context)
+- After the flag has been set to `"enabled"` or `"disabled"` (the decision has been made — do not re-raise)
+- In the middle of a debugging turn or a deeply focused task (wait for a natural pause)
+
+After the user answers, update `.claude/project-config.json` with the chosen value (preserving `_meta` and any other fields). For a `"later"` answer, do not modify the file — the flag stays `"prompt-on-first-use"` and you can ask again at the next review-adjacent moment.
+
+If the user has explicitly said they don't want reviews at a prior turn in the conversation, respect that even if the flag hasn't been persisted yet — persist `"disabled"` on their behalf.
+
 ## Technology Stack and Choices
 
 We prefer free/low-cost, state-of-the-art solutions. Always use latest stable versions and follow best practices.

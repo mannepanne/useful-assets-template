@@ -23,7 +23,8 @@ This template encapsulates patterns and workflows that have worked well for me w
 ```
 .claude/                    # AI collaboration config (auto-loads)
 ├── COLLABORATION/          # Behavioral guidance, PM mode, tech preferences
-└── skills/                 # Automated PR review workflows
+├── skills/                 # Automated PR review workflows
+└── project-config.json     # Per-project feature flags (e.g. prReviewMode)
 
 SPECIFICATIONS/             # What are we building
 ├── ORIGINAL_IDEA/         # Initial project vision
@@ -34,6 +35,8 @@ REFERENCE/                  # How implemented features work
 ├── environment-setup.md
 └── troubleshooting.md
 ```
+
+**Automated PR reviews are opt-in.** The first time you invoke `/review-pr`, `/review-pr-team`, or `/review-spec` (or the first review-adjacent moment in conversation with Claude), you'll be asked whether to enable the review system for this project. Your answer persists in `.claude/project-config.json`. For throwaway experiments where reviews are overkill, answer `no` once — all `/review-*` skills become no-ops. You can change your mind later by editing the file.
 
 ## If you want to try using this as a template
 
