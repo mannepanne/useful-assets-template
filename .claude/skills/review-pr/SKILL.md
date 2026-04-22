@@ -75,7 +75,7 @@ Running light review now. If this looks wrong, stop me and run
 /review-pr-team 42 directly to force the deepest tier.
 ```
 
-**Note on interruption:** ESC behaviour during a running sub-agent spawn is not guaranteed to land cleanly on every Claude Code version. If ESC doesn't take effect immediately, let the current tier finish, then run `/review-pr-team <N>` — reviews stack fine (see override table below).
+**Note on interruption:** ESC behaviour during a running sub-agent spawn is not guaranteed to land cleanly on every Claude Code version. If ESC doesn't take effect immediately, let the current tier finish, then run `/review-pr-team <N>` — each skill posts its own PR comment independently, so running them sequentially doesn't conflict (see override table below). The ESC-during-spawn interrupt path itself is not end-to-end verified.
 
 ### Step 3: Route to the right reviewer
 
@@ -188,9 +188,9 @@ After posting, always end with a short summary in chat:
 | Situation | What to do |
 |---|---|
 | Want to skip triage entirely | Run `/review-pr-team N` directly |
-| Triage chose wrong tier (too shallow) — caught during announce | Press ESC; if the interrupt doesn't land, let the current tier finish and then run `/review-pr-team N` — reviews stack fine |
+| Triage chose wrong tier (too shallow) — caught during announce | Press ESC; if the interrupt doesn't land, let the current tier finish and then run `/review-pr-team N` — each skill posts its own PR comment, they don't conflict |
 | Triage flagged something unexpected | Read the rationale — if wrong, let Magnus know; the rubric lives in `.claude/agents/triage-reviewer.md` |
-| Want a deeper look after a `light` or `standard` review | Run `/review-pr-team N` on the same PR — reviews stack fine |
+| Want a deeper look after a `light` or `standard` review | Run `/review-pr-team N` on the same PR — each skill posts its own PR comment, they don't conflict |
 | Triage output didn't parse / `gh` command failed | Dispatcher falls back to `team` tier automatically (see Step 1 fallback) |
 
 ---
