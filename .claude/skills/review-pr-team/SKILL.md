@@ -53,7 +53,7 @@ When this skill is invoked with a PR number (e.g., `/review-pr-team 1`):
 
 ### Step 0: Review-mode gate
 
-Run the gate defined in `.claude/CLAUDE.md` → "Automated PR review system" → "Gate logic". When rendering the disabled message, substitute this skill's name: `review-pr-team`. If the gate tells you to stop, stop. If it tells you to proceed, continue to Step 1.
+Run the gate defined in [`.claude/skills/review-gate.md`](../review-gate.md) → "Gate logic". When rendering the disabled message, substitute this skill's name: `review-pr-team`. If the gate tells you to stop, stop. If it tells you to proceed, continue to Step 1.
 
 *(If you were invoked by `/review-pr` auto-escalating to team tier, the dispatcher has already passed this check — the resolved flag will be `"enabled"` when you get here, and the gate is a fast no-op.)*
 

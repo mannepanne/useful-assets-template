@@ -29,7 +29,7 @@ When invoked with a PR number (e.g. `/review-pr 42`):
 
 ### Step 0a: Review-mode gate
 
-Run the gate defined in `.claude/CLAUDE.md` → "Automated PR review system" → "Gate logic". When rendering the disabled message, substitute this skill's name: `review-pr`. If the gate tells you to stop (disabled, or user answered `no`), stop. If it tells you to proceed, continue to Step 0b.
+Run the gate defined in [`.claude/skills/review-gate.md`](../review-gate.md) → "Gate logic". When rendering the disabled message, substitute this skill's name: `review-pr`. If the gate tells you to stop (disabled, or user answered `no`), stop. If it tells you to proceed, continue to Step 0b.
 
 ### Step 0b: Input validation
 

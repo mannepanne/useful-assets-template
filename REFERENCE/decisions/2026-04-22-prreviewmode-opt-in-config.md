@@ -34,7 +34,7 @@ We wanted a gate that:
 
 **Tri-state, not boolean.** The third state (`"prompt-on-first-use"`) is where most of the value lives. It means a fresh clone neither runs expensive reviews without asking nor silently hides the feature — instead, at the first review-adjacent moment (user mentions finishing a feature, user invokes a `/review-*` skill, user asks what the template provides), Claude renders a canonical pitch, the user answers `yes` / `no` / `later`, and the answer persists. That's the shape of a consent-respecting default.
 
-**One canonical gate, not three copies.** The gate logic — read order, branch rules, persist semantics, malformed-JSON handling — lives in `.claude/CLAUDE.md` under "Automated PR review system" → "Gate logic". Each of the three SKILL.md files has a one-line Step 0 that says *"run the gate, substituting my skill name."* Single source of truth, zero drift surface. This fixes a real bug the PR review caught: in the first draft, three copies of the Step 0 block existed, and on day one they had already drifted — two said *"PR review system is disabled"*, one said *"Review system is disabled"*. Centralising eliminates that class of bug entirely.
+**One canonical gate, not three copies.** The gate logic — read order, branch rules, persist semantics, malformed-JSON handling — lives in `.claude/skills/review-gate.md`. Each of the three SKILL.md files has a one-line Step 0 that says *"run the gate, substituting my skill name."* Single source of truth, zero drift surface. This fixes a real bug the PR review caught: in the first draft, three copies of the Step 0 block existed, and on day one they had already drifted — two said *"PR review system is disabled"*, one said *"Review system is disabled"*. Centralising eliminates that class of bug entirely. The gate originally lived inline in `.claude/CLAUDE.md`; it was extracted to its own file when that CLAUDE.md exceeded the template's own <300-line guidance (see the extraction follow-up PR).
 
 **Local override via gitignored file, not via `--skip-worktree` or environment variable.** The maintainer's problem ("I want `enabled` locally but `prompt-on-first-use` committed") has several solutions, but the cleanest is the same pattern Claude Code already uses elsewhere: a `.local.json` sibling file that overrides the committed values and is gitignored. Users who want dogfooding create the local file; users who don't, don't. The gate merges local on top of committed, with local winning. Writes prefer the local file when it exists, so the user's choice stays local and doesn't leak into committed state.
 
@@ -81,7 +81,8 @@ We wanted a gate that:
 ## References
 
 - Related ADR: [2026-04-22 — Tiered PR review via a triage dispatcher](./2026-04-22-tiered-pr-review-dispatcher.md) — established the prompt-and-markdown-only portability constraint this ADR inherits.
-- Gate implementation: [`.claude/CLAUDE.md`](../../.claude/CLAUDE.md) → "Automated PR review system" → "Gate logic"
+- Gate implementation: [`.claude/skills/review-gate.md`](../../.claude/skills/review-gate.md)
+- Overview and Layer 1 triggers: [`.claude/CLAUDE.md`](../../.claude/CLAUDE.md) → "Automated PR review system"
 - Config file (committed default): [`.claude/project-config.json`](../../.claude/project-config.json)
 - Local override (gitignored): `.claude/project-config.local.json`
 - User-facing docs: [`REFERENCE/pr-review-workflow.md`](../pr-review-workflow.md) → "Configuration"

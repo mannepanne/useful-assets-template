@@ -47,7 +47,7 @@ When this skill is invoked with a spec file path or name (e.g., `/review-spec SP
 
 ### Step 0: Review-mode gate
 
-Run the gate defined in `.claude/CLAUDE.md` → "Automated PR review system" → "Gate logic". When rendering the disabled message, substitute this skill's name: `review-spec`. If the gate tells you to stop, stop. If it tells you to proceed, continue to Step 1.
+Run the gate defined in [`.claude/skills/review-gate.md`](../review-gate.md) → "Gate logic". When rendering the disabled message, substitute this skill's name: `review-spec`. If the gate tells you to stop, stop. If it tells you to proceed, continue to Step 1.
 
 ### Step 1: Locate the Spec
 

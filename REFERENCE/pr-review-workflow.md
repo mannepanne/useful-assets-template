@@ -37,7 +37,7 @@ When the local file exists, the gate merges its top-level keys on top of the com
 
 If a local override has the same value as the committed file, it's a no-op and can be deleted.
 
-The canonical gate logic (read order, branch rules, persist semantics, malformed-JSON handling) lives in [`.claude/CLAUDE.md`](../.claude/CLAUDE.md) under "Automated PR review system" → "Gate logic". Each `/review-*` skill's Step 0 is a one-line reference to that section.
+The canonical gate logic (read order, branch rules, persist semantics, malformed-JSON handling) lives in [`.claude/skills/review-gate.md`](../.claude/skills/review-gate.md). Each `/review-*` skill's Step 0 is a one-line reference to that file. The Layer 1 contextual-surfacing rules (when Claude proactively raises the pitch outside of a skill invocation) live in [`.claude/CLAUDE.md`](../.claude/CLAUDE.md) → "Automated PR review system", since they need to be auto-loaded.
 
 ---
 
