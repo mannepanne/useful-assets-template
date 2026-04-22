@@ -144,9 +144,9 @@ npm run test:coverage     # Coverage report
 
 **Planning & Specs:**
 - **Project outline** → [SPECIFICATIONS/ORIGINAL_IDEA/project-outline.md](./SPECIFICATIONS/ORIGINAL_IDEA/project-outline.md)
-- **Naming inspiration** → [SPECIFICATIONS/ORIGINAL_IDEA/naming-rationale.md](./SPECIFICATIONS/ORIGINAL_IDEA/naming-rationale.md)
 - **Implementation phases** → See section above or [SPECIFICATIONS/](./SPECIFICATIONS/)
 - **Completed specs** → [ARCHIVE/](./SPECIFICATIONS/ARCHIVE/)
+- **Other ORIGINAL_IDEA documents** (naming, brainstorms, research — if you've added any) → [SPECIFICATIONS/ORIGINAL_IDEA/](./SPECIFICATIONS/ORIGINAL_IDEA/)
 
 **Reference Docs:**
 - **Setting up environment?** → [environment-setup.md](./REFERENCE/environment-setup.md)

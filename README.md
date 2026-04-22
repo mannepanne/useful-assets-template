@@ -40,10 +40,12 @@ REFERENCE/                  # How implemented features work
 
 ## If you want to try using this as a template
 
-1. **Use this template** (click "Use this template" button on GitHub)
-2. **Follow setup guide** - See [TEMPLATE-INSTRUCTIONS.md](./TEMPLATE-INSTRUCTIONS.md)
-3. **Customise for your project** - Replace placeholders with your details
-4. **Start building** - Break project into phases, work systematically
+1. **Use this template** (click "Use this template" button on GitHub) or download the zip and rename the folder
+2. **Open Claude in the folder and have a conversation about your project** — the template is designed to be customised through chat, not by editing files yourself
+3. **Let Claude de-templatify the docs** based on what you discussed
+4. **Start building** — break the project into phases, work systematically, one PR at a time
+
+Full walkthrough (with example prompts) in [TEMPLATE-INSTRUCTIONS.md](./TEMPLATE-INSTRUCTIONS.md). It's short — and aimed at non-technical users too.
 
 ## Why did I end up here...
 
@@ -71,4 +73,4 @@ MIT - Use freely, adapt as needed, share improvements.
 
 ---
 
-**Ready to start?** Read [TEMPLATE-INSTRUCTIONS.md](./TEMPLATE-INSTRUCTIONS.md) for step-by-step setup.
+**Ready to start?** Read [TEMPLATE-INSTRUCTIONS.md](./TEMPLATE-INSTRUCTIONS.md) to get going — it's short and aimed at non-technical users too.
