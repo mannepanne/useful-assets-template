@@ -8,7 +8,7 @@
 
 ## Decision
 
-The three `/review-*` skills are gated by a single project-level enum flag `prReviewMode` in `.claude/project-config.json`, with values `"enabled"` / `"disabled"` / `"prompt-on-first-use"`. The committed default for template consumers is `"prompt-on-first-use"`. A gitignored `.claude/project-config.local.json` may override the committed value on a per-clone basis. The gate logic that reads both files and branches on the resolved value lives in one canonical section of `.claude/CLAUDE.md` — each skill's Step 0 is a one-line reference to that section, not a copy of it.
+The three `/review-*` skills are gated by a single project-level enum flag `prReviewMode` in `.claude/project-config.json`, with values `"enabled"` / `"disabled"` / `"prompt-on-first-use"`. The committed default for template consumers is `"prompt-on-first-use"`. A gitignored `.claude/project-config.local.json` may override the committed value on a per-clone basis. The gate logic that reads both files and branches on the resolved value lives in one canonical file, `.claude/skills/review-gate.md` — each skill's Step 0 is a one-line reference to that file, not a copy of it. Contextual Layer 1 triggers (when Claude proactively surfaces the pitch outside a skill invocation) stay in `.claude/CLAUDE.md` because they must be auto-loaded to fire.
 
 ## Context
 
