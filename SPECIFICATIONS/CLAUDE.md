@@ -1,4 +1,4 @@
-# Implementation Specifications Library
+# Implementation specifications library
 
 Auto-loaded when working with files in this directory. Forward-looking plans for features being built.
 
@@ -12,7 +12,7 @@ Auto-loaded when working with files in this directory. Forward-looking plans for
 
 The SPECIFICATIONS folder contains **forward-looking plans** for features you're actively building. These are living documents that guide development and evolve as you learn more.
 
-### Key Principles
+### Key principles
 
 1. **Specifications are active work** - They describe what you're building *now* or *next*
 2. **One phase at a time** - Focus on clear, sequential implementation phases
@@ -25,47 +25,47 @@ Break your project into numbered sequential phases (e.g., 01-foundation.md, 02-a
 
 ### What each phase file should include
 
-1. **Phase Overview**
+1. **Phase overview**
    - Phase number and name
    - Brief description
    - Estimated timeframe
    - Dependencies on previous phases
 
-2. **Scope and Deliverables**
+2. **Scope and deliverables**
    - What will be built in this phase
    - What's explicitly out of scope
    - Acceptance criteria
 
-3. **Technical Approach**
+3. **Technical approach**
    - Architecture decisions (document significant choices as ADRs in REFERENCE/decisions/)
    - Technology choices (check existing ADRs for precedent before deciding)
    - Key files and components
    - Database schema changes (if applicable)
 
-4. **Testing Strategy**
+4. **Testing strategy**
    - Unit test requirements
    - Integration test requirements
    - Coverage targets
    - Manual testing checklist
 
-5. **Pre-Commit Checklist**
+5. **Pre-commit checklist**
    - [ ] All tests passing
    - [ ] Type checking passes
    - [ ] Coverage meets targets
    - [ ] Manual verification complete
    - [ ] Documentation updated
 
-6. **PR Workflow**
+6. **PR workflow**
    - Branch naming convention
    - PR review requirements
    - Deployment steps
 
-7. **Edge Cases and Considerations**
+7. **Edge cases and considerations**
    - Known risks or challenges
    - Alternative approaches considered
    - Future optimization opportunities
 
-### Example Phase Structure
+### Example phase structure
 
 See [00-TEMPLATE-phase.md](./00-TEMPLATE-phase.md) for a complete example.
 
@@ -93,7 +93,7 @@ Archive serves as historical record. For current implementation details, see `RE
 ## Workflow example
 
 **Starting a new project:**
-1. Create master specification in `ORIGINAL_IDEA/project-outline.md`
+1. Fill in the master specification stub at `ORIGINAL_IDEA/project-outline.md` (created during the orientation conversation)
 2. Break project into phases (e.g., 01-foundation.md, 02-core-features.md)
 3. Work through phases sequentially
 4. Move completed specs to ARCHIVE/
@@ -127,7 +127,7 @@ Development is organised into [X] sequential phases. Each phase includes scope, 
 
 **Current phase:** [Phase number and name]
 
-### Phase Files (Work Through in Order)
+### Phase files (work through in order)
 
 1. **[01-phase-name.md](./01-phase-name.md)** - [Timeframe]
    [Brief description of what this phase builds]
@@ -143,9 +143,8 @@ Development is organised into [X] sequential phases. Each phase includes scope, 
 ### Supporting documentation
 
 **[ORIGINAL_IDEA/](./ORIGINAL_IDEA/)**
-- `project-outline.md` - Master specification and product vision
-- `naming-rationale.md` - Project naming inspiration
-- [Add other initial concept documents]
+- `project-outline.md` - Master specification and product vision (always present as a stub)
+- Optional additions: `naming-rationale.md`, brainstorms, competitive analysis, sketches, briefs
 
 **[ARCHIVE/](./ARCHIVE/)**
 - Completed specifications (moved here when phase is done)

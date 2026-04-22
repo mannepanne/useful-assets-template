@@ -1,6 +1,6 @@
 # Project outline
 
-> **How to use this file:** This is a stub for Claude to fill in during the orientation conversation. You don't need to write this yourself — talk through the project with Claude and ask it to populate the sections below. Once filled in, this becomes your project's "source of truth" for original intent, referenced throughout development.
+> **How to use this file:** This is a stub for Claude to fill in during the orientation conversation. You don't need to write this yourself — talk through the project with Claude and ask it to populate the sections below. Once filled in, this becomes your project's "source of truth" for original intent, referenced throughout development. When you finish populating it, replace `[date when filled in]` at the bottom with today's date.
 
 ---
 

@@ -73,4 +73,4 @@ MIT - Use freely, adapt as needed, share improvements.
 
 ---
 
-**Ready to start?** Read [TEMPLATE-INSTRUCTIONS.md](./TEMPLATE-INSTRUCTIONS.md) for step-by-step setup.
+**Ready to start?** Read [TEMPLATE-INSTRUCTIONS.md](./TEMPLATE-INSTRUCTIONS.md) to get going — it's short and aimed at non-technical users too.

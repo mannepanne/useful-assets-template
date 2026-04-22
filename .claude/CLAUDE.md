@@ -327,7 +327,7 @@ Documentation drifts from reality faster than it feels like it should. Don't wai
 
 **Trigger an offer when any of these occur:**
 - A phase completes (spec moved to `SPECIFICATIONS/ARCHIVE/`, or I say "we're done with phase X")
-- After roughly 5+ merged PRs since the last docs update
+- When I mention I've merged several PRs recently, or `git log --oneline CLAUDE.md .claude/ REFERENCE/ SPECIFICATIONS/CLAUDE.md` shows many merges since the last docs-touching commit
 - After a significant architectural change (new service, swapped library, restructured folders, new ADR)
 - When CLAUDE.md or REFERENCE/ files haven't been touched in a while but the code has clearly moved on (e.g. tech stack section names something the code no longer uses)
 - When I mention I'm about to onboard someone (collaborator, future-self after a break, the wider team)
@@ -342,7 +342,7 @@ Documentation drifts from reality faster than it feels like it should. Don't wai
 - If a sweep was done within the last few PRs already
 
 **If accepted, the sweep should:**
-1. Read root `CLAUDE.md`, `SPECIFICATIONS/CLAUDE.md`, and all `REFERENCE/` files
+1. Read root `CLAUDE.md`, `.claude/CLAUDE.md`, all `.claude/COLLABORATION/` files, `SPECIFICATIONS/CLAUDE.md`, and all `REFERENCE/` files
 2. Cross-check against the current code and recent git history
 3. Flag drift (stale references, missing new features, outdated phase status, broken links)
 4. Propose specific edits — don't just rewrite wholesale
