@@ -14,7 +14,7 @@ The collaboration style baked into this template (in `.claude/CLAUDE.md` and the
 
 ---
 
-## The shape of what should happen
+## The shape of things to come
 
 If you get lost, this is the basic outline:
 
