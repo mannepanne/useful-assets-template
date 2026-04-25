@@ -86,20 +86,20 @@ Each reviewer agent should reference this contract in its Role section rather th
 
 ### Bash invocation conventions
 
-Two patterns trigger Claude Code's manual-approval prompt even when the underlying operation is purely read-only. Both are easy to avoid.
-
-**1. The `git -C <absolute-path> …` form.** Reviewer agents inherit CWD from the parent session — that's the project repo root. Prefer bare `git status`, `git log`, `git show`, `git diff` etc. over `git -C <path> …`. The `-C` flag falls outside the read-only auto-allow rules in some Claude Code versions and prompts on every invocation. Same applies to `gh` — bare `gh pr view N` is silent. If you genuinely need to operate against a different repo (rare for reviewer work), `-C` is fine — but for the default case of "the repo we're already in", drop it.
-
-**2. Pipe compounds.** Even when both sides of a pipe are individually auto-allowed (e.g. `git show` and `sed -n`), the compound is *not* auto-allowed and prompts the user. Prefer one of these forms instead:
+Reviewer agents read a lot of files. The choice of *how* to read affects token cost, output cleanliness, and (occasionally) whether the human sees an approval prompt. The conventions below pick the form that's surgical, bounded, and silent under the project's threat model — see [`REFERENCE/decisions/2026-04-25-pr-review-threat-model.md`](../../REFERENCE/decisions/2026-04-25-pr-review-threat-model.md) for the calibration these defaults assume.
 
 | Situation | Use this | Why |
 |---|---|---|
-| Working-tree file, any size | `Read` tool with `offset` / `limit` | Surgical line-range reads, never prompts |
-| Branch file, small (≤~500 lines) | `git show <branch>:<path>` (no pipe) | Single read-only command, auto-allowed |
-| Diff between branches | `gh pr diff <N>` standalone | Single command, allowlisted |
-| Branch file, large (>~500 lines) | `git show <branch>:<path> \| sed -n 'X,Yp'` | Accept the prompt — paying 40× tokens to silence one prompt is a worse trade |
+| Working-tree file, any size | `Read` tool with `offset` / `limit` | Surgical line-range reads. Bounded token cost, no shell complexity, never prompts. The default for any file the agent already has on disk. |
+| Branch / revision file, small (≤~500 lines) | `git show <branch>:<path>` (no pipe) | One read-only command. Whole-file output is fine when the file is small — saves a pipe and a regex. |
+| Branch / revision file, large (>~500 lines) | `git show <branch>:<path> \| sed -n 'X,Yp'` | Bounded slice of a large file. The pipe form is allowlisted under the project's threat model so this stays silent. |
+| Diff between branches | `gh pr diff <N>` (standalone) or `gh pr diff <N> \| grep …` | Both forms are allowlisted. Use the standalone form when you want the full diff in context, or the piped form when you only care about specific patterns. |
 
-The token cost of reading a small branch file unsliced is trivial; the prompt cost of an unnecessary pipe is one click of friction every time. For working-tree files the Read tool wins on both axes — use it by default.
+**Why not just use bash everywhere?** Read tool is faster (no shell spawn), bounded by `limit` so it doesn't blow up on large files, and gives the agent a predictable interface. For working-tree files there's no reason to shell out.
+
+**Why not just always pipe?** Two reasons. (1) Unsliced `git show <branch>:<path>` for a small file is *less* expensive than `git show … | sed -n '1,30p'` once you count tokens — fewer commands, simpler output, no regex to think about. (2) Pipes are still load-bearing for the secret-shape scan in `triage-reviewer.md`, where the patterns file approach (`grep -E -f patterns.txt`) requires the pipe; reserving pipes for the cases that genuinely need them keeps the conventions clear.
+
+**`git -C <abs-path> …` is allowlisted but rarely needed.** Reviewer agents inherit CWD from the parent session — that's the project repo root — so bare `git status`/`log`/`show`/`diff` work without `-C`. The `-C` allowlist exists because some agents reach for it reflexively (when they shouldn't have to); not because it's the recommended form. Prefer bare invocations.
 
 ## When to Create New Agents
 

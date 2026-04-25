@@ -36,7 +36,15 @@ You classify PR risk so the dispatcher can route to the cheapest review that's s
 
 ## Protocol
 
-### 1. Gather signals (cheap)
+### 0. Validate the PR-number argument (load-bearing)
+
+Before any tool call that substitutes `<N>`, confirm `<N>` matches `^[0-9]+$` — a positive integer, no whitespace, no shell metacharacters. If it doesn't, stop immediately and emit the failure block in step 1 below (with rationale "PR number argument failed validation"). The dispatcher (`/review-pr` skill) validates this before invoking, but this agent restates the invariant because it's load-bearing for the safety of the bash invocations that interpolate `<N>` (in particular the `gh pr diff <N> | grep …` compound — the `gh pr diff *` argument position must not contain shell metacharacters).
+
+### 1. Verify the patterns file is readable, then gather signals
+
+**First:** use the Read tool to read the first line of `.claude/agents/triage-scan-patterns.txt`. If the Read fails (file missing, unreadable), stop immediately and emit the failure block below with rationale "Patterns file missing — secret scan cannot run." This is the deterministic fail-closed gate for the secret-shape scan, replacing any reliance on parsing free-form stderr from grep.
+
+**Then:** run the gather commands.
 
 ```bash
 gh pr view <N>                                 # title, description, base
@@ -49,19 +57,13 @@ gh pr view <N> --json additions,deletions,changedFiles
 # permission validator otherwise misreads them as shell brace expansion and triggers a
 # manual approval prompt every run.
 #
-# The file path is relative to CWD, which is the repo root by Claude Code convention.
-# If the file is missing or unreadable, grep emits "No such file or directory" to stderr
-# and exits 2 — `|| true` keeps the bash exit clean, but the stderr line is preserved in
-# the tool result, and the rules below require escalating to team tier when seen.
-#
 # Note for maintainers: do NOT add `#`-prefixed comment lines to the patterns file.
 # `grep -E -f` treats every line as a literal pattern, including `#` lines.
 gh pr diff <N> | grep -iE -f .claude/agents/triage-scan-patterns.txt || true
 ```
 
 If `gh pr view` or `gh pr diff` fails (PR not found, auth expired, network error), or
-if the grep emits a "No such file or directory" / "cannot open" error to stderr (the
-patterns file is missing or unreadable from the agent's CWD), stop immediately and emit:
+if the Read-tool patterns-file check failed in the step above, stop immediately and emit:
 
 ```
 TIER: team
