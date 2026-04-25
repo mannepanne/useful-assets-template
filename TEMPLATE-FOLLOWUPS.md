@@ -22,23 +22,6 @@ When a derivative project clones this template, this file can usually be deleted
 
 ---
 
-### Dispatcher temp-file handling shouldn't need an `rm -f` cleanup
-
-**Observation:** During the team review of PR 19, the dispatcher invoked `rm -f /tmp/review-pr-19-triage.md /tmp/review-pr-19-light.md /tmp/review-pr-19-standard.md` and triggered a manual approval prompt. The `rm -f` was a workaround for the Write tool refusing to overwrite an existing file without a prior Read. Stale temp files from a previous abandoned review run hit that path.
-
-**Why the workaround is awkward:** `rm -f /tmp/…` is a Bash command that's not allowlisted (and shouldn't be — generic `Bash(rm -f *)` is too broad to grant). So every run with stale temp files prompts the user. Self-inflicted noise.
-
-**Cleaner options to consider:**
-- **Read-then-Write fallback in the skill instructions.** The dispatcher detects the "file already exists" error from Write, then Reads the file (to satisfy the prerequisite), then Writes. No Bash needed.
-- **Unique filenames per session.** Add a short random suffix or PID to the temp filename — e.g. `/tmp/review-pr-19-triage-$RANDOM.md`. Always-fresh paths means the conflict never arises. Trade-off: slightly less predictable for debugging.
-- **Allow `Bash(rm -f /tmp/review-pr-*)` and `Bash(rm -f /tmp/spec-review-*)` explicitly.** Narrowest possible allowlist scope (only the dispatcher's own temp files). Subject to the same path-normalisation caveat as the Write entries.
-
-**Why separate from the path-normalisation workaround:** that one's about the Write tool's allowlist matcher behaviour. This one's about the dispatcher's design choosing to rely on a Bash cleanup at all. Different fix.
-
-**Next step:** pick an option (probably option 1 — least surface area, no allowlist churn) and apply it to `.claude/skills/review-pr/SKILL.md`, `.claude/skills/review-pr-team/SKILL.md`, and `.claude/skills/review-spec/SKILL.md`. Small docs/skills PR, no spec needed.
-
----
-
 ### PreToolUse safety-harness hook
 
 **Idea:** Add a `PreToolUse` hook in `.claude/settings.json` that intercepts dangerous bash commands before they execute, requiring extra confirmation or outright blocking them. Acts as a safety net against contributor or AI mistakes — distinct from the allowlist (which is about UX/permission grants).
@@ -60,6 +43,16 @@ When a derivative project clones this template, this file can usually be deleted
 ---
 
 ## Done
+
+### Dispatcher temp-file handling shouldn't need an `rm -f` cleanup
+
+**Shipped:** PR 22.
+
+**Observation:** During the team review of PR 19, the dispatcher invoked `rm -f /tmp/review-pr-19-triage.md /tmp/review-pr-19-light.md /tmp/review-pr-19-standard.md` and triggered a manual approval prompt. The `rm -f` was a workaround for the Write tool refusing to overwrite an existing file without a prior Read. Stale temp files from a previous abandoned review run hit that path.
+
+**As shipped:** option 1 from the original entry — Read-then-Write fallback in the skill instructions. `.claude/skills/review-pr/SKILL.md` and `.claude/skills/review-pr-team/SKILL.md` now spell out the fallback explicitly: if Write errors with *"File has not been read yet"*, Read the path first, then re-issue the Write. No Bash `rm -f`, no allowlist churn, no /tmp/ cleanup needed at end of run. `.claude/skills/review-pr-team/SKILL.md` was also converted from the inline `--body "..."` heredoc-style post to the same Write→`--body-file` pattern as the dispatcher, for the same heredoc-quoting safety reasons. `review-spec/SKILL.md` had no relevant code path (it doesn't post to PRs) so it wasn't touched.
+
+---
 
 ### Recalibrate reviewer-agent severity defaults against the threat-model ADR
 
