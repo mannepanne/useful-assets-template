@@ -4,7 +4,18 @@
   },
   "permissions": {
     "allow": [
-      "Bash(git fetch *)"
+      "Bash(git fetch *)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh pr comment:*)",
+      "Bash(git -C * log *)",
+      "Bash(git -C * show *)",
+      "Bash(git -C * diff *)",
+      "Bash(git -C * status *)",
+      "Bash(bun run test)",
+      "Bash(bun run typecheck)",
+      "Write(/tmp/review-pr-*)",
+      "Write(/tmp/triage-pr-*)",
+      "Write(/tmp/spec-review-*)"
     ],
     "deny": []
   },

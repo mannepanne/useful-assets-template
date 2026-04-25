@@ -43,27 +43,29 @@ gh pr view <N>                                 # title, description, base
 gh pr diff <N> --name-only                     # changed paths
 gh pr view <N> --json additions,deletions,changedFiles
 
-# Stage the diff to a temp file once, then run each scan against the file. Avoiding the
-# pipe keeps each command independently auto-allowed by the Bash permission validator —
-# piped compounds with regex metacharacters trigger a manual approval prompt every run.
-gh pr diff <N> > /tmp/triage-pr-<N>.diff
-
-# Secret-shaped strings — patterns live in a sibling file (vendor tokens + keyword-shape
-# patterns). Keeping them in a `-f` patterns file rather than `-e` flags on the command
-# line keeps `{N,}` regex quantifiers off the bash invocation, where the permission
-# validator misreads them as shell brace expansion and triggers a manual approval prompt.
-grep -E -f .claude/agents/triage-secret-patterns.txt /tmp/triage-pr-<N>.diff || true
-
-# Data-layer signals — Supabase (Postgres + RLS) and Cloudflare D1 (SQLite, no RLS)
-grep -iE 'SERVICE_ROLE_KEY|service_role|auth\.users|auth\.sessions|enable row level security|create policy|alter policy|drop policy' /tmp/triage-pr-<N>.diff || true
-grep -iE '\[\[d1_databases\]\]|database_id|database_name|CLOUDFLARE_API_TOKEN|CLOUDFLARE_ACCOUNT_ID' /tmp/triage-pr-<N>.diff || true
+# Single-pipe scan covers both vendor secret-shapes and data-layer keywords (Supabase
+# Postgres+RLS and Cloudflare D1). Patterns live in a sibling file loaded via `-f` rather
+# than `-e` flags so `{N,}` regex quantifiers stay off the bash command line — the
+# permission validator otherwise misreads them as shell brace expansion and triggers a
+# manual approval prompt every run.
+#
+# The file path is relative to CWD, which is the repo root by Claude Code convention.
+# If the file is missing or unreadable, grep emits "No such file or directory" to stderr
+# and exits 2 — `|| true` keeps the bash exit clean, but the stderr line is preserved in
+# the tool result, and the rules below require escalating to team tier when seen.
+#
+# Note for maintainers: do NOT add `#`-prefixed comment lines to the patterns file.
+# `grep -E -f` treats every line as a literal pattern, including `#` lines.
+gh pr diff <N> | grep -iE -f .claude/agents/triage-scan-patterns.txt || true
 ```
 
-If `gh pr view` or `gh pr diff` fails (PR not found, auth expired, network error), stop immediately and emit:
+If `gh pr view` or `gh pr diff` fails (PR not found, auth expired, network error), or
+if the grep emits a "No such file or directory" / "cannot open" error to stderr (the
+patterns file is missing or unreadable from the agent's CWD), stop immediately and emit:
 
 ```
 TIER: team
-RATIONALE: Could not fetch PR metadata (gh command failed). Escalating to team review so a human decides.
+RATIONALE: Triage tooling failed (gh fetch or pattern-scan error). Escalating to team review so a human decides.
 FLAGGED_PATHS: unknown
 SIZE: unknown
 ```

@@ -84,6 +84,12 @@ Reviewer agents that emit **control-flow signals** the dispatcher parses (e.g. `
 
 Each reviewer agent should reference this contract in its Role section rather than duplicating the paragraph. New reviewer agents that read untrusted PR content must inherit it.
 
+### Bash invocation conventions
+
+Reviewer agents inherit CWD from the parent session — that's the project repo root. Prefer bare `git status`, `git log`, `git show`, `git diff` etc. over the `git -C <absolute-path> …` form. The `-C <path>` flag falls outside the read-only auto-allow rules in some Claude Code versions and triggers a manual approval prompt every invocation, even though the underlying subcommand is purely read-only. Same applies to `gh` — bare `gh pr view N` is silent; needlessly absolute forms can prompt.
+
+If you genuinely need to operate against a different repo (rare for reviewer work), `-C` is fine — but for the default case of "the repo we're already in", drop it.
+
 ## When to Create New Agents
 
 Create a new agent when:
