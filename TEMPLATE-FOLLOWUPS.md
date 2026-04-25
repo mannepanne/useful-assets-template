@@ -31,7 +31,7 @@ When a derivative project clones this template, this file can usually be deleted
 
 **Why this matters:** the dispatcher writes its body files (`/tmp/review-pr-N-light.md`, `/tmp/review-pr-N-standard.md`, `/tmp/review-pr-N-team.md`, `/tmp/review-pr-N-triage.md`, `/tmp/spec-review-N.md`) using absolute paths in the skill prompt. The matcher transforms those to relative form before evaluating allowlist matches, so the entries shipped in PR 19 don't silence the prompts they were meant to silence.
 
-**Workaround (this PR):** add a second matching entry in relative-traversal form alongside each absolute-form `Write(/tmp/…)` entry — e.g. `Write(../../../../../../tmp/review-pr-*)` next to `Write(/tmp/review-pr-*)`. Belt-and-braces, costs nothing if the underlying bug is fixed upstream, immediately silences the prompt today.
+**Proposed workaround:** add a second matching entry in relative-traversal form alongside each absolute-form `Write(/tmp/…)` entry — e.g. `Write(../../../../../../tmp/review-pr-*)` next to `Write(/tmp/review-pr-*)`. Belt-and-braces, costs nothing if the underlying bug is fixed upstream, immediately silences the prompt today.
 
 **Caveat:** the literal traversal depth (`../../../../../../`) depends on where Claude Code starts the relative path from. Capture the exact form from a fresh permission prompt and use that — don't guess the depth.
 
