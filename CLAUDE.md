@@ -73,6 +73,7 @@ How-it-works documentation for implemented features:
 - [technical-debt.md](./REFERENCE/technical-debt.md) - Known issues and accepted risks
 - [environment-setup.md](./REFERENCE/environment-setup.md) - API keys and environment configuration
 - [troubleshooting.md](./REFERENCE/troubleshooting.md) - Common issues and solutions
+- [TEMPLATE-UPDATES/](./REFERENCE/TEMPLATE-UPDATES/) - Migration packets for rolling out template improvements to derivative projects
 - [Add project-specific reference docs as they're created]
 
 *Note: Keep CLAUDE.md files short (<300 lines). Break details into separate reference files with succinct summaries. CLAUDE.md files work as "library index" to find context when needed, minimising token usage.*
@@ -154,6 +155,7 @@ npm run test:coverage     # Coverage report
 - **Known issues?** → [technical-debt.md](./REFERENCE/technical-debt.md)
 - **Getting unstuck?** → [troubleshooting.md](./REFERENCE/troubleshooting.md)
 - **Architecture decisions?** → [decisions/](./REFERENCE/decisions/) - ADRs explaining why things are this way
+- **Rolling out a template improvement?** → [TEMPLATE-UPDATES/](./REFERENCE/TEMPLATE-UPDATES/) - Migration packets for derivative projects
 
 ## Project-specific notes
 
