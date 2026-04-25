@@ -118,6 +118,8 @@ The body must contain:
 
 Using `--body-file` avoids the brittle heredoc-quoting pattern (where a substituted rationale containing the literal token `EOF` on its own line would terminate the heredoc early and either mangle the comment or run unintended shell). Write-then-post also makes the substitution step explicit.
 
+**Read-then-Write fallback (avoid `rm -f`).** If the Write tool errors with *"File has not been read yet"* (because a stale temp file exists at the same path from a prior abandoned run), call **Read on the path first** to satisfy the Write prerequisite, then re-issue the Write. Do **not** use `Bash(rm -f /tmp/…)` to clear stale files — `rm -f` is not allowlisted (and shouldn't be broadly allowlisted) so it triggers a manual approval prompt; Read-then-Write stays silent. Don't bother cleaning up the temp file after posting either: the next run handles staleness via the same fallback, and `/tmp/` is already short-lived under macOS reboot semantics. This same fallback applies to all subsequent Write call sites in this skill (standard tier, team-triage marker).
+
 Why two agents in light tier: the triage routes docs-only PRs to `light`, and docs PRs are exactly the case where temporal-language and REFERENCE/ currency checks matter most. Keeping `technical-writer` in this tier closes that gap without bloating the light-reviewer prompt with doc-specific rules.
 
 **If `TIER: standard`:**
