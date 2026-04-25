@@ -23,15 +23,36 @@ When a derivative project clones this template, this file can usually be deleted
 
 ---
 
-### Investigate Claude Code Write path-normalisation for allowlist matching
+### Add belt-and-braces relative-path entries for Write allowlist (path-normalisation workaround)
 
-**Observation:** During the team review of PR 19, the dispatcher tried to write `/tmp/review-pr-19-triage.md` and was prompted for it, despite `Write(/tmp/review-pr-*)` being in `.claude/settings.json`'s allowlist. The path was displayed as `../../../../../../tmp/review-pr-19-triage.md` — a relative path traversal up to the filesystem root, then back down to `/tmp/`. Claude Code's permission matcher seems to have compared the relative form against the absolute pattern and not found a match.
+**Status:** hypothesis confirmed. The follow-up team review of PR 19 reproduced the prompt verbatim — Claude Code displayed `../../../../../../tmp/review-pr-19-triage.md` for an absolute Write target, and the absolute-form `Write(/tmp/review-pr-*)` allowlist entry didn't match. Same behaviour for the related `Bash` cleanup of stale temp files (see the next entry).
 
-**Hypothesis:** the matcher doesn't normalise relative-vs-absolute paths before applying allowlist patterns. If true, allowlist entries with absolute paths silently fail to match when the tool input is the same path expressed relatively.
+**Hypothesis (now confirmed):** Claude Code's permission matcher doesn't normalise relative-vs-absolute paths before applying allowlist patterns. Allowlist entries with absolute paths silently fail to match when the tool input is the same path expressed relatively.
 
-**Why this matters:** the dispatcher writes its body files (`/tmp/review-pr-N-light.md`, `/tmp/review-pr-N-standard.md`, `/tmp/review-pr-N-team.md`, `/tmp/review-pr-N-triage.md`, `/tmp/spec-review-N.md`) using absolute paths in the skill prompt. If Claude Code transforms those to relative form before evaluating allowlist matches, the entries we added in this PR won't actually silence the prompts they were meant to silence.
+**Why this matters:** the dispatcher writes its body files (`/tmp/review-pr-N-light.md`, `/tmp/review-pr-N-standard.md`, `/tmp/review-pr-N-team.md`, `/tmp/review-pr-N-triage.md`, `/tmp/spec-review-N.md`) using absolute paths in the skill prompt. The matcher transforms those to relative form before evaluating allowlist matches, so the entries shipped in PR 19 don't silence the prompts they were meant to silence.
 
-**Next step:** repro deliberately on a fresh review (post PR 19 merge), capture the exact path Claude Code displays in the permission prompt, compare against the allowlist entry. If the hypothesis holds, file the issue against Claude Code (and consider adding both forms to the allowlist as a workaround until fixed).
+**Workaround (this PR):** add a second matching entry in relative-traversal form alongside each absolute-form `Write(/tmp/…)` entry — e.g. `Write(../../../../../../tmp/review-pr-*)` next to `Write(/tmp/review-pr-*)`. Belt-and-braces, costs nothing if the underlying bug is fixed upstream, immediately silences the prompt today.
+
+**Caveat:** the literal traversal depth (`../../../../../../`) depends on where Claude Code starts the relative path from. Capture the exact form from a fresh permission prompt and use that — don't guess the depth.
+
+**Separately:** file the bug against Claude Code so the workaround can be removed once the matcher normalises paths.
+
+---
+
+### Dispatcher temp-file handling shouldn't need an `rm -f` cleanup
+
+**Observation:** During the team review of PR 19, the dispatcher invoked `rm -f /tmp/review-pr-19-triage.md /tmp/review-pr-19-light.md /tmp/review-pr-19-standard.md` and triggered a manual approval prompt. The `rm -f` was a workaround for the Write tool refusing to overwrite an existing file without a prior Read. Stale temp files from a previous abandoned review run hit that path.
+
+**Why the workaround is awkward:** `rm -f /tmp/…` is a Bash command that's not allowlisted (and shouldn't be — generic `Bash(rm -f *)` is too broad to grant). So every run with stale temp files prompts the user. Self-inflicted noise.
+
+**Cleaner options to consider:**
+- **Read-then-Write fallback in the skill instructions.** The dispatcher detects the "file already exists" error from Write, then Reads the file (to satisfy the prerequisite), then Writes. No Bash needed.
+- **Unique filenames per session.** Add a short random suffix or PID to the temp filename — e.g. `/tmp/review-pr-19-triage-$RANDOM.md`. Always-fresh paths means the conflict never arises. Trade-off: slightly less predictable for debugging.
+- **Allow `Bash(rm -f /tmp/review-pr-*)` and `Bash(rm -f /tmp/spec-review-*)` explicitly.** Narrowest possible allowlist scope (only the dispatcher's own temp files). Subject to the same path-normalisation caveat as the Write entries.
+
+**Why separate from the path-normalisation workaround:** that one's about the Write tool's allowlist matcher behaviour. This one's about the dispatcher's design choosing to rely on a Bash cleanup at all. Different fix.
+
+**Next step:** pick an option (probably option 1 — least surface area, no allowlist churn) and apply it to `.claude/skills/review-pr/SKILL.md`, `.claude/skills/review-pr-team/SKILL.md`, and `.claude/skills/review-spec/SKILL.md`. Small docs/skills PR, no spec needed.
 
 ---
 
