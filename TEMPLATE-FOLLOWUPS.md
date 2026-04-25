@@ -23,19 +23,17 @@ When a derivative project clones this template, this file can usually be deleted
 
 ---
 
-### Add belt-and-braces relative-path entries for Write allowlist (path-normalisation workaround)
+### Investigate Claude Code Write path-normalisation for allowlist matching
 
-**Status:** hypothesis confirmed. The follow-up team review of PR 19 reproduced the prompt verbatim — Claude Code displayed `../../../../../../tmp/review-pr-19-triage.md` for an absolute Write target, and the absolute-form `Write(/tmp/review-pr-*)` allowlist entry didn't match. Same behaviour for the related `Bash` cleanup of stale temp files (see the next entry).
+**Status:** intermittent — observed once, couldn't reproduce on the next run. During PR 19's team review the dispatcher tried to write `/tmp/review-pr-19-triage.md` and was prompted, despite `Write(/tmp/review-pr-*)` being in the allowlist; the displayed path was `../../../../../../tmp/review-pr-19-triage.md`. On a follow-up dispatcher run (PR 20's light review, post-merge of PR 19, fresh session), the same Write call ran silently with the same allowlist entry — no prompt. Repro conditions are not yet characterised.
 
-**Hypothesis (now confirmed):** Claude Code's permission matcher doesn't normalise relative-vs-absolute paths before applying allowlist patterns. Allowlist entries with absolute paths silently fail to match when the tool input is the same path expressed relatively.
+**Working hypothesis:** Claude Code's permission matcher *may* not normalise relative-vs-absolute paths before applying allowlist patterns, so absolute-form entries fail to match relative-form tool inputs in some sessions. The PR 19 observation is consistent with this; the PR 20 silent run is not. Possible explanations for the inconsistency: the matcher does normalise and the PR 19 prompt was caused by something else (settings.json change without session restart, missing entry at the time, transient cache issue); the matcher has session-scoped state we haven't identified; the displayed path differs between sessions for reasons unrelated to allowlist matching.
 
-**Why this matters:** the dispatcher writes its body files (`/tmp/review-pr-N-light.md`, `/tmp/review-pr-N-standard.md`, `/tmp/review-pr-N-team.md`, `/tmp/review-pr-N-triage.md`, `/tmp/spec-review-N.md`) using absolute paths in the skill prompt. The matcher transforms those to relative form before evaluating allowlist matches, so the entries shipped in PR 19 don't silence the prompts they were meant to silence.
+**Why this still matters:** if the matcher genuinely doesn't normalise, then every `Write(/tmp/…)` and `Bash(... /tmp/…)` allowlist entry is unreliable depending on session state. That's a footgun worth understanding even if the current symptoms are mild.
 
-**Proposed workaround:** add a second matching entry in relative-traversal form alongside each absolute-form `Write(/tmp/…)` entry — e.g. `Write(../../../../../../tmp/review-pr-*)` next to `Write(/tmp/review-pr-*)`. Belt-and-braces, costs nothing if the underlying bug is fixed upstream, immediately silences the prompt today.
+**Next step:** deliberate repro. Try toggling: (a) settings.json edits without session restart vs. with restart, (b) fresh session vs. resumed session, (c) different invocation paths (skill-driven Write vs. agent-driven Write). Capture the exact displayed path in each case. Once the conditions are characterised, decide between: file an upstream bug; ship the relative-form belt-and-braces workaround as a permanent precaution; or close the entry as a session-state quirk that doesn't need a fix.
 
-**Caveat:** the literal traversal depth (`../../../../../../`) depends on where Claude Code starts the relative path from. Capture the exact form from a fresh permission prompt and use that — don't guess the depth.
-
-**Separately:** file the bug against Claude Code so the workaround can be removed once the matcher normalises paths.
+**If a workaround is needed later:** add a second matching entry in relative-traversal form alongside each absolute-form `Write(/tmp/…)` entry — e.g. `Write(../../../../../../tmp/review-pr-*)` next to `Write(/tmp/review-pr-*)`. The literal traversal depth depends on where Claude Code starts the relative path from, so capture the exact form from a fresh permission prompt rather than guessing.
 
 ---
 
