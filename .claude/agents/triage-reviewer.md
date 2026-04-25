@@ -36,36 +36,41 @@ You classify PR risk so the dispatcher can route to the cheapest review that's s
 
 ## Protocol
 
-### 1. Gather signals (cheap)
+### 0. Validate the PR-number argument (load-bearing)
+
+Before any tool call that substitutes `<N>`, confirm `<N>` matches `^[0-9]+$` — a positive integer, no whitespace, no shell metacharacters. If it doesn't, stop immediately and emit the failure block in step 1 below (with rationale "PR number argument failed validation"). The dispatcher (`/review-pr` skill) validates this before invoking, but this agent restates the invariant because it's load-bearing for the safety of the bash invocations that interpolate `<N>` (in particular the `gh pr diff <N> | grep …` compound — the `gh pr diff *` argument position must not contain shell metacharacters).
+
+### 1. Verify the patterns file is readable, then gather signals
+
+**First:** use the Read tool to read the first line of `.claude/agents/triage-scan-patterns.txt`. If the Read fails (file missing, unreadable) **or the first line is empty / whitespace-only** (file truncated, accidentally cleared), stop immediately and emit the failure block below with rationale "Patterns file missing or empty — secret scan cannot run." This is the deterministic fail-closed gate for the secret-shape scan, replacing any reliance on parsing free-form stderr from grep. The empty-first-line check is load-bearing: an empty patterns file would cause `grep -E -f` to match nothing, silently fail-open in the secret-detection direction, and break the "fail-closed" invariant this gate asserts.
+
+**Then:** run the gather commands.
 
 ```bash
 gh pr view <N>                                 # title, description, base
 gh pr diff <N> --name-only                     # changed paths
 gh pr view <N> --json additions,deletions,changedFiles
 
-# Secret-shaped strings — vendor token formats first (high-signal, low false-positive),
-# then keyword-based patterns anchored to a value shape to reduce noise on doc mentions.
-gh pr diff <N> | grep -E \
-  -e 'BEGIN [A-Z ]*PRIVATE KEY' \
-  -e 'sk-(ant-)?[A-Za-z0-9_-]{20,}' \
-  -e 'gh[pousr]_[A-Za-z0-9]{36,}' \
-  -e 'xox[baprs]-[A-Za-z0-9-]{10,}' \
-  -e 'AKIA[0-9A-Z]{16}' \
-  -e 'ASIA[0-9A-Z]{16}' \
-  -e 'eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.' \
-  -e '(SECRET|API_KEY|PRIVATE_KEY|TOKEN|PASSWORD)\s*[:=]\s*["'"'"']?[A-Za-z0-9+/=_-]{16,}' \
-  || true
-
-# Data-layer signals — Supabase (Postgres + RLS) and Cloudflare D1 (SQLite, no RLS)
-gh pr diff <N> | grep -iE 'SERVICE_ROLE_KEY|service_role|auth\.users|auth\.sessions|enable row level security|create policy|alter policy|drop policy' || true
-gh pr diff <N> | grep -iE '\[\[d1_databases\]\]|database_id|database_name|CLOUDFLARE_API_TOKEN|CLOUDFLARE_ACCOUNT_ID' || true
+# Single-pipe scan covers both vendor secret-shapes and data-layer keywords (Supabase
+# Postgres+RLS and Cloudflare D1). Patterns live in a sibling file loaded via `-f` rather
+# than `-e` flags so `{N,}` regex quantifiers stay off the bash command line — the
+# permission validator otherwise misreads them as shell brace expansion and triggers a
+# manual approval prompt every run.
+#
+# Note for maintainers: the patterns file deliberately has no header comment
+# (no equivalent of the project's `// ABOUT:` convention). `grep -E -f` treats
+# every line as a literal regex pattern, so headers, prose, blank lines, and
+# `#`-prefixed comments would either fail to compile, match unintended content,
+# or silently disable the scan. Patterns only, one per line — no exceptions.
+gh pr diff <N> | grep -iE -f .claude/agents/triage-scan-patterns.txt || true
 ```
 
-If `gh pr view` or `gh pr diff` fails (PR not found, auth expired, network error), stop immediately and emit:
+If `gh pr view` or `gh pr diff` fails (PR not found, auth expired, network error), or
+if the Read-tool patterns-file check failed in the step above, stop immediately and emit:
 
 ```
 TIER: team
-RATIONALE: Could not fetch PR metadata (gh command failed). Escalating to team review so a human decides.
+RATIONALE: Triage tooling failed (gh fetch or pattern-scan error). Escalating to team review so a human decides.
 FLAGGED_PATHS: unknown
 SIZE: unknown
 ```
