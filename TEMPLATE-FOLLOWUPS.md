@@ -8,21 +8,6 @@ When a derivative project clones this template, this file can usually be deleted
 
 ## Open
 
-### Recalibrate reviewer-agent severity defaults against the threat-model ADR
-
-**Idea:** Update `security-specialist.md` and `triage-reviewer.md` so their severity ratings match the threat model documented in [`REFERENCE/decisions/2026-04-25-pr-review-threat-model.md`](./REFERENCE/decisions/2026-04-25-pr-review-threat-model.md). Today these agents default to a worst-case "all attackers including malicious committers" stance, which produces theoretical-RCE findings that don't apply to the in-scope use case.
-
-**Calibration intent:**
-- `security-specialist`: keep vigilant on production-runtime exposure (deployed-app vulns, secrets in repo history, malicious upstream packages, SQL injection, RLS/auth bugs, XSS, IDOR, CSRF). De-prioritise attacks that require a malicious committer (PR-content prompt injection, hostile migrations, backdoors in test code) — flag them as "out-of-scope per threat model" with a one-line tightening pointer rather than as blockers.
-- `triage-reviewer`: HIGH→team triggers stay path-based (data layer, auth, CI, supply chain) since those are runtime concerns. The secret-shape scan threshold doesn't change. Add one-line guidance for severity calibration.
-- Shared `.claude/agents/CLAUDE.md`: one-line pointer at the ADR for "when assessing severity, see this threat model" so all reviewers can reference it.
-
-**Why separate from PR 19:** PR 19 ships the *foundation* (the ADR, the calibrated allowlist, correctness fixes). This PR ships the *agent-side calibration* that builds on that foundation. Keeping them in separate PRs keeps each one's review surface tractable.
-
-**Next step:** when ready, this is a small focused PR (3-4 files). Likely no spec needed — write the agent-prompt edits directly, run `/review-pr` on it, ship.
-
----
-
 ### Investigate Claude Code Write path-normalisation for allowlist matching
 
 **Status:** intermittent — observed once, couldn't reproduce on the next run. During PR 19's team review the dispatcher tried to write `/tmp/review-pr-19-triage.md` and was prompted, despite `Write(/tmp/review-pr-*)` being in the allowlist; the displayed path was `../../../../../../tmp/review-pr-19-triage.md`. On a follow-up dispatcher run (PR 20's light review, post-merge of PR 19, fresh session), the same Write call ran silently with the same allowlist entry — no prompt. Repro conditions are not yet characterised.
@@ -76,4 +61,15 @@ When a derivative project clones this template, this file can usually be deleted
 
 ## Done
 
-*(Move items here when implemented and merged.)*
+### Recalibrate reviewer-agent severity defaults against the threat-model ADR
+
+**Shipped:** PR 21.
+
+**Idea:** Update `security-specialist.md` and `triage-reviewer.md` so their severity ratings match the threat model documented in [`REFERENCE/decisions/2026-04-25-pr-review-threat-model.md`](./REFERENCE/decisions/2026-04-25-pr-review-threat-model.md). Today these agents default to a worst-case "all attackers including malicious committers" stance, which produces theoretical-RCE findings that don't apply to the in-scope use case.
+
+**Calibration intent:**
+- `security-specialist`: keep vigilant on production-runtime exposure (deployed-app vulns, secrets in repo history, malicious upstream packages, SQL injection, RLS/auth bugs, XSS, IDOR, CSRF). De-prioritise attacks that require a malicious committer (PR-content prompt injection, hostile migrations, backdoors in test code) — flag them as "out-of-scope per threat model" with a one-line tightening pointer rather than as blockers.
+- `triage-reviewer`: HIGH→team triggers stay path-based (data layer, auth, CI, supply chain) since those are runtime concerns. The secret-shape scan threshold doesn't change. Add one-line guidance for severity calibration.
+- Shared `.claude/agents/CLAUDE.md`: one-line pointer at the ADR for "when assessing severity, see this threat model" so all reviewers can reference it.
+
+**As shipped:** the calibration intent above landed verbatim. The shared contract lives in `.claude/agents/CLAUDE.md` (`Severity calibration` section); `security-specialist.md` gained a `Threat model` section after Role plus a recalibrated `Review Standards` block; `triage-reviewer.md` gained a one-line note explaining why its rubric doesn't need recalibration (path-based HIGH triggers are runtime concerns, in-scope regardless of contributor trust).
