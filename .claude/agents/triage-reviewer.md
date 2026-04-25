@@ -42,7 +42,7 @@ Before any tool call that substitutes `<N>`, confirm `<N>` matches `^[0-9]+$` �
 
 ### 1. Verify the patterns file is readable, then gather signals
 
-**First:** use the Read tool to read the first line of `.claude/agents/triage-scan-patterns.txt`. If the Read fails (file missing, unreadable), stop immediately and emit the failure block below with rationale "Patterns file missing — secret scan cannot run." This is the deterministic fail-closed gate for the secret-shape scan, replacing any reliance on parsing free-form stderr from grep.
+**First:** use the Read tool to read the first line of `.claude/agents/triage-scan-patterns.txt`. If the Read fails (file missing, unreadable) **or the first line is empty / whitespace-only** (file truncated, accidentally cleared), stop immediately and emit the failure block below with rationale "Patterns file missing or empty — secret scan cannot run." This is the deterministic fail-closed gate for the secret-shape scan, replacing any reliance on parsing free-form stderr from grep. The empty-first-line check is load-bearing: an empty patterns file would cause `grep -E -f` to match nothing, silently fail-open in the secret-detection direction, and break the "fail-closed" invariant this gate asserts.
 
 **Then:** run the gather commands.
 
@@ -57,8 +57,11 @@ gh pr view <N> --json additions,deletions,changedFiles
 # permission validator otherwise misreads them as shell brace expansion and triggers a
 # manual approval prompt every run.
 #
-# Note for maintainers: do NOT add `#`-prefixed comment lines to the patterns file.
-# `grep -E -f` treats every line as a literal pattern, including `#` lines.
+# Note for maintainers: the patterns file deliberately has no header comment
+# (no equivalent of the project's `// ABOUT:` convention). `grep -E -f` treats
+# every line as a literal regex pattern, so headers, prose, blank lines, and
+# `#`-prefixed comments would either fail to compile, match unintended content,
+# or silently disable the scan. Patterns only, one per line — no exceptions.
 gh pr diff <N> | grep -iE -f .claude/agents/triage-scan-patterns.txt || true
 ```
 
