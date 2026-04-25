@@ -1,6 +1,6 @@
 #!/bin/bash
 # ABOUT: PreToolUse hook — guardrail against honest mistakes on Bash tool calls.
-# ABOUT: Three tiers (block/ask/warn) calibrated for less-experienced users.
+# ABOUT: Two tiers (block/ask) calibrated for less-experienced users.
 #
 # Spec: SPECIFICATIONS/pretooluse-safety-harness.md
 # Pattern set adapted from https://github.com/davekilleen/Dex/blob/main/.claude/hooks/dex-safety-guard.sh
@@ -48,32 +48,22 @@ if [ "${SAFETY_HARNESS_OFF:-}" = "1" ]; then
 fi
 
 # Emit JSON output for a hookSpecificOutput response. Argument 1 is the decision
-# (deny/ask/allow); argument 2 is the user-visible text. For "allow", text becomes
-# systemMessage (warn tier); for "deny"/"ask", text becomes permissionDecisionReason.
+# (deny/ask); argument 2 is the user-visible reason. Only deny and ask are used
+# in v1 — see "Why no warn tier?" in REFERENCE/safety-harness.md for the
+# implementation finding that systemMessage does not render in interactive
+# Claude Code, leading to chmod 777 being moved from warn to ask.
 emit() {
     local decision="$1"
     local text="$2"
     python3 -c "
 import json, sys
-decision = sys.argv[1]
-text = sys.argv[2]
-if decision == 'allow':
-    out = {
-        'hookSpecificOutput': {
-            'hookEventName': 'PreToolUse',
-            'permissionDecision': 'allow'
-        },
-        'systemMessage': text
+print(json.dumps({
+    'hookSpecificOutput': {
+        'hookEventName': 'PreToolUse',
+        'permissionDecision': sys.argv[1],
+        'permissionDecisionReason': sys.argv[2]
     }
-else:
-    out = {
-        'hookSpecificOutput': {
-            'hookEventName': 'PreToolUse',
-            'permissionDecision': decision,
-            'permissionDecisionReason': text
-        }
-    }
-print(json.dumps(out))
+}))
 " "$decision" "$text"
     exit 0
 }
@@ -139,11 +129,12 @@ if printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+push[[:space:]]+.*(-f\b|--f
     fi
 fi
 
-# === WARN TIER ===
-
-# chmod 777 (and -R 777). Renders an educational systemMessage; command runs.
+# chmod 777 (and -R 777). Originally drafted at warn tier (educational
+# systemMessage) but moved to ask tier during implementation when systemMessage
+# was found not to render in interactive Claude Code. Ask-tier confirmation
+# preserves the educational signal in a form that actually reaches the user.
 if printf '%s' "$COMMAND" | grep -qE 'chmod[[:space:]]+(-R[[:space:]]+)?777\b'; then
-    emit allow "chmod 777 grants read/write/execute to everyone including other users on the system. Consider chmod 750 (owner+group full, others nothing) or chmod 755 (owner full, others read+execute) instead."
+    emit ask "chmod 777 grants read/write/execute to everyone including other users on the system. Usually chmod 750 (owner+group full, others nothing) or chmod 755 (owner full, others read+execute) is what's wanted. Continue with 777?"
 fi
 
 # Default: allow silently.
