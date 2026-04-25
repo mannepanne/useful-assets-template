@@ -43,22 +43,20 @@ gh pr view <N>                                 # title, description, base
 gh pr diff <N> --name-only                     # changed paths
 gh pr view <N> --json additions,deletions,changedFiles
 
-# Secret-shaped strings — vendor token formats first (high-signal, low false-positive),
-# then keyword-based patterns anchored to a value shape to reduce noise on doc mentions.
-gh pr diff <N> | grep -E \
-  -e 'BEGIN [A-Z ]*PRIVATE KEY' \
-  -e 'sk-(ant-)?[A-Za-z0-9_-]{20,}' \
-  -e 'gh[pousr]_[A-Za-z0-9]{36,}' \
-  -e 'xox[baprs]-[A-Za-z0-9-]{10,}' \
-  -e 'AKIA[0-9A-Z]{16}' \
-  -e 'ASIA[0-9A-Z]{16}' \
-  -e 'eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{20,}\.' \
-  -e '(SECRET|API_KEY|PRIVATE_KEY|TOKEN|PASSWORD)\s*[:=]\s*["'"'"']?[A-Za-z0-9+/=_-]{16,}' \
-  || true
+# Stage the diff to a temp file once, then run each scan against the file. Avoiding the
+# pipe keeps each command independently auto-allowed by the Bash permission validator —
+# piped compounds with regex metacharacters trigger a manual approval prompt every run.
+gh pr diff <N> > /tmp/triage-pr-<N>.diff
+
+# Secret-shaped strings — patterns live in a sibling file (vendor tokens + keyword-shape
+# patterns). Keeping them in a `-f` patterns file rather than `-e` flags on the command
+# line keeps `{N,}` regex quantifiers off the bash invocation, where the permission
+# validator misreads them as shell brace expansion and triggers a manual approval prompt.
+grep -E -f .claude/agents/triage-secret-patterns.txt /tmp/triage-pr-<N>.diff || true
 
 # Data-layer signals — Supabase (Postgres + RLS) and Cloudflare D1 (SQLite, no RLS)
-gh pr diff <N> | grep -iE 'SERVICE_ROLE_KEY|service_role|auth\.users|auth\.sessions|enable row level security|create policy|alter policy|drop policy' || true
-gh pr diff <N> | grep -iE '\[\[d1_databases\]\]|database_id|database_name|CLOUDFLARE_API_TOKEN|CLOUDFLARE_ACCOUNT_ID' || true
+grep -iE 'SERVICE_ROLE_KEY|service_role|auth\.users|auth\.sessions|enable row level security|create policy|alter policy|drop policy' /tmp/triage-pr-<N>.diff || true
+grep -iE '\[\[d1_databases\]\]|database_id|database_name|CLOUDFLARE_API_TOKEN|CLOUDFLARE_ACCOUNT_ID' /tmp/triage-pr-<N>.diff || true
 ```
 
 If `gh pr view` or `gh pr diff` fails (PR not found, auth expired, network error), stop immediately and emit:
