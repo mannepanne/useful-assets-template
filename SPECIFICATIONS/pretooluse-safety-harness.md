@@ -298,6 +298,8 @@ The three open questions raised during `/review-spec` were all settled by live s
 
 3. **Ask-tier dialog surfaces to the user; AI cannot see or auto-answer it.** Verified by running `git reset --hard <nonexistent-ref>` and `chmod 777 <test-file>` — both produced permission dialogs the user could approve or deny, neither produced any signal visible to the AI. This confirms the ask tier is structurally safe against AI-self-bypass per the spec's design intent.
 
+4. **The inline-prefix bypass needed an explicit hook-side check.** The original hook checked `[ "$SAFETY_HARNESS_OFF" = "1" ]` against the script's own environment. That works for parent-shell export (the env var propagates from the shell that started `claude`) but NOT for the inline form (`SAFETY_HARNESS_OFF=1 rm -rf ~/old`) — Claude Code spawns the hook script before the command shell exists, so an inline prefix on the user's command never reaches the hook's environment. **Resolution:** the hook now explicitly checks the *command string* for a leading `SAFETY_HARNESS_OFF=1 ` prefix as well, in addition to its own environment. This was discovered during fixture generation when bypassing the hook to write test data with destructive command strings — the inline form silently failed until the explicit check was added. The behaviour the spec promised is now actually delivered.
+
 **Sentinel-file escape hatch — still deferred.** Revisit if AI-self-bypass becomes a real failure mode in practice. The v1 design doesn't foreclose it.
 
 ## Future extensions (not in v1)

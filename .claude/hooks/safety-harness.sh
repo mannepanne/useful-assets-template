@@ -41,9 +41,26 @@ if [ "${TOOL_NAME:-}" != "Bash" ]; then
     exit 0
 fi
 
-# Escape hatch.
+# Escape hatch — two forms:
+#   1. Inline-prefix on the command itself (the documented primary form):
+#        SAFETY_HARNESS_OFF=1 rm -rf ~/old-project
+#      The user types this; the hook sees it in the command string and
+#      short-circuits before pattern matching. The actual shell that runs
+#      the command also picks up the env var, but the hook would never see
+#      it via its own environment because Claude Code spawns the hook
+#      before the command shell exists.
+#   2. Parent-shell export (set before launching `claude`):
+#        export SAFETY_HARNESS_OFF=1
+#        claude
+#      The env var is in claude's process and propagates to every hook
+#      invocation. Heavy-handed; not recommended except for short
+#      maintenance sessions.
+if printf '%s' "$COMMAND" | grep -qE '^[[:space:]]*SAFETY_HARNESS_OFF=1[[:space:]]+'; then
+    echo "[safety-harness] disabled via inline SAFETY_HARNESS_OFF prefix" >&2
+    exit 0
+fi
 if [ "${SAFETY_HARNESS_OFF:-}" = "1" ]; then
-    echo "[safety-harness] disabled via SAFETY_HARNESS_OFF" >&2
+    echo "[safety-harness] disabled via SAFETY_HARNESS_OFF (parent-shell export)" >&2
     exit 0
 fi
 
