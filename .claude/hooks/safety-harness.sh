@@ -1,0 +1,150 @@
+#!/bin/bash
+# ABOUT: PreToolUse hook — guardrail against honest mistakes on Bash tool calls.
+# ABOUT: Three tiers (block/ask/warn) calibrated for less-experienced users.
+#
+# Spec: SPECIFICATIONS/pretooluse-safety-harness.md
+# Pattern set adapted from https://github.com/davekilleen/Dex/blob/main/.claude/hooks/dex-safety-guard.sh
+# JSON contract per https://docs.claude.com/en/docs/claude-code/hooks.md (current shape).
+#
+# Bypass: prefix the command inline with SAFETY_HARNESS_OFF=1, e.g.
+#   SAFETY_HARNESS_OFF=1 rm -rf ~/old-project
+# Setting it in a Claude Code Bash tool call does NOT persist to the next call
+# (each tool call is a fresh shell). Use parent-shell export only when launching
+# claude itself with the harness off for an entire session — not recommended.
+
+set -u
+
+INPUT=$(cat)
+
+# Parse tool_name and command in a single python invocation (cuts cold-start cost).
+read -r TOOL_NAME COMMAND <<< "$(printf '%s' "$INPUT" | python3 -c "
+import sys, json
+try:
+    data = json.loads(sys.stdin.read())
+    name = data.get('tool_name', '')
+    cmd = data.get('tool_input', {}).get('command', '')
+    # Encode command as base64 to avoid newline/whitespace splitting issues.
+    import base64
+    cmd_b64 = base64.b64encode(cmd.encode('utf-8')).decode('ascii')
+    print(name, cmd_b64)
+except Exception:
+    print('', '')
+" 2>/dev/null)"
+
+if [ -n "${COMMAND:-}" ]; then
+    COMMAND=$(printf '%s' "$COMMAND" | base64 --decode 2>/dev/null)
+fi
+
+# Defensive: only operate on Bash. Hook is registered with matcher "Bash" but if
+# the matcher behaviour ever changes, fail safe by allowing other tools through.
+if [ "${TOOL_NAME:-}" != "Bash" ]; then
+    exit 0
+fi
+
+# Escape hatch.
+if [ "${SAFETY_HARNESS_OFF:-}" = "1" ]; then
+    echo "[safety-harness] disabled via SAFETY_HARNESS_OFF" >&2
+    exit 0
+fi
+
+# Emit JSON output for a hookSpecificOutput response. Argument 1 is the decision
+# (deny/ask/allow); argument 2 is the user-visible text. For "allow", text becomes
+# systemMessage (warn tier); for "deny"/"ask", text becomes permissionDecisionReason.
+emit() {
+    local decision="$1"
+    local text="$2"
+    python3 -c "
+import json, sys
+decision = sys.argv[1]
+text = sys.argv[2]
+if decision == 'allow':
+    out = {
+        'hookSpecificOutput': {
+            'hookEventName': 'PreToolUse',
+            'permissionDecision': 'allow'
+        },
+        'systemMessage': text
+    }
+else:
+    out = {
+        'hookSpecificOutput': {
+            'hookEventName': 'PreToolUse',
+            'permissionDecision': decision,
+            'permissionDecisionReason': text
+        }
+    }
+print(json.dumps(out))
+" "$decision" "$text"
+    exit 0
+}
+
+BYPASS_HINT='Prefix the command inline with SAFETY_HARNESS_OFF=1 if you really mean it.'
+
+# === BLOCK TIER ===
+
+# rm -rf against root, home, $HOME, /Users. Catches the common short-flag forms
+# (-rf, -fr, -Rf, etc.). Long-form (--recursive --force) and split-flag forms
+# (-r -f) are not caught — see spec §Compound-command coverage.
+if printf '%s' "$COMMAND" | grep -qE 'rm[[:space:]]+(-[a-zA-Z]*[rRfF][a-zA-Z]*[[:space:]]+)+(/|~|\$HOME|/Users)([[:space:]]|/|"|$)'; then
+    emit deny "Blocked: rm -rf targeting filesystem root, home directory, or /Users. $BYPASS_HINT"
+fi
+
+# Explicit catch for rm -rf / regardless of flag clustering.
+if printf '%s' "$COMMAND" | grep -qE 'rm[[:space:]]+.*-[rRfF][a-zA-Z]*[[:space:]]+/([[:space:]]|$)'; then
+    emit deny "Blocked: rm -rf /. $BYPASS_HINT"
+fi
+
+# dd writing to a raw disk device. dd if=... alone (input flag) is benign — only
+# block when of= targets a raw device.
+if printf '%s' "$COMMAND" | grep -qE 'dd[[:space:]]+.*of=/dev/(disk|sd|nvme|rdisk)'; then
+    emit deny "Blocked: dd writing to a raw disk device — this overwrites the device. $BYPASS_HINT"
+fi
+
+# mkfs against a raw disk device.
+if printf '%s' "$COMMAND" | grep -qE 'mkfs(\.[a-z0-9]+)?[[:space:]]+.*[[:space:]]/dev/(disk|sd|nvme|rdisk)'; then
+    emit deny "Blocked: mkfs formatting a raw disk device. $BYPASS_HINT"
+fi
+
+# diskutil eraseDisk.
+if printf '%s' "$COMMAND" | grep -qE 'diskutil[[:space:]]+eraseDisk'; then
+    emit deny "Blocked: diskutil eraseDisk. $BYPASS_HINT"
+fi
+
+# SQL DROP TABLE/DATABASE/SCHEMA. Case-insensitive. Catches direct execution via
+# psql -c, supabase db execute, etc. Editing migration files (Write/Edit) is not
+# caught — only command-line execution.
+if printf '%s' "$COMMAND" | grep -qiE '\bDROP[[:space:]]+(TABLE|DATABASE|SCHEMA)\b'; then
+    emit deny "Blocked: SQL DROP TABLE/DATABASE/SCHEMA on the command line. Schema changes should go through a migration file. $BYPASS_HINT"
+fi
+
+# gh repo delete.
+if printf '%s' "$COMMAND" | grep -qE 'gh[[:space:]]+repo[[:space:]]+delete\b'; then
+    emit deny "Blocked: gh repo delete. $BYPASS_HINT"
+fi
+
+# === ASK TIER ===
+
+# git reset --hard. Pattern-only — no rev-list lookup, the user disambiguates.
+if printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+reset[[:space:]]+(--hard|.*[[:space:]]--hard)'; then
+    emit ask "git reset --hard discards all uncommitted changes and any commits ahead of the target. Continue?"
+fi
+
+# git push --force (or -f) to a non-main/master branch. Force-push to main is
+# explicitly NOT caught here — branch protection on the remote is the right
+# layer for that, and the explicit rule in .claude/CLAUDE.md covers the local
+# convention.
+if printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+push[[:space:]]+.*(-f\b|--force\b)'; then
+    if ! printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+push[[:space:]]+.*[[:space:]](main|master)\b'; then
+        emit ask "git push --force rewrites branch history. Continue if this is your personal branch and you intended to rebase."
+    fi
+fi
+
+# === WARN TIER ===
+
+# chmod 777 (and -R 777). Renders an educational systemMessage; command runs.
+if printf '%s' "$COMMAND" | grep -qE 'chmod[[:space:]]+(-R[[:space:]]+)?777\b'; then
+    emit allow "chmod 777 grants read/write/execute to everyone including other users on the system. Consider chmod 750 (owner+group full, others nothing) or chmod 755 (owner full, others read+execute) instead."
+fi
+
+# Default: allow silently.
+exit 0
