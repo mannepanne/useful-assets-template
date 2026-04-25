@@ -86,9 +86,20 @@ Each reviewer agent should reference this contract in its Role section rather th
 
 ### Bash invocation conventions
 
-Reviewer agents inherit CWD from the parent session — that's the project repo root. Prefer bare `git status`, `git log`, `git show`, `git diff` etc. over the `git -C <absolute-path> …` form. The `-C <path>` flag falls outside the read-only auto-allow rules in some Claude Code versions and triggers a manual approval prompt every invocation, even though the underlying subcommand is purely read-only. Same applies to `gh` — bare `gh pr view N` is silent; needlessly absolute forms can prompt.
+Two patterns trigger Claude Code's manual-approval prompt even when the underlying operation is purely read-only. Both are easy to avoid.
 
-If you genuinely need to operate against a different repo (rare for reviewer work), `-C` is fine — but for the default case of "the repo we're already in", drop it.
+**1. The `git -C <absolute-path> …` form.** Reviewer agents inherit CWD from the parent session — that's the project repo root. Prefer bare `git status`, `git log`, `git show`, `git diff` etc. over `git -C <path> …`. The `-C` flag falls outside the read-only auto-allow rules in some Claude Code versions and prompts on every invocation. Same applies to `gh` — bare `gh pr view N` is silent. If you genuinely need to operate against a different repo (rare for reviewer work), `-C` is fine — but for the default case of "the repo we're already in", drop it.
+
+**2. Pipe compounds.** Even when both sides of a pipe are individually auto-allowed (e.g. `git show` and `sed -n`), the compound is *not* auto-allowed and prompts the user. Prefer one of these forms instead:
+
+| Situation | Use this | Why |
+|---|---|---|
+| Working-tree file, any size | `Read` tool with `offset` / `limit` | Surgical line-range reads, never prompts |
+| Branch file, small (≤~500 lines) | `git show <branch>:<path>` (no pipe) | Single read-only command, auto-allowed |
+| Diff between branches | `gh pr diff <N>` standalone | Single command, allowlisted |
+| Branch file, large (>~500 lines) | `git show <branch>:<path> \| sed -n 'X,Yp'` | Accept the prompt — paying 40× tokens to silence one prompt is a worse trade |
+
+The token cost of reading a small branch file unsliced is trivial; the prompt cost of an unnecessary pipe is one click of friction every time. For working-tree files the Read tool wins on both axes — use it by default.
 
 ## When to Create New Agents
 
