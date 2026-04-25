@@ -1,6 +1,6 @@
 # Spec: PreToolUse safety-harness hook
 
-**Status:** Revised after `/review-spec` — ready for implementation
+**Status:** Implemented. Hook script is live; how-it-works documentation is at [`REFERENCE/safety-harness.md`](../REFERENCE/safety-harness.md). This file is the implementation history.
 **Type:** Template tooling (not a derivative-project phase)
 **Related:** [TEMPLATE-FOLLOWUPS.md](../TEMPLATE-FOLLOWUPS.md) → "PreToolUse safety-harness hook"
 
@@ -8,13 +8,13 @@
 
 ## Purpose
 
-Add a `PreToolUse` hook in `.claude/settings.json` that intercepts dangerous bash commands before they execute. The hook acts as a safety net against honest mistakes — fat-finger typos, AI agents reaching for a destructive shortcut, commands that look fine in isolation but are catastrophic in context — by blocking irreversible operations against high-value targets, prompting for confirmation on ambiguous-but-destructive operations, and educating less-experienced users when a risky-but-legitimate operation is about to run.
+Add a `PreToolUse` hook in `.claude/settings.json` that intercepts dangerous bash commands before they execute. The hook acts as a safety net against honest mistakes — fat-finger typos, AI agents reaching for a destructive shortcut, commands that look fine in isolation but are catastrophic in context — by blocking irreversible operations against high-value targets and prompting for confirmation on ambiguous-but-destructive operations. The educational signal for less-experienced users rides on the ask-tier confirmation prompt; the originally-drafted warn tier was dropped during implementation (see *Implementation findings* below).
 
 This is **distinct from the allowlist**. The allowlist exists to silence UX friction on safe operations (auto-allow `git status`, `gh pr diff`, etc.). The safety harness is the inverse: catch dangerous operations *regardless* of whether they would have been silently allowed. Allowlist = ergonomics; safety harness = guardrail.
 
 ## Threat model alignment
 
-This spec inherits the threat model from [`REFERENCE/decisions/2026-04-25-pr-review-threat-model.md`](../REFERENCE/decisions/2026-04-25-pr-review-threat-model.md), and is calibrated specifically against the **less-experienced-user sub-case** introduced in that ADR's *Sub-cases within in-scope* section. The PR review system is calibrated for the experienced-user sub-case (silent execution on safe ops); the safety harness is calibrated for the less-experienced-user sub-case (catch dangerous ops, prompt on ambiguous ones, warn on risky-but-legitimate ones).
+This spec inherits the threat model from [`REFERENCE/decisions/2026-04-25-pr-review-threat-model.md`](../REFERENCE/decisions/2026-04-25-pr-review-threat-model.md), and is calibrated specifically against the **less-experienced-user sub-case** introduced in that ADR's *Sub-cases within in-scope* section. The PR review system is calibrated for the experienced-user sub-case (silent execution on safe ops); the safety harness is calibrated for the less-experienced-user sub-case (catch dangerous ops, prompt on ambiguous ones).
 
 The harness is sized for **honest mistakes**, not malicious actors. The contributor already trusts Claude Code with bash access; the hook is not a defence against an adversarial AI or hostile committer. It exists to catch:
 
@@ -32,7 +32,7 @@ Derivative projects with a tighter threat model should follow the *Tightening ch
 ### In scope
 
 - One PreToolUse hook script (`.claude/hooks/safety-harness.sh`) intercepting **Bash** tool calls
-- **Three-tier rubric**: **block** (catastrophic, hard stop), **ask** (ambiguous-but-destructive, user confirms), **warn** (risky-but-legitimate, command runs with educational signal)
+- **Two-tier rubric** (revised from the originally-planned three): **block** (catastrophic, hard stop) and **ask** (ambiguous-but-destructive, user confirms via Claude Code's permission dialog)
 - Pattern coverage for the commands listed in *Commands to catch* below
 - Environment-variable escape hatch (`SAFETY_HARNESS_OFF=1`) for the rare case where bypass is needed, with documented limits
 - Hook registration in `.claude/settings.json` with an `if` filter so the script doesn't spawn for unrelated Bash calls
@@ -43,19 +43,18 @@ Derivative projects with a tighter threat model should follow the *Tightening ch
 - **Write/Edit interception.** Bash is where the asymmetric blast radius lives; Write/Edit changes are reversible via git. Revisit if a clear class of Write/Edit footguns emerges.
 - **MCP tool policy** (preferring one scraper over another, etc.). Mixes safety with policy — keep the hook strictly safety.
 - **Static analysis of command intent** (interpreting variables, expanding heredocs, decoding base64). Pattern matching against the literal command string is good enough for honest-mistake catching; deliberate evasion is out of scope per the threat model.
-- **Logging / telemetry.** The user-visible signal (block prompt, ask dialog, warn message) is the only output; no separate log file.
+- **Logging / telemetry.** The user-visible signal (block reason, ask dialog) is the only output; no separate log file.
 - **Sentinel-file escape hatch.** Considered as a stronger alternative to the env var (an AI can't `touch` a file as easily as it can inline-prefix an env var) but deferred — the env-var hatch with documented limits is enough for v1, and the sentinel-file design has its own footguns (forgotten-and-left-on, accidentally committed). Revisit if AI-self-bypass becomes a real failure mode.
 
 ### Acceptance criteria
 
-- [ ] Hook blocks every command in the *block* list with a clear `permissionDecisionReason` string visible to the user
-- [ ] Hook prompts via the `"ask"` decision for every command in the *ask* list, surfacing in Claude Code's standard permission-dialog UI
-- [ ] Hook warns (allows + flags via `systemMessage`) every command in the *warn* list with a clear, educational reason
-- [ ] Setting `SAFETY_HARNESS_OFF=1` disables the hook and is itself logged to stderr so the bypass is visible
-- [ ] Allowlist composition is correct: a command on the *block* list is blocked even if `permissions.allow` would have auto-allowed it
-- [ ] **Smoke tests pass on day one**: harmless `echo hello` exits 0 silently with the hook installed; `systemMessage` from a warn-tier match actually renders to the user (verify against the actual UI, not just the docs); a hook-script error path produces a visible signal rather than silent failure
-- [ ] Documentation in `REFERENCE/safety-harness.md` explains the three-tier rubric, the bypass mechanism with its limits, the compound-command coverage limits, and how to extend the patterns
-- [ ] Hand-curated fixture-based tests cover each pattern (input JSON → expected output JSON, looped through with `diff`)
+- [x] Hook blocks every command in the *block* list with a clear `permissionDecisionReason` string visible to the user
+- [x] Hook prompts via the `"ask"` decision for every command in the *ask* list, surfacing in Claude Code's standard permission-dialog UI
+- [x] Setting `SAFETY_HARNESS_OFF=1` disables the hook and is itself logged to stderr so the bypass is visible
+- [x] Allowlist composition is correct: a command on the *block* list is blocked even if `permissions.allow` would have auto-allowed it
+- [x] **Smoke tests pass on day one**: harmless `echo hello` exits 0 silently with the hook installed; ask dialogs actually surface to the user; block reasons actually surface; the env-var bypass actually disables the hook
+- [x] Documentation in `REFERENCE/safety-harness.md` explains the two-tier rubric, the bypass mechanism with its limits, the compound-command coverage limits, and how to extend the patterns
+- [x] Hand-curated fixture-based tests cover each pattern (input JSON → expected output JSON, looped through with `diff`)
 
 ## Risk-tier rubric
 
@@ -63,8 +62,7 @@ The hook informs the user clearly in every case — silent guarding is worse tha
 
 **Primary discriminator: target × destructiveness, not reversibility alone.**
 - **Block** patterns target *irreversible destruction of high-value paths*: filesystem roots (`/`, `~`, `$HOME`, `/Users`), raw disk devices (`/dev/disk*`, `/dev/sd*`, `/dev/nvme*`), the project's data layer (SQL `DROP TABLE/DATABASE/SCHEMA`), or the project's GitHub repo (`gh repo delete`).
-- **Ask** patterns are *destructive operations with a legitimate use case*: the user can disambiguate intent (e.g. `git reset --hard` is right when you want to throw away local work, wrong when you don't), so the hook surfaces a confirmation dialog and lets the user decide.
-- **Warn** patterns are *risky-but-legitimate operations with educational value*: they run, but a system message explains what the command actually does. Calibrated for less-experienced users who might not recognise the implication (e.g. `chmod 777` means *anyone* can read).
+- **Ask** patterns are *destructive or risky operations where the user can disambiguate intent*: `git reset --hard` is right when you want to throw away local work, wrong when you don't; `chmod 777` is rare and almost always overkill but occasionally what's wanted. The hook surfaces a confirmation dialog, the educational message rides on the dialog reason, and the user decides.
 
 Reversibility is a *secondary* heuristic — useful when target+destructiveness is ambiguous, but not the primary frame. `rm -rf ./build` is fully irreversible and completely fine; the target (a build artefact) is what makes it safe. `chmod 777` on a public web directory is reversible but a security disaster while it's in effect; the target (a public path) is what makes it dangerous. **When extending the patterns, ask "what target does this command operate against, and what kind of destruction does it cause?" before deciding the tier.**
 
@@ -78,17 +76,11 @@ For commands targeting irreversible destruction of high-value paths. Block-tier 
 
 ### Tier 2: Ask (`permissionDecision: "ask"`, command awaits user confirmation)
 
-For destructive operations where intent matters and only the user can disambiguate. The hook returns `"ask"`; Claude Code surfaces the standard permission-dialog UI. Per Claude Code's contract, the prompt is **shown to the user but not to Claude** — the AI can't auto-answer. Ask-tier output includes the same three fields as block, framed as a confirmation question rather than a refusal.
+For destructive or risky operations where intent matters and only the user can disambiguate. The hook returns `"ask"`; Claude Code surfaces the standard permission-dialog UI. Per Claude Code's contract, the prompt is **shown to the user but not to Claude** — the AI can't auto-answer. Ask-tier output includes the same three fields as block, framed as a confirmation question rather than a refusal. The ask reason carries any educational message the user benefits from (e.g. for `chmod 777`, the reason explains what 777 means and suggests safer alternatives).
 
-### Tier 3: Warn (`permissionDecision: "allow"` + `systemMessage`, command runs)
+### Why no warn tier?
 
-For risky-but-legitimate operations where the educational signal matters more than the friction. Warn-tier output uses the JSON `systemMessage` field (the only mechanism that actually renders to the user — stderr from a successful hook goes to the debug log, not the terminal). Each warn message includes:
-
-1. **What was flagged**
-2. **Why this is risky in plain language** (one sentence aimed at a user who may not know)
-3. **A safer alternative when one exists** (e.g. "consider `chmod 750` instead of `chmod 777` — owner+group rwx, others nothing")
-
-The warn tier is deliberately small. Adding marginal patterns produces alert fatigue, defeating the educational point. Extending the list is a deliberate per-PR decision documented in `REFERENCE/safety-harness.md`.
+The original spec had a third tier — *warn* — that would allow the command to run while displaying an educational `systemMessage` to the user. During implementation, live testing revealed that `systemMessage` does not render in interactive Claude Code (the hook fires with the correct JSON, but the field is invisible to the user). Rather than ship a warn tier that doesn't actually warn, the single warn-tier pattern (`chmod 777`) was moved to the ask tier. The educational message now rides on the ask-dialog reason, which the user genuinely sees. See *Implementation findings* below for the full record.
 
 ## Commands to catch
 
@@ -112,12 +104,7 @@ The warn tier is deliberately small. Adding marginal patterns produces alert fat
 |---|---|
 | `git reset --hard` | Discards local work; legitimate when you mean it, catastrophic when you don't. Confirming forces a pause. **Note:** detection is pattern-only — no `git rev-list` lookup, no branch-state introspection. The user's confirmation is the disambiguator |
 | `git push --force` (or `-f`) to **non-main/master** branches | Rewrites personal-branch history; routine during rebase workflows but worth a confirm pause for less-experienced users |
-
-### Warn (Tier 3)
-
-| Pattern | Reason |
-|---|---|
-| `chmod 777`, `chmod -R 777` | Grants read/write/execute to **everyone** including other users on the system. Almost always overkill — usually `chmod 750` (owner+group full, others nothing) or `chmod 755` (owner full, others read+execute) is what was wanted |
+| `chmod 777`, `chmod -R 777` | Grants read/write/execute to **everyone** including other users on the system. Almost always overkill — the ask-dialog reason explains and suggests `chmod 750` or `chmod 755` as alternatives. Originally drafted at warn tier; moved to ask during implementation when `systemMessage` was found not to render |
 
 ### Deliberately excluded patterns
 
@@ -148,7 +135,7 @@ Claude Code's PreToolUse hook contract (current, per [Anthropic's hooks docs](ht
 }
 ```
 
-Valid `permissionDecision` values: `allow`, `deny`, `ask`, `defer`. The block tier uses `deny`, the ask tier uses `ask`, the warn tier uses `allow` plus a `systemMessage` field at the top level of the JSON output.
+Valid `permissionDecision` values: `allow`, `deny`, `ask`, `defer`. The block tier uses `deny`; the ask tier uses `ask`. The originally-planned warn tier was to use `allow` plus a `systemMessage` field at the top level of the JSON output — that approach was abandoned during implementation because `systemMessage` does not render in interactive Claude Code (see *Implementation findings*).
 
 **Note:** the older `{"decision":"allow|block","reason":"..."}` shape is **deprecated** for PreToolUse and must not be used. The Dex reference implementation uses the deprecated shape — adopt its patterns, not its protocol envelope.
 
@@ -289,24 +276,6 @@ Hook output (stdout, JSON):
 
 Claude Code surfaces the standard permission-dialog UI. The user answers (yes/no); the command runs only on yes. The AI can't see the dialog content.
 
-### Warn example
-
-User runs: `chmod -R 777 ./build`
-
-Hook output (stdout, JSON):
-
-```json
-{
-  "hookSpecificOutput": {
-    "hookEventName": "PreToolUse",
-    "permissionDecision": "allow"
-  },
-  "systemMessage": "chmod 777 grants read/write/execute to everyone including other users on the system. Usually `chmod 750` (owner+group full, others nothing) or `chmod 755` (owner full, others read+execute) is what's wanted."
-}
-```
-
-The command runs. The system message renders to the user inline in the transcript.
-
 ### Escape-hatch example
 
 User runs: `SAFETY_HARNESS_OFF=1 rm -rf ~/old-project`
@@ -319,15 +288,17 @@ Hook output (stderr):
 
 The command runs with no further checks.
 
-## Open questions for implementation
+## Implementation findings
 
-These don't block the spec but should be settled when the hook script is written.
+The three open questions raised during `/review-spec` were all settled by live smoke-testing against the actual Claude Code runtime. Recording the results here so future maintainers don't re-derive them.
 
-1. **Verify `systemMessage` actually renders to the user.** The docs describe it as "warning message shown to the user," but UI behaviour can drift from docs. Day-one smoke test: trigger a warn-tier match, confirm the message appears inline rather than disappearing into the debug log. If it doesn't render, fall back to using `permissionDecisionReason` on `permissionDecision: "allow"` and document the imperfection.
+1. **`systemMessage` does not render to the user in interactive Claude Code.** The hook fires with the correct JSON shape (verified offline) but the `systemMessage` field is invisible to the user in interactive sessions. Block reasons (on `deny`) and ask reasons (on `ask`) both surface correctly, so it isn't a hook-protocol issue — `systemMessage` specifically doesn't make it to the terminal. **Resolution:** drop the warn tier entirely; move the single warn pattern (`chmod 777`) to the ask tier. The educational message now rides on the ask-dialog reason. The fallback proposed in the original spec — using `permissionDecisionReason` on `permissionDecision: "allow"` — was not pursued because moving to ask is cleaner and aligns with the review-team's preference for fewer informational mechanisms.
 
-2. **Verify the `if` filter syntax.** The settings.json snippet uses `|` for alternation. If Claude Code's `if` field doesn't accept that syntax, split into separate handlers per command family (one entry for `rm`, one for `dd`, etc.). Same behaviour, longer config.
+2. **The `if` filter accepts `|` alternation.** Verified by registering the spec's filter (`Bash(rm * | dd * | mkfs* | diskutil* | git push * | git reset * | gh repo * | psql * | supabase * | chmod *)`) and triggering a block-tier `dd` command. The block fired correctly, meaning Claude Code parsed the alternation and matched `dd *` against the command. No need to split into separate handlers per command family.
 
-3. **Sentinel-file escape hatch revisited.** If AI-self-bypass becomes a real failure mode in practice (i.e. the harness blocks something legitimate, the AI inline-prefixes the bypass, the user doesn't notice), reconsider replacing the env var with a sentinel file (`touch .claude/.safety-harness-off` to disable, `rm` to re-enable). Sentinel files are easier for a human to set deliberately and harder for an AI to set in passing. Not v1, but the v1 design doesn't foreclose it.
+3. **Ask-tier dialog surfaces to the user; AI cannot see or auto-answer it.** Verified by running `git reset --hard <nonexistent-ref>` and `chmod 777 <test-file>` — both produced permission dialogs the user could approve or deny, neither produced any signal visible to the AI. This confirms the ask tier is structurally safe against AI-self-bypass per the spec's design intent.
+
+**Sentinel-file escape hatch — still deferred.** Revisit if AI-self-bypass becomes a real failure mode in practice. The v1 design doesn't foreclose it.
 
 ## Future extensions (not in v1)
 
