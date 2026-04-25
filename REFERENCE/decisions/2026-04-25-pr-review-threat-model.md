@@ -74,7 +74,7 @@ These are not separate threat models — both are trusted contributors on person
 
 **How the defaults split:**
 - The PR review system (`/review-pr`, allowlist, reviewer-agent severity) is calibrated for the experienced-user case: silent execution on safe ops, hostile-committer attacks de-prioritised. This is correct because review-system friction hits *every routine operation*, and routine operations need to be silent.
-- The safety-harness hook ([`SPECIFICATIONS/pretooluse-safety-harness.md`](../../SPECIFICATIONS/pretooluse-safety-harness.md)) is calibrated for the less-experienced-user case: catastrophic operations blocked, ambiguous-but-destructive operations prompt for user confirmation (`ask` tier), educational warnings flag risky-but-legitimate ops. This is correct because the harness fires *only on dangerous operations*, and dangerous operations are exactly where less-experienced users benefit most from a pause.
+- The safety-harness hook ([`REFERENCE/safety-harness.md`](../safety-harness.md)) is calibrated for the less-experienced-user case: catastrophic operations blocked, ambiguous-but-destructive operations prompt for user confirmation (`ask` tier), educational warnings flag risky-but-legitimate ops. This is correct because the harness fires *only on dangerous operations*, and dangerous operations are exactly where less-experienced users benefit most from a pause.
 
 The two systems compose. The review allowlist controls UX friction on safe operations; the safety harness catches dangerous operations regardless of allowlist state. They live at different points in the call path and target different user states.
 
@@ -123,5 +123,5 @@ If your project doesn't match the in-scope profile above, change these defaults 
   - `.claude/settings.json` `permissions.allow` — comment block references this ADR
   - `.claude/agents/security-specialist.md` — severity defaults reference the in/out-of-scope split (PR 21 onwards)
   - `.claude/agents/CLAUDE.md` — shared bash conventions section references this ADR for severity calibration
-  - `SPECIFICATIONS/pretooluse-safety-harness.md` — calibrated against the less-experienced-user sub-case introduced in this ADR
+  - `REFERENCE/safety-harness.md` — how-it-works for the safety-harness hook (calibrated against the less-experienced-user sub-case introduced in this ADR); implementation history at `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md`
 - Discussion that produced this ADR: PR 19 review thread on `mannepanne/useful-assets-template`

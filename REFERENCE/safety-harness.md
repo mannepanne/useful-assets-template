@@ -156,4 +156,4 @@ Either:
 
 The pattern set is adapted from [`davekilleen/Dex`'s `dex-safety-guard.sh`](https://github.com/davekilleen/Dex/blob/main/.claude/hooks/dex-safety-guard.sh). We diverge from Dex in three ways: we use the current `hookSpecificOutput.permissionDecision` JSON contract (not the deprecated `decision`/`reason` shape Dex uses); we add the ask tier (Dex is binary block/allow); and we narrow `dd`/`mkfs` to output-device patterns rather than matching the bare commands.
 
-Implementation history and the full review trail are at [`SPECIFICATIONS/pretooluse-safety-harness.md`](../SPECIFICATIONS/pretooluse-safety-harness.md).
+Implementation history and the full review trail are at [`SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md`](../SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md).
