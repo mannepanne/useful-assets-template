@@ -104,6 +104,6 @@ If your project doesn't match the in-scope profile above, change these defaults 
   - [2026-04-22 — Opt-in config flag for the review system](./2026-04-22-prreviewmode-opt-in-config.md) — adjacent: the *whether* of the review system; this ADR is the *how-strict*
 - Anchor points in code/config:
   - `.claude/settings.json` `permissions.allow` — comment block references this ADR
-  - `.claude/agents/security-specialist.md` — severity defaults reference the in/out-of-scope split (PR 20 onwards)
+  - `.claude/agents/security-specialist.md` — severity defaults reference the in/out-of-scope split (PR 21 onwards)
   - `.claude/agents/CLAUDE.md` — shared bash conventions section references this ADR for severity calibration
 - Discussion that produced this ADR: PR 19 review thread on `mannepanne/useful-assets-template`

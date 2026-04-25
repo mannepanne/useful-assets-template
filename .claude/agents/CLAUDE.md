@@ -101,6 +101,15 @@ Reviewer agents read a lot of files. The choice of *how* to read affects token c
 
 **`git -C <abs-path> …` is allowlisted but rarely needed.** Reviewer agents inherit CWD from the parent session — that's the project repo root — so bare `git status`/`log`/`show`/`diff` work without `-C`. The `-C` allowlist exists because some agents reach for it reflexively (when they shouldn't have to); not because it's the recommended form. Prefer bare invocations.
 
+### Severity calibration
+
+When you assess severity, calibrate against the project's threat model: **a single trusted contributor working on personal projects, or a small team of mutually-trusted contributors**. The full reasoning lives in the ADR — [`REFERENCE/decisions/2026-04-25-pr-review-threat-model.md`](../../REFERENCE/decisions/2026-04-25-pr-review-threat-model.md). The condensed version reviewer agents need:
+
+- **In scope (keep vigilant):** production-runtime exposure — vulnerabilities in the deployed app facing users or the internet, secrets leaking into repo history, malicious upstream packages, SQL injection, RLS/auth bugs, XSS, IDOR, CSRF on state-changing endpoints, dependency adds. Anything exploitable from *outside* the project.
+- **Out of scope by default:** attacks that require a malicious committer — RCE via PR-content prompt injection, backdoors in test code, hostile migrations crafted by the contributor against themselves. Note these as *"out-of-scope per threat model"* with a one-line pointer to the ADR's tightening checklist, rather than as blockers.
+
+This calibration is the discriminator between "real finding" and "theoretical worst-case noise." If you find yourself reaching for an attack scenario where the contributor is actively malicious against their own project, that's the signal to demote the finding rather than escalate it. Derivative projects whose contributor model differs (open-source PRs from strangers, multi-team setups, regulated environments) are expected to follow the ADR's tightening checklist before relying on these defaults — that's their work to do, not yours to anticipate by being defensive.
+
 ## When to Create New Agents
 
 Create a new agent when:
