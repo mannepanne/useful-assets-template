@@ -63,6 +63,23 @@ This ADR fixes that by stating the assumption explicitly. Future reviews calibra
 
 If your usage matches anything here, follow the tightening checklist before relying on these defaults.
 
+## Sub-cases within in-scope: experience level shifts safety defaults
+
+The in-scope profile above is silent on *experience level*. Two design points exist within scope, and they need different safety defaults even though both are equally trusted:
+
+- **Experienced user.** Comfortable with shell, recognises destructive commands by sight, knows recovery mechanisms (`git reflog`, Time Machine, etc.). Unlikely to fat-finger; able to recover quickly if they do. Daily friction is the main cost — protective prompts on routine operations are pure noise.
+- **Less-experienced user.** May not recognise destructive commands by sight, less likely to know recovery mechanisms, more likely to follow AI suggestions or error-message instructions without sanity-checking. Honest mistakes are both more frequent *and* more costly when they happen, and a destructive operation that lands cleanly often can't be undone after the fact.
+
+These are not separate threat models — both are trusted contributors on personal projects. They differ in what the tooling needs to do *for* them.
+
+**How the defaults split:**
+- The PR review system (`/review-pr`, allowlist, reviewer-agent severity) is calibrated for the experienced-user case: silent execution on safe ops, hostile-committer attacks de-prioritised. This is correct because review-system friction hits *every routine operation*, and routine operations need to be silent.
+- The safety-harness hook ([`SPECIFICATIONS/pretooluse-safety-harness.md`](../../SPECIFICATIONS/pretooluse-safety-harness.md)) is calibrated for the less-experienced-user case: catastrophic operations blocked, ambiguous-but-destructive operations prompt for user confirmation (`ask` tier), educational warnings flag risky-but-legitimate ops. This is correct because the harness fires *only on dangerous operations*, and dangerous operations are exactly where less-experienced users benefit most from a pause.
+
+The two systems compose. The review allowlist controls UX friction on safe operations; the safety harness catches dangerous operations regardless of allowlist state. They live at different points in the call path and target different user states.
+
+**Why call this out explicitly.** A future maintainer reading "single trusted contributor / silent execution / de-prioritise hostile committers" could reasonably conclude the safety-harness defaults are over-tuned and shrink them back. The reasoning is that **contributor experience is independent of contributor trust** — both sub-cases are equally in-scope, equally trusted, but they have genuinely different needs from the tooling. Don't shrink safety-harness defaults that are sized for the less-experienced case unless the project's contributor profile is verifiably experienced-only.
+
 ## Tightening checklist (for derivative projects whose use case differs)
 
 If your project doesn't match the in-scope profile above, change these defaults *before* running reviews on contributor PRs:
@@ -106,4 +123,5 @@ If your project doesn't match the in-scope profile above, change these defaults 
   - `.claude/settings.json` `permissions.allow` — comment block references this ADR
   - `.claude/agents/security-specialist.md` — severity defaults reference the in/out-of-scope split (PR 21 onwards)
   - `.claude/agents/CLAUDE.md` — shared bash conventions section references this ADR for severity calibration
+  - `SPECIFICATIONS/pretooluse-safety-harness.md` — calibrated against the less-experienced-user sub-case introduced in this ADR
 - Discussion that produced this ADR: PR 19 review thread on `mannepanne/useful-assets-template`
