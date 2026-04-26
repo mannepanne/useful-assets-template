@@ -110,16 +110,14 @@ Steps:
 3. Create a feature branch (e.g. `feature/adopt-threat-model-and-safety-harness`).
    Do NOT work on main.
 
-4. Apply the FIVE sub-changes IN ORDER (see the packet's "Application order" section):
-   a. TEMPLATE-UPDATES bootstrap — only if `REFERENCE/TEMPLATE-UPDATES/CLAUDE.md` does
-      NOT already exist locally.
-   b. Threat-model ADR + agent severity calibration.
-   c. Silent-review conventions (Tool invocation conventions section, allowlist
+4. Apply the FOUR sub-changes IN ORDER (see the packet's "Application order" section):
+   a. Threat-model ADR + agent severity calibration.
+   b. Silent-review conventions (Tool invocation conventions section, allowlist
       additions, triage patterns file rename, dispatcher fallback, WebFetch grants on
       spec-review agents).
-   d. Safety harness — establishes the `hooks.PreToolUse` block (first entry, Bash matcher).
-   e. SCRATCH-write hook — appends the second entry to `hooks.PreToolUse` (Write matcher).
-      Apply after Stage d so the block-merge is a single pass.
+   c. Safety harness — establishes the `hooks.PreToolUse` block (first entry, Bash matcher).
+   d. SCRATCH-write hook — appends the second entry to `hooks.PreToolUse` (Write matcher).
+      Apply after Stage c so the block-merge is a single pass.
 
 5. For each "Copy verbatim" file, check existence; WebFetch + create if absent, treat as
    "merge carefully" if present.
@@ -173,8 +171,8 @@ Steps:
 
 13. After applying, run the packet's verification commands and report results. The two
     test-suite checks catch partial rollouts:
-    - `bash .claude/hooks/tests/safety-harness/run-tests.sh` (Stage d, expect 40/40)
-    - `bash .claude/hooks/tests/approve-scratch-write/run-tests.sh` (Stage e, expect 7/7)
+    - `bash .claude/hooks/tests/safety-harness/run-tests.sh` (Stage c, expect 40/40)
+    - `bash .claude/hooks/tests/approve-scratch-write/run-tests.sh` (Stage d, expect 7/7)
     `test -f` and `grep -q` checks are necessary but not sufficient.
 
 14. Commit, push, open a PR.
