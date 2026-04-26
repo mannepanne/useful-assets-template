@@ -62,7 +62,13 @@
       "Bash(grep:*)",
       "Bash(grep * ; echo *)",
       "Write(/SCRATCH/*)",
-      "Read(/SCRATCH/*)"
+      "Write(/SCRATCH/**)",
+      "Write(SCRATCH/*)",
+      "Write(SCRATCH/**)",
+      "Read(/SCRATCH/*)",
+      "Read(/SCRATCH/**)",
+      "Read(SCRATCH/*)",
+      "Read(SCRATCH/**)"
     ],
     "deny": []
   },
