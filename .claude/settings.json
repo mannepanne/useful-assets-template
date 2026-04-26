@@ -61,8 +61,8 @@
       "Bash(jq * | grep *)",
       "Bash(grep:*)",
       "Bash(grep * ; echo *)",
-      "Write(.claude/scratch/*)",
-      "Read(.claude/scratch/*)"
+      "Write(/SCRATCH/*)",
+      "Read(/SCRATCH/*)"
     ],
     "deny": []
   },
