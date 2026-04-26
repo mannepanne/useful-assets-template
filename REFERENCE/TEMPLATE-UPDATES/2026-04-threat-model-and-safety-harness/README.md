@@ -39,11 +39,10 @@ Plus one bootstrap dependency: **PR #18 introduced the TEMPLATE-UPDATES packet s
 - **Tool grant asymmetry:** spec-review agents (`technical-skeptic`, `requirements-auditor`, `devils-advocate`) gain `WebFetch` for verifying claims against authoritative external docs. PR-review agents do NOT — their substrate is local (code, PR content) and a PR description containing an attacker-controlled URL would otherwise be a fetch target. The asymmetry is documented to prevent future "harmonization" reverts.
 - **Triage patterns file rename:** `.claude/agents/triage-secret-patterns.txt` → `.claude/agents/triage-scan-patterns.txt`. The file is loaded via `grep -E -f` to keep the regex off the command line (the Claude Code permission validator was misreading `{N,}` quantifiers as brace expansion). Receiving projects on the previous packet may have neither; receiving projects mid-rename may have the old name.
 - **Dispatcher Read-then-Write fallback:** `/review-pr` and `/review-pr-team` no longer use `rm -f /tmp/...` to clear stale temp files (which prompted because `rm` isn't allowlisted). They Read first, then Write — silent under default permissions.
-- **Project-relative scratch directory:** review skills write their intermediate comment-body files to a top-level `SCRATCH/` directory rather than `/tmp/`. The directory contents are gitignored (`*\n!.gitignore` inside `SCRATCH/.gitignore`). For `Read`, the allow-list rule `Read(/SCRATCH/*)` works as documented — the leading-`/` is project-root-relative and the matcher honours it. For `Write`, the allow-list rule `Write(/SCRATCH/*)` does **not** silence the prompt across five fresh-session sightings — the upstream `Write` matcher gates beyond the allow-list. The supported path is the `PreToolUse` SCRATCH-write hook bundled in this packet (see the next bullet). Derivative projects on an earlier draft of this packet that committed `Write(/SCRATCH/*)` (or any of `Write(/SCRATCH/**)`, `Write(SCRATCH/*)`, `Write(SCRATCH/**)`) should remove all four — they are dead code — and adopt the hook instead. Sidesteps two distinct problems: (1) an intermittent matcher quirk where absolute `/tmp/...` paths were sometimes displayed in `../../../../../../tmp/...` traversal form and failed allow-list matching (see `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md`, vendored by this packet); and (2) a settings-self-modification approval gate that fires on any Write under `.claude/`, regardless of allowlist entries — which is why the directory lives at the repo root rather than inside `.claude/`. Root cause of (1) unresolved upstream; the symptom is now silenced by the SCRATCH-write hook rather than the allow-list.
+- **Project-relative scratch directory:** review skills write their intermediate comment-body files to a top-level `SCRATCH/` directory rather than `/tmp/`. The directory contents are gitignored (`*\n!.gitignore` inside `SCRATCH/.gitignore`). For `Read`, the allow-list rule `Read(/SCRATCH/*)` works as documented — the leading-`/` is project-root-relative and the matcher honours it. For `Write`, the allow-list rule `Write(/SCRATCH/*)` does **not** silence the prompt across five fresh-session sightings — the upstream `Write` matcher gates beyond the allow-list. The supported path is the `PreToolUse` SCRATCH-write hook bundled in this packet (see the next bullet). Derivative projects on an earlier draft of this packet that committed `Write(/SCRATCH/*)` (or any of `Write(/SCRATCH/**)`, `Write(SCRATCH/*)`, `Write(SCRATCH/**)`) should remove all four — they are dead code — and adopt the hook instead. Sidesteps two distinct problems: (1) an intermittent matcher quirk where absolute `/tmp/...` paths were sometimes displayed in `../../../../../../tmp/...` traversal form and failed allow-list matching (the diagnosis trail is template-internal historical context — the conclusion travels via the SCRATCH-write hook ADR); and (2) a settings-self-modification approval gate that fires on any Write under `.claude/`, regardless of allowlist entries — which is why the directory lives at the repo root rather than inside `.claude/`. Root cause of (1) unresolved upstream; the symptom is now silenced by the SCRATCH-write hook rather than the allow-list.
 - **PreToolUse safety-harness hook:** new `.claude/hooks/safety-harness.sh` script + 39-fixture test suite at `.claude/hooks/tests/safety-harness/`. Registered in `.claude/settings.json` under `hooks.PreToolUse` with an `if`-filter alternation to keep the script invocation cheap. Inline `SAFETY_HARNESS_OFF=1 <cmd>` bypass works because the script checks the command string explicitly (the env var alone wouldn't propagate — Claude Code spawns the hook before the command shell).
 - **PreToolUse SCRATCH-write hook:** new `.claude/hooks/approve-scratch-write.sh` script + a 7-test fixture suite at `.claude/hooks/tests/approve-scratch-write/` (6 fixture pairs + one unset-`CLAUDE_PROJECT_DIR` case that needs no fixture). Registered as the second entry in `hooks.PreToolUse` with `matcher: "Write"`. Shares the parse helper at `.claude/hooks/lib/parse-tool-input.sh` with the safety-harness hook. Fail-safe: only ever emits `permissionDecision: "allow"`, exits silently on any error or unexpected shape, never weakens existing safety. Replaces the dead `Write(/SCRATCH/*)` (and three sibling glob) allow-list entries — those are removed because the upstream `Write` matcher empirically does not honour them. The `permissions._comment_scratch_writes` field in `.claude/settings.json` documents the situation for future readers and points at the ADR.
 - **Reference doc:** `REFERENCE/safety-harness.md` describes block-tier / ask-tier / what's not caught / how to bypass / how to extend patterns. `REFERENCE/scratch-write-hook.md` is the operations doc for the SCRATCH-write hook (what it approves, where it sits in the call path, what's deliberately out of scope, fail-closed semantics, how to extend, and the rollback path if the upstream matcher is fixed).
-- **Investigation log:** `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` captures the five-sighting diagnosis trail that led to hypothesis #3 (the `Write` matcher gates beyond the allow-list) and motivated the SCRATCH-write hook. Vendored as part of this packet so derivative projects have the full historical record alongside the ADR that built on it.
 - **Allowlist tuning** in `.claude/settings.json` for git-pipe forms, `git fetch`, `Read(/SCRATCH/*)` (and three sibling glob shapes for `Read`), the safety-harness and SCRATCH-write hook test-runner entries, etc. The `Write(/SCRATCH/...)` entries are deliberately *absent* — the SCRATCH-write hook handles those.
 - **TEMPLATE-UPDATES packet system itself:** `REFERENCE/TEMPLATE-UPDATES/CLAUDE.md` (index + author/apply guide) and `TEMPLATE.md` (skeleton) — the system that lets future packets like this one be applied cleanly.
 
@@ -95,9 +94,6 @@ Files that did not exist before this rollout. Add them as-is unless a same-named
 - `REFERENCE/scratch-write-hook.md` — how-it-works doc (what's caught, fail-closed semantics, threat-model carve-outs for symlinks and exotic filenames, how to extend, how to remove if upstream is fixed)
 - `REFERENCE/decisions/2026-04-26-scratch-write-pretooluse-hook.md` — the ADR documenting *why* this hook exists (the upstream `Write` matcher gates beyond the allow-list) and the trade-offs accepted
 
-**Investigation log**
-- `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` — the five-sighting diagnosis trail that produced hypothesis #3 in the SCRATCH-write hook ADR. Vendored alongside the hook so the historical record travels with the fix; the ADR and ops doc reference it via project-relative paths that resolve in derivative projects only if this file is also fetched. Place at the listed path even if the project doesn't otherwise use `SPECIFICATIONS/ARCHIVE/` — the file is self-contained and the path is referenced from the SCRATCH-write hook ADR.
-
 ### Merge carefully
 
 Files that almost certainly exist in the target project but with different content. The receiving Claude must read the local version, identify the section(s) added/changed by this packet, and merge — preserving local customisation elsewhere.
@@ -141,7 +137,8 @@ Don't treat this file as a single merge. Apply each delta independently:
 - Recalibrated by PR #21. Gained a `Threat model` section after Role and a recalibrated `Review Standards` block. Merge by adding the `Threat model` section if absent and reconciling `Review Standards` — keep local-specific stack notes, fold in the threat-model-aware language.
 
 **`.claude/agents/devils-advocate.md`, `.claude/agents/requirements-auditor.md`, `.claude/agents/technical-skeptic.md`**
-- All three gained `WebFetch` in their `tools:` frontmatter via PR #25. Single-line change per file: change `tools: Bash, Read, Glob, Grep` to `tools: Bash, Read, Glob, Grep, WebFetch`. If the local frontmatter already lists `WebFetch`, no change.
+- All three gained `WebFetch` in their `tools:` frontmatter via PR #25. **Apply ONLY the frontmatter `tools:` line change** — change `tools: Bash, Read, Glob, Grep` to `tools: Bash, Read, Glob, Grep, WebFetch`. If the local frontmatter already lists `WebFetch`, no change.
+- **DO NOT apply any body diffs from the source.** The source body of these spec-review agents may include placeholder stack mentions (`Readwise API`, `Perplexity API`, `Supabase Realtime`, `Cloudflare Workers` etc.) that derivative projects often customise with their actual stack. Applying a body diff verbatim would clobber that customisation and silently degrade review quality. The packet's net contribution to these three files is the WebFetch frontmatter line and nothing else; surface any body differences you observe between source and local but do not write them.
 
 **`.claude/skills/review-pr/SKILL.md` and `.claude/skills/review-pr-team/SKILL.md`**
 - PR #22 added a Read-then-Write fallback paragraph to both files, removing the need for `rm -f /tmp/...` cleanup. The paragraph appears under the "Posting the comment" section in `review-pr/SKILL.md` and the equivalent in `review-pr-team/SKILL.md`. The skill text now references `SCRATCH/review-pr-...` paths (not `/tmp/review-pr-...`) — derivative projects upgrading from an earlier shape of this packet should sweep the skill files for any remaining `/tmp/` or `.claude/scratch/` paths and replace with `SCRATCH/`. If the local skill files don't have this paragraph, add it. If they have a different stale-file workaround (e.g. `rm -f`), replace it with the Read-then-Write text.
@@ -157,6 +154,7 @@ Don't treat this file as a single merge. Apply each delta independently:
 
 **`SPECIFICATIONS/ARCHIVE/CLAUDE.md`**
 - PR #23 added a "Link convention for archived specs" rule. Apply only if the project uses the `SPECIFICATIONS/ARCHIVE/` pattern. The rule is short and self-contained — append it.
+- **DO NOT copy any "Completed phases" / index entries from the source file.** The source `SPECIFICATIONS/ARCHIVE/CLAUDE.md` lists template-internal archived specs (e.g. `pretooluse-safety-harness.md`, `INVESTIGATION-claude-code-write-path-normalisation.md`) that derivative projects don't have. Index entries in this file should reflect the *local* archive contents; only the link-convention rule itself is generic and shippable.
 
 ### Conditional
 
@@ -169,6 +167,7 @@ Files that may or may not be relevant depending on whether the target project ha
 ## Excluded by design — do NOT copy these even though they appear in the source PRs' diffs
 
 - `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md` — template-internal historical spec record (the implementation is what matters; the spec is preserved for the template's own audit trail)
+- `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` — the five-sighting diagnosis trail that motivated the SCRATCH-write hook. Template-internal historical context. Derivatives inherit the conclusion (the hook + the ADR + the ops doc); the diagnosis trail itself stays in the template. The SCRATCH-write hook ADR's "Hook compensates for an unfixed upstream defect" trade-off section points to the upstream URL for anyone who wants the breadcrumb.
 - `TEMPLATE-INSTRUCTIONS.md` — template-internal bootstrap doc; derivative projects either delete it after first clone or have their own version
 
 ## Apply prompt
@@ -266,12 +265,15 @@ Please:
 
 9. **For "Conditional" files**, evaluate the stated condition before deciding.
 
-10. **Excluded files**: do NOT fetch SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md
-    or TEMPLATE-INSTRUCTIONS.md even though they appear in the source PRs' diffs. They
-    are template-internal. Note:
-    SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md IS in
-    the manifest (Copy verbatim → Investigation log) and should be fetched — it is
-    referenced from the SCRATCH-write hook ADR and ops doc via project-relative paths.
+10. **Excluded files**: do NOT fetch any of the following even though they appear in the
+    source PRs' diffs. All are template-internal historical context:
+    - SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md (template's own historical
+      spec record)
+    - SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md
+      (the diagnosis trail that motivated the SCRATCH-write hook; the conclusion
+      travels via the ADR, the trail stays in the template — the ADR points to the
+      upstream URL for anyone who wants the diagnosis breadcrumb)
+    - TEMPLATE-INSTRUCTIONS.md (template-bootstrap doc)
 
 11. **Before writing ANY changes**, list every proposed edit with a one-line rationale,
     and flag every place where local customisation could be lost. Wait for user
@@ -349,7 +351,6 @@ test -f REFERENCE/scratch-write-hook.md                # ops doc
 test -f REFERENCE/decisions/2026-04-26-scratch-write-pretooluse-hook.md   # ADR
 grep -q '2026-04-26-scratch-write-pretooluse-hook' REFERENCE/decisions/CLAUDE.md   # ADR indexed
 grep -q 'scratch-write-hook' REFERENCE/CLAUDE.md       # ops doc indexed
-test -f SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md   # investigation log vendored
 grep -q 'approve-scratch-write.sh' .claude/settings.json   # hook registered
 grep -q '_comment_scratch_writes' .claude/settings.json    # documented why no Write(/SCRATCH/...) entries
 
@@ -362,10 +363,13 @@ bash .claude/hooks/tests/safety-harness/run-tests.sh
 bash .claude/hooks/tests/approve-scratch-write/run-tests.sh
 ```
 
-Manual checks (can't be scripted):
+### Required smoke tests (cannot be scripted — fixtures don't substitute)
 
-- Run `/review-spec` once on any spec and confirm no Bash approval prompts surface during the reviewer agents' work.
-- Trigger the safety-harness intentionally: type `rm -rf $HOME/test-nonexistent` (in a state where the path doesn't exist, so it's a no-op even if it ran) and confirm the hook blocks with the expected reason. Then prefix with `SAFETY_HARNESS_OFF=1 ` and confirm the bypass works.
+The fixture suites verify the hook scripts' JSON output. They cannot verify that Claude Code is actually firing the hooks before the relevant tool gates fire — that's a registration concern, and registration only fails empirically in a fresh session. Run all three smoke tests below; if any fails, the hook is not actually wired up and the corresponding test suite passing is a misleading green.
+
+1. **Safety-harness fires (Stage 4 registration check).** Type `rm -rf $HOME/test-nonexistent` at the prompt (the path doesn't exist, so it's a no-op even if it ran). The hook should block with a clear reason. Then prefix with `SAFETY_HARNESS_OFF=1 ` and confirm the bypass works. If the block doesn't fire, the hook is misregistered — the matcher in `.claude/settings.json` `hooks.PreToolUse[0]` is not pointing at the script, or the script isn't executable.
+2. **SCRATCH-write hook fires silently (Stage 5 registration check).** In a *fresh* Claude Code session (not the one that just merged the rollout — registration is read at session start), run any `/review-*` skill against any PR. The skill writes its comment body to `SCRATCH/review-pr-<N>-*.md` via the `Write` tool. **No approval prompt should appear.** If the prompt fires, the hook is misregistered — see [`REFERENCE/scratch-write-hook.md`](../../scratch-write-hook.md) → "Troubleshooting → The prompt still fires when writing to SCRATCH/" for the diagnosis steps.
+3. **Reviewer agents run silent (Stage 3 conventions check).** Run `/review-spec` once on any spec and confirm no Bash approval prompts surface during the reviewer agents' work. If prompts appear, the Tool invocation conventions section didn't land or the allowlist additions are incomplete.
 
 ## Notes for the receiving Claude
 
@@ -377,6 +381,6 @@ Manual checks (can't be scripted):
 - **`chmod +x` on all four `.sh` files is essential.** Raw GitHub URLs do not preserve executable bits. Without this step, the hooks silently fail (Claude Code will error trying to invoke a non-executable script) and the test runners won't run. Apply `chmod +x` immediately after WebFetch for each. The four files are: `safety-harness.sh`, `safety-harness/run-tests.sh`, `approve-scratch-write.sh`, `approve-scratch-write/run-tests.sh`.
 - **Two fixture directories need bulk-fetching.** The 39-pair safety-harness fixtures and the 6-pair SCRATCH-write fixtures are both small enough to fetch via the GitHub tree API. Do not manually list filenames in the apply plan — that's noise and risks transcription errors.
 - **The two test suites are the single most useful verification checks.** All the `test -f` and `grep -q` checks confirm presence; only the test runners confirm behaviour. If `bash .claude/hooks/tests/safety-harness/run-tests.sh` or `bash .claude/hooks/tests/approve-scratch-write/run-tests.sh` exits non-zero, something is wrong (likely a fixture missing, the script not executable, the parse helper missing, or a regex/bash quirk on the receiving system).
-- **Excluded files**: `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md` and `TEMPLATE-INSTRUCTIONS.md` are template-internal. They appear in the source PRs' diffs but should not be copied. The "What changed" section explains why each is template-internal. Note that `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` IS in the manifest (Copy verbatim → Investigation log) and SHOULD be fetched — it is referenced by project-relative path from the SCRATCH-write hook ADR and ops doc, and skipping it leaves dangling links.
+- **Excluded files**: three template-internal files appear in the source PRs' diffs but should NOT be copied: `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md` (template's own historical spec record), `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` (diagnosis trail; the conclusion travels via the SCRATCH-write hook ADR, which points to the upstream URL for the trail), and `TEMPLATE-INSTRUCTIONS.md` (template-bootstrap doc).
 - **Shared parse helper at `.claude/hooks/lib/parse-tool-input.sh`** — used by both `safety-harness.sh` and `approve-scratch-write.sh`. Stage 4 may already have placed it; if so, Stage 5 doesn't need to re-fetch. If a content diff between local and source surfaces, flag it rather than overwriting — the helper is small and a difference would suggest local divergence worth investigating.
 - **Project-specific stack mentions in `security-specialist.md`** — the template's reference includes generic mentions like "Supabase RLS", "Cloudflare Workers". If the receiving project uses different infrastructure, fold the threat-model-aware language in but keep local stack-specific guidance.
