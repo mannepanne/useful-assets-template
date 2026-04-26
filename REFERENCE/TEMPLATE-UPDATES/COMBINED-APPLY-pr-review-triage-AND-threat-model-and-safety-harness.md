@@ -158,12 +158,15 @@ Steps:
 
 10. For "Conditional" files, evaluate the stated condition before deciding.
 
-11. Excluded files — do NOT fetch even though they appear in the source PRs' diffs:
-    - `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md`
-    - `TEMPLATE-INSTRUCTIONS.md`
-    Note: `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` IS
-    in the manifest (Copy verbatim → Investigation log) and SHOULD be fetched — it's
-    referenced by project-relative path from the SCRATCH-write hook ADR and ops doc.
+11. Excluded files — do NOT fetch any of the following even though they appear in the
+    source PRs' diffs. All are template-internal historical context:
+    - `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md` (template's own historical
+      spec record)
+    - `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md`
+      (the diagnosis trail that motivated the SCRATCH-write hook; the conclusion
+      travels via the ADR, the trail stays in the template — the ADR points to the
+      upstream URL for the breadcrumb)
+    - `TEMPLATE-INSTRUCTIONS.md` (template-bootstrap doc)
 
 12. Before writing ANY changes, list every proposed edit with a one-line rationale and
     flag every place where local customisation could be lost. Wait for my confirmation.
@@ -289,9 +292,16 @@ Now that both rollout packets have landed, do a post-rollout consistency sweep
        resolve
      - Anchors pointing at `.claude/agents/CLAUDE.md#untrusted-input-contract`
        resolve
-     - The threat-model ADR (`2026-04-25-pr-review-threat-model.md`) is
-       referenced correctly from `triage-reviewer.md`, `light-reviewer.md`,
-       `security-specialist.md`
+     - **Per-file direct ADR reference (do not rely on inheritance).** Each of
+       `.claude/agents/triage-reviewer.md`, `.claude/agents/light-reviewer.md`,
+       and `.claude/agents/security-specialist.md` MUST contain a direct,
+       grep-able reference to `2026-04-25-pr-review-threat-model.md`. Verify
+       with `grep -l '2026-04-25-pr-review-threat-model' <each file>` — all
+       three should match. Transitive inheritance through the
+       `agents/CLAUDE.md` severity-calibration section is not sufficient:
+       reviewers should be self-contained on their calibration assumptions, and
+       a reviewer read in isolation needs the ADR pointer without having to
+       know the inheritance chain.
      - The two packet-1 ADRs (`2026-04-22-...`) and the three packet-2 ADRs
        (`2026-04-25-pr-review-threat-model.md`,
        `2026-04-26-allowlist-pinning-principle.md`,
