@@ -26,6 +26,11 @@ TEMPLATE-UPDATES/
 
 **When to apply:** If a derivative project still has the older `/review-pr` (no triage) and/or the gate logic duplicated inside `.claude/CLAUDE.md`.
 
+### [2026-04-threat-model-and-safety-harness/](./2026-04-threat-model-and-safety-harness/)
+**What it rolls out:** A documented threat model that calibrates reviewer-agent severity defaults, a coherent set of silence-the-prompts conventions (Tool invocation conventions, allowlist tuning, dispatcher Read-then-Write fallback, `WebFetch` granted to spec-review agents only), and a PreToolUse safety-harness hook with a 39-fixture test suite. Bundles PRs #18, #19, #21, #22, #23, #24, #25 plus the standalone silence/threat-model groundwork commits between them.
+
+**When to apply:** After `2026-04-pr-review-triage` has landed (this packet builds on the triage system). Apply if the derivative project still has reviewer agents flagging worst-case findings without a documented threat model, `/review-pr` runs that prompt the user repeatedly, no safety net against destructive commands, or hasn't yet adopted the TEMPLATE-UPDATES system itself.
+
 ---
 
 ## Authoring a new packet
