@@ -27,8 +27,6 @@ A coherent set of improvements landed across PRs 18–34 that together shift the
 3. **A PreToolUse safety-harness hook.** A two-tier (block/ask) hook script that intercepts genuinely destructive Bash commands before the shell sees them. Calibrated for the *less-experienced-user* sub-case in the threat model (the threat-model ADR has an addendum for this) — block tier catches one-way doors against personal data (`rm -rf` against root/home/`$HOME`, `dd of=/dev/disk*`, `mkfs * /dev/disk*`, `diskutil eraseDisk`, SQL `DROP TABLE/DATABASE/SCHEMA`, `gh repo delete`); ask tier surfaces a permission dialog with educational reason for `git reset --hard`, `git push --force` to non-main, `chmod 777`. Comes with a 32-test fixture-based test suite and an inline `SAFETY_HARNESS_OFF=1` bypass.
 4. **A PreToolUse SCRATCH-write hook.** A second `PreToolUse` hook scoped to `Write` that auto-approves writes under `<project>/SCRATCH/`. Required because Claude Code's `Write` tool gates *beyond* the allow-list matcher — `Write(/SCRATCH/*)` and three sibling glob shapes empirically do not silence the prompt across five fresh-session sightings (PR #32 captured the fifth and ran it with all four shapes simultaneously committed). The hook is fail-safe by design (only ever emits `permissionDecision: "allow"`, falls through silently on any error or unexpected input), narrowly scoped (`Write` only, paths textually under `$CLAUDE_PROJECT_DIR/SCRATCH/` only, with `..`-traversal rejection), and ships with a 7-test fixture suite (6 fixture pairs + one unset-`CLAUDE_PROJECT_DIR` case). The dead `Write(/SCRATCH/*)` allow-list entries are removed; the hook is the canonical path until the upstream matcher is fixed.
 
-Plus one bootstrap dependency: **PR #18 introduced the TEMPLATE-UPDATES packet system itself.** Derivative projects on the previous packet (`2026-04-pr-review-triage`) won't have it, and they need it before they can apply this packet's manifest cleanly. Apply the bootstrap first.
-
 > **⚠️ Read this before adopting any calibration downstream.** The threat-model ADR at `REFERENCE/decisions/2026-04-25-pr-review-threat-model.md` is the load-bearing assumption. **Most derivative projects do not have the template's exact contributor model.** The severity defaults, the safety-harness block/ask choices, and the decision to withhold `WebFetch` from PR-review agents all depend on that calibration. If your project's contributor model differs (open-source PRs from strangers, multi-team enterprise, regulated environments, junior developers as primary users), follow the ADR's *tightening checklist* before adopting downstream changes — otherwise you ship the template's defaults into a project that needs different ones. The receiving Claude must surface this question before applying anything in the manifest.
 
 ## What changed
@@ -44,7 +42,6 @@ Plus one bootstrap dependency: **PR #18 introduced the TEMPLATE-UPDATES packet s
 - **PreToolUse SCRATCH-write hook:** new `.claude/hooks/approve-scratch-write.sh` script + a 7-test fixture suite at `.claude/hooks/tests/approve-scratch-write/` (6 fixture pairs + one unset-`CLAUDE_PROJECT_DIR` case that needs no fixture). Registered as the second entry in `hooks.PreToolUse` with `matcher: "Write"`. Shares the parse helper at `.claude/hooks/lib/parse-tool-input.sh` with the safety-harness hook. Fail-safe: only ever emits `permissionDecision: "allow"`, exits silently on any error or unexpected shape, never weakens existing safety. Replaces the dead `Write(/SCRATCH/*)` (and three sibling glob) allow-list entries — those are removed because the upstream `Write` matcher empirically does not honour them. The `permissions._comment_scratch_writes` field in `.claude/settings.json` documents the situation for future readers and points at the ADR.
 - **Reference doc:** `REFERENCE/safety-harness.md` describes block-tier / ask-tier / what's not caught / how to bypass / how to extend patterns. `REFERENCE/scratch-write-hook.md` is the operations doc for the SCRATCH-write hook (what it approves, where it sits in the call path, what's deliberately out of scope, fail-closed semantics, how to extend, and the rollback path if the upstream matcher is fixed).
 - **Allowlist tuning** in `.claude/settings.json` for git-pipe forms, `git fetch`, `Read(/SCRATCH/*)` (and three sibling glob shapes for `Read`), the safety-harness and SCRATCH-write hook test-runner entries, etc. The `Write(/SCRATCH/...)` entries are deliberately *absent* — the SCRATCH-write hook handles those.
-- **TEMPLATE-UPDATES packet system itself:** `REFERENCE/TEMPLATE-UPDATES/CLAUDE.md` (index + author/apply guide) and `TEMPLATE.md` (skeleton) — the system that lets future packets like this one be applied cleanly.
 
 For the full design rationale, the threat-model ADR is the single most useful starting point. The PR descriptions linked above carry the per-change specifics.
 
@@ -52,11 +49,10 @@ For the full design rationale, the threat-model ADR is the single most useful st
 
 The sub-changes have dependencies. Apply in this order:
 
-1. **TEMPLATE-UPDATES bootstrap** (PR #18) — without it, the packet system this README is part of doesn't exist locally.
-2. **Threat-model ADR + agent severity calibration** (commits `4813aad`, PR #19, PR #21) — every other calibration in this packet refers back to this ADR. If a derivative project edits the ADR to fit a different contributor model, that edit must land first; downstream calibrations follow.
-3. **Silent-review conventions** (commits `e3521c7`, `f6050b2`, `db5f200`, PR #22, PR #25, PR #30, PR #31, PR #32, PR #34) — Tool invocation conventions section, allowlist additions (including JSON-validation tooling pinned per the allow-list pinning ADR, bare-grep and jq, hook test-runner entries, the four `Read(/SCRATCH/...)` glob shapes), triage patterns file rename, dispatcher Read-then-Write fallback, WebFetch grants on spec-review agents.
-4. **Safety harness** (PR #23 ADR sub-case, PR #24 implementation) — independent of the silent-review work; establishes the `hooks.PreToolUse` block for the first time. The `chmod +x` step (see below) is essential.
-5. **SCRATCH-write hook** (PR #32 investigation, PR #33 implementation) — appends the second entry to `hooks.PreToolUse`, so apply *after* Stage 4 to keep the block-merge clean. Conceptually this closes the silent-reviews loop (Stage 3 added `Read(/SCRATCH/*)` allow-list rules; this stage handles the `Write` side that the matcher doesn't honour). File-content-wise it doesn't depend on Stage 4, but adjacency keeps the `hooks.PreToolUse` merge to a single pass. The `chmod +x` step on `approve-scratch-write.sh` and its test runner is essential.
+1. **Threat-model ADR + agent severity calibration** (commits `4813aad`, PR #19, PR #21) — every other calibration in this packet refers back to this ADR. If a derivative project edits the ADR to fit a different contributor model, that edit must land first; downstream calibrations follow.
+2. **Silent-review conventions** (commits `e3521c7`, `f6050b2`, `db5f200`, PR #22, PR #25, PR #30, PR #31, PR #32, PR #34) — Tool invocation conventions section, allowlist additions (including JSON-validation tooling pinned per the allow-list pinning ADR, bare-grep and jq, hook test-runner entries, the four `Read(/SCRATCH/...)` glob shapes), triage patterns file rename, dispatcher Read-then-Write fallback, WebFetch grants on spec-review agents.
+3. **Safety harness** (PR #23 ADR sub-case, PR #24 implementation) — independent of the silent-review work; establishes the `hooks.PreToolUse` block for the first time. The `chmod +x` step (see below) is essential.
+4. **SCRATCH-write hook** (PR #32 investigation, PR #33 implementation) — appends the second entry to `hooks.PreToolUse`, so apply *after* Stage 3 to keep the block-merge clean. Conceptually this closes the silent-reviews loop (Stage 2 added `Read(/SCRATCH/*)` allow-list rules; this stage handles the `Write` side that the matcher doesn't honour). File-content-wise it doesn't depend on Stage 3, but adjacency keeps the `hooks.PreToolUse` merge to a single pass. The `chmod +x` step on `approve-scratch-write.sh` and its test runner is essential.
 
 ## File manifest
 
@@ -73,10 +69,6 @@ Files that did not exist before this rollout. Add them as-is unless a same-named
 **Scratch directory placeholder**
 - `SCRATCH/.gitignore` — single file, two lines (`*\n!.gitignore`). Keeps the directory tracked but ignores all contents. Review skills write their intermediate comment-body files here; the gitignored contents mean artefacts don't leak into commits. Without this file, the directory wouldn't exist in fresh clones and the first Write would have to create the parent. The directory lives at the repo root (not inside `.claude/`) because Writes under `.claude/` trigger Claude Code's settings-self-modification approval gate regardless of allowlist entries.
 
-**TEMPLATE-UPDATES bootstrap (only if absent locally — projects that already applied a previous packet via this system will have these)**
-- `REFERENCE/TEMPLATE-UPDATES/CLAUDE.md` — index + author/apply guide
-- `REFERENCE/TEMPLATE-UPDATES/TEMPLATE.md` — skeleton for new packets
-
 **Triage patterns file** (RENAMED — see "Easy-to-miss mechanics" below)
 - `.claude/agents/triage-scan-patterns.txt` — secret-shape patterns, loaded via `grep -E -f` to keep regex off the command line. **Note:** the previous packet (`2026-04-pr-review-triage`) now also ships this file, so projects that adopted that packet first will already have it. Skip this entry if the file is already present locally.
 
@@ -88,7 +80,7 @@ Files that did not exist before this rollout. Add them as-is unless a same-named
 
 **SCRATCH-write hook implementation**
 - `.claude/hooks/approve-scratch-write.sh` — the hook script (**must `chmod +x` after fetch**)
-- `.claude/hooks/lib/parse-tool-input.sh` — shared parse helper used by both PreToolUse hooks. **Note:** the safety-harness hook also depends on this file, so projects that already applied Stage 4 will have it. If absent, fetch and place at the listed path; if present, leave alone (a content diff between local and source would be unexpected — flag rather than overwrite). **Older-shape edge case:** projects that applied Stage 4 *before* PR #33 landed have a `safety-harness.sh` that does inline JSON parsing (no `. "$SCRIPT_DIR/lib/parse-tool-input.sh"` line near the top). On re-application, that file should also be updated from source — otherwise you have the helper sitting unused alongside the older inline shape. A quick `grep -q parse-tool-input.sh .claude/hooks/safety-harness.sh` confirms which shape is local.
+- `.claude/hooks/lib/parse-tool-input.sh` — shared parse helper used by both PreToolUse hooks. **Note:** the safety-harness hook also depends on this file, so projects that already applied Stage 3 will have it. If absent, fetch and place at the listed path; if present, leave alone (a content diff between local and source would be unexpected — flag rather than overwrite). **Older-shape edge case:** projects that applied Stage 3 *before* PR #33 landed have a `safety-harness.sh` that does inline JSON parsing (no `. "$SCRIPT_DIR/lib/parse-tool-input.sh"` line near the top). On re-application, that file should also be updated from source — otherwise you have the helper sitting unused alongside the older inline shape. A quick `grep -q parse-tool-input.sh .claude/hooks/safety-harness.sh` confirms which shape is local.
 - `.claude/hooks/tests/approve-scratch-write/run-tests.sh` — fixture runner (**must `chmod +x` after fetch**)
 - `.claude/hooks/tests/approve-scratch-write/fixtures/` — 6 fixture pairs (12 files: `*.in.json` + `*.expected.json`). Test count is 7 because one test (the unset-`CLAUDE_PROJECT_DIR` case) needs no fixture pair. Use the same tree-API approach as the safety-harness fixtures; the directory is small enough to enumerate but consistent with the broader pattern.
 - `REFERENCE/scratch-write-hook.md` — how-it-works doc (what's caught, fail-closed semantics, threat-model carve-outs for symlinks and exotic filenames, how to extend, how to remove if upstream is fixed)
@@ -113,7 +105,7 @@ Don't treat this file as a single merge. Apply each delta independently:
 
 - **`env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"`** — already required by the previous packet (`2026-04-pr-review-triage`); it's listed here only because it appears in the source file. **If already present locally with the same value, no change.** If absent, add.
 - **`permissions.allow` additions** — multiple new entries across thematic groups, plus two `_comment_*` fields that document load-bearing assumptions (the threat-model `_comment` and the `_comment_scratch_writes` field that explains why no `Write(/SCRATCH/...)` entries are present and points at the SCRATCH-write hook ADR):
-  - **Review-tooling entries** (the silent-reviews work): `Bash(git fetch *)`, `Bash(git -C * log/show/diff/status *)`, `Bash(git show * | sed -n *)` and the related git-pipe siblings, `Bash(gh pr diff * | grep *)`, the four `Read(/SCRATCH/*)` / `Read(/SCRATCH/**)` / `Read(SCRATCH/*)` / `Read(SCRATCH/**)` glob shapes (all four are committed deliberately — `Read` honours the matcher and the four-shape coverage was the empirical answer that surfaced from PR #32's investigation; cheaper than guessing which form a future Claude Code build prefers). **Do NOT add `Write(/SCRATCH/*)` (or any of `Write(/SCRATCH/**)`, `Write(SCRATCH/*)`, `Write(SCRATCH/**)`)** — the upstream `Write` matcher empirically does not honour these entries across five fresh-session sightings. Silencing the SCRATCH/ Write prompt is the job of the `PreToolUse` SCRATCH-write hook bundled in this packet (Stage 5; the second `hooks.PreToolUse` array entry, registered with `matcher: "Write"` and pointing at `.claude/hooks/approve-scratch-write.sh`). Older versions of this packet pinned to `/tmp/review-pr-*` and `/tmp/spec-review-*` — derivative projects upgrading from the older form should swap those `/tmp` rules for the four `Read(/SCRATCH/...)` glob shapes and add `SCRATCH/.gitignore`. Projects upgrading from an earlier draft of THIS packet that committed `Write(/SCRATCH/*)` (or any of the four `Write` glob shapes) should remove all four — they are dead code. An even-earlier intermediate shape used `.claude/scratch/*`; that form triggered Claude Code's settings-self-modification approval prompt on every Write and was abandoned for the repo-root location.
+  - **Review-tooling entries** (the silent-reviews work): `Bash(git fetch *)`, `Bash(git -C * log/show/diff/status *)`, `Bash(git show * | sed -n *)` and the related git-pipe siblings, `Bash(gh pr diff * | grep *)`, the four `Read(/SCRATCH/*)` / `Read(/SCRATCH/**)` / `Read(SCRATCH/*)` / `Read(SCRATCH/**)` glob shapes (all four are committed deliberately — `Read` honours the matcher and the four-shape coverage was the empirical answer that surfaced from PR #32's investigation; cheaper than guessing which form a future Claude Code build prefers). **Do NOT add `Write(/SCRATCH/*)` (or any of `Write(/SCRATCH/**)`, `Write(SCRATCH/*)`, `Write(SCRATCH/**)`)** — the upstream `Write` matcher empirically does not honour these entries across five fresh-session sightings. Silencing the SCRATCH/ Write prompt is the job of the `PreToolUse` SCRATCH-write hook bundled in this packet (Stage 4; the second `hooks.PreToolUse` array entry, registered with `matcher: "Write"` and pointing at `.claude/hooks/approve-scratch-write.sh`). Older versions of this packet pinned to `/tmp/review-pr-*` and `/tmp/spec-review-*` — derivative projects upgrading from the older form should swap those `/tmp` rules for the four `Read(/SCRATCH/...)` glob shapes and add `SCRATCH/.gitignore`. Projects upgrading from an earlier draft of THIS packet that committed `Write(/SCRATCH/*)` (or any of the four `Write` glob shapes) should remove all four — they are dead code. An even-earlier intermediate shape used `.claude/scratch/*`; that form triggered Claude Code's settings-self-modification approval prompt on every Write and was abandoned for the repo-root location.
   - **Test / typecheck / lint entries** (silent test runs across common JS/TS toolchains). Two shape families, both needed:
     - **Plain prefix forms:** `Bash(npm test:*)`, `Bash(npm run test:*)`, `Bash(npm run typecheck:*)`, `Bash(npm run lint:*)`, `Bash(bun test:*)`, `Bash(bun run test:*)`, `Bash(bun run typecheck:*)`, `Bash(bun run lint:*)`, `Bash(node_modules/.bin/vitest:*)`, `Bash(node_modules/.bin/jest:*)`, `Bash(node_modules/.bin/tsc:*)`, `Bash(npx vitest:*)`, `Bash(npx tsc:*)`.
     - **Pipe-aware forms** for common output-truncation patterns Claude reaches for (`| tail -<n>`, `| head -<n>`, `| grep <pattern>`): `Bash(npm test * | tail/head/grep *)`, `Bash(npm run test * | tail/head/grep *)`, `Bash(npm run typecheck * | tail *)`, `Bash(npm run lint * | tail *)`, `Bash(bun run test * | tail/head/grep *)`, `Bash(bun run typecheck * | tail *)`, `Bash(bun run lint * | tail *)`, `Bash(node_modules/.bin/vitest * | tail/head/grep *)`, `Bash(node_modules/.bin/jest * | tail *)`, `Bash(node_modules/.bin/tsc * | tail *)`, `Bash(npx vitest * | tail *)`, `Bash(npx tsc * | tail *)`. The pipe variants are **necessary**, not redundant — the permission matcher checks the full compound command against the pattern, so `Bash(node_modules/.bin/vitest:*)` alone won't silence `vitest run X 2>&1 | tail -30`. The same reason the manifest's git-pipe rules (`Bash(git show * | tail *)` etc) exist as siblings of `Bash(git -C * show *)`.
@@ -122,13 +114,13 @@ Don't treat this file as a single merge. Apply each delta independently:
     - **`python3 -m json.tool` (pinned narrowly):** `Bash(python3 -m json.tool:*)`, `Bash(python3 -m json.tool * > /dev/null)`, `Bash(python3 -m json.tool * > /dev/null && echo *)`, `Bash(python3 -m json.tool * && echo *)`. The risk is the binary, not the module — `Bash(python3:*)` or `Bash(python3 -m *)` would silently allow `python3 -c "import os; os.system(...)"` (full arbitrary code execution) and any other Python module. Pin to the specific subcommand only.
     - **`jq` (binary-level allow):** `Bash(jq:*)` plus pipe siblings `Bash(jq * | tail *)`, `Bash(jq * | head *)`, `Bash(jq * | grep *)`. **Different risk profile from Python** — `jq` has no escape hatch to arbitrary code execution: no `-c`-equivalent, no shell-out, no module imports, no file writes. It's a pure JSON-in / JSON-out transformer. So binary-level allow at `Bash(jq:*)` is genuinely safe; the pipe siblings cover jq-as-source patterns. (jq-as-sink — `<command> | jq *` — is intentionally NOT allow-listed broadly: the matcher checks the full compound, so `Bash(* | jq *)` would smuggle in any source command. Add narrow source-piped-to-jq rules only as specific sources surface as pain points.)
     - **`grep` (binary-level allow + semicolon-echo sibling):** `Bash(grep:*)` plus `Bash(grep * ; echo *)`. Same pinning-ADR rationale as `jq` — `grep` is a pure data transformer with no code-eval, no shell-out, no file writes. Binary-level allow is safe. The semicolon-echo sibling silences the `grep ... ; echo "exit=$?"` workaround pattern (used to disambiguate "no matches" from "error" since `grep` exits 1 when the pattern doesn't match, which the shell treats as a failure).
-  - **Hook test-runner entries** (silent execution of bundled hook test suites that reviewer agents reach for after `.claude/settings.json` or hook-script changes — empirically observed three times in a single review before silencing): `Bash(.claude/hooks/tests/safety-harness/run-tests.sh:*)` (Stage 4) and `Bash(.claude/hooks/tests/approve-scratch-write/run-tests.sh:*)` (Stage 5). Same pinning-ADR rationale as `node_modules/.bin/vitest:*` — both runners are deterministic shell scripts that invoke a single fixed hook and exit, with no `-c`-equivalent escape hatch, so binary-level (script-path) allow is the right granularity. Pin to the script path, not the parent directory. Each entry is dead until its corresponding hook + test suite is in place — Stage 4 establishes the safety-harness side, Stage 5 establishes the SCRATCH-write side.
+  - **Hook test-runner entries** (silent execution of bundled hook test suites that reviewer agents reach for after `.claude/settings.json` or hook-script changes — empirically observed three times in a single review before silencing): `Bash(.claude/hooks/tests/safety-harness/run-tests.sh:*)` (Stage 3) and `Bash(.claude/hooks/tests/approve-scratch-write/run-tests.sh:*)` (Stage 4). Same pinning-ADR rationale as `node_modules/.bin/vitest:*` — both runners are deterministic shell scripts that invoke a single fixed hook and exit, with no `-c`-equivalent escape hatch, so binary-level (script-path) allow is the right granularity. Pin to the script path, not the parent directory. Each entry is dead until its corresponding hook + test suite is in place — Stage 3 establishes the safety-harness side, Stage 4 establishes the SCRATCH-write side.
   - Append entries that are absent locally; do not deduplicate or reorder existing local entries. The `_comment` and `_comment_scratch_writes` keys are no-op fields for documentation purposes — fine to add.
 - **`hooks.PreToolUse` block** — new top-level `hooks` key with the `PreToolUse` array containing two entries:
-  1. **Bash matcher (safety-harness, Stage 4):** `matcher: "Bash"`, the `if`-filter alternation (`rm * | dd * | mkfs* | diskutil* | git push * | git reset * | gh repo * | psql * | supabase * | chmod *`), and the command pointing at `$CLAUDE_PROJECT_DIR/.claude/hooks/safety-harness.sh`.
-  2. **Write matcher (SCRATCH-write hook, Stage 5):** `matcher: "Write"`, no `if`-filter (the script does its own scoping in pure shell — see the ADR's "trade-offs accepted" section for why an `if`-filter doesn't cleanly express path-prefix matching), and the command pointing at `$CLAUDE_PROJECT_DIR/.claude/hooks/approve-scratch-write.sh`.
+  1. **Bash matcher (safety-harness, Stage 3):** `matcher: "Bash"`, the `if`-filter alternation (`rm * | dd * | mkfs* | diskutil* | git push * | git reset * | gh repo * | psql * | supabase * | chmod *`), and the command pointing at `$CLAUDE_PROJECT_DIR/.claude/hooks/safety-harness.sh`.
+  2. **Write matcher (SCRATCH-write hook, Stage 4):** `matcher: "Write"`, no `if`-filter (the script does its own scoping in pure shell — see the ADR's "trade-offs accepted" section for why an `if`-filter doesn't cleanly express path-prefix matching), and the command pointing at `$CLAUDE_PROJECT_DIR/.claude/hooks/approve-scratch-write.sh`.
 
-  If `hooks.PreToolUse` is absent, add the whole block with both entries. If present with other entries, append each as an additional array element. **Do not overwrite local hook entries.** If only the Bash entry is present (i.e. the project applied an earlier shape of this packet that didn't include the SCRATCH-write hook), append the Write entry — that's the Stage 5 delta.
+  If `hooks.PreToolUse` is absent, add the whole block with both entries. If present with other entries, append each as an additional array element. **Do not overwrite local hook entries.** If only the Bash entry is present (i.e. the project applied an earlier shape of this packet that didn't include the SCRATCH-write hook), append the Write entry — that's the Stage 4 delta.
 
 **`.claude/agents/triage-reviewer.md`**
 - Adopted across PRs #19, `f6050b2`, and PR #21. Three changes: (1) reads patterns from the patterns file via `grep -E -f` rather than inline regex; (2) gained a one-line note explaining its rubric doesn't need recalibration (path-based HIGH triggers are runtime concerns); (3) fail-closed contract escalates to `team` tier when the patterns file is missing or unreadable. If the local file is the older form (inline secret regex on the command line), replace wholesale and verify nothing project-specific was added.
@@ -147,10 +139,10 @@ Don't treat this file as a single merge. Apply each delta independently:
 - PR #25 changed the spec-resolution step from `find SPECIFICATIONS/...` to using the `Glob` tool. Replace the bash code block + surrounding sentence with the Glob-based instruction. Localised wording around it can stay as-is.
 
 **`REFERENCE/CLAUDE.md`**
-- Two index entries to add under "Files in this directory": one for `safety-harness.md` (Stage 4, PR #24) and one for `scratch-write-hook.md` (Stage 5, PR #33). Add each in alphabetical/topical order alongside existing entries.
+- Two index entries to add under "Files in this directory": one for `safety-harness.md` (Stage 3, PR #24) and one for `scratch-write-hook.md` (Stage 4, PR #33). Add each in alphabetical/topical order alongside existing entries.
 
 **`REFERENCE/decisions/CLAUDE.md`**
-- Three index entries to add: one for the threat-model ADR (`2026-04-25-pr-review-threat-model.md`, Stage 2), one for the allow-list pinning principle ADR (`2026-04-26-allowlist-pinning-principle.md`, Stage 3 — already in the "Copy verbatim" list above), and one for the SCRATCH-write hook ADR (`2026-04-26-scratch-write-pretooluse-hook.md`, Stage 5). The index typically lists ADRs newest-first.
+- Three index entries to add: one for the threat-model ADR (`2026-04-25-pr-review-threat-model.md`, Stage 1), one for the allow-list pinning principle ADR (`2026-04-26-allowlist-pinning-principle.md`, Stage 2 — already in the "Copy verbatim" list above), and one for the SCRATCH-write hook ADR (`2026-04-26-scratch-write-pretooluse-hook.md`, Stage 4). The index typically lists ADRs newest-first.
 
 **`SPECIFICATIONS/ARCHIVE/CLAUDE.md`**
 - PR #23 added a "Link convention for archived specs" rule. Apply only if the project uses the `SPECIFICATIONS/ARCHIVE/` pattern. The rule is short and self-contained — append it.
@@ -168,6 +160,7 @@ Files that may or may not be relevant depending on whether the target project ha
 
 - `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md` — template-internal historical spec record (the implementation is what matters; the spec is preserved for the template's own audit trail)
 - `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` — the five-sighting diagnosis trail that motivated the SCRATCH-write hook. Template-internal historical context. Derivatives inherit the conclusion (the hook + the ADR + the ops doc); the diagnosis trail itself stays in the template. The SCRATCH-write hook ADR's "Hook compensates for an unfixed upstream defect" trade-off section points to the upstream URL for anyone who wants the breadcrumb.
+- `REFERENCE/TEMPLATE-UPDATES/CLAUDE.md` and `REFERENCE/TEMPLATE-UPDATES/TEMPLATE.md` — the migration-packet-system infrastructure (introduced in PR #18). Template-internal: derivative projects don't need this scaffold unless they themselves intend to become templates for further forks, which is rare. Shipping them creates dead links in derivatives because the index inside `TEMPLATE-UPDATES/CLAUDE.md` points at packet directories (`./2026-04-pr-review-triage/`, `./2026-04-threat-model-and-safety-harness/`) that don't exist in derivative projects. If a derivative later wants to author its own packets, it can copy these two files at that point.
 - `TEMPLATE-INSTRUCTIONS.md` — template-internal bootstrap doc; derivative projects either delete it after first clone or have their own version
 
 ## Apply prompt
@@ -225,18 +218,16 @@ Please:
 3. Create a feature branch (e.g. feature/adopt-threat-model-and-safety-harness).
    Do NOT work on main.
 
-4. Apply the FIVE sub-changes IN ORDER (the README's "Application order" section
+4. Apply the FOUR sub-changes IN ORDER (the README's "Application order" section
    describes dependencies):
 
-   a. TEMPLATE-UPDATES bootstrap — only if REFERENCE/TEMPLATE-UPDATES/CLAUDE.md
-      doesn't already exist locally.
-   b. Threat-model ADR + agent severity calibration.
-   c. Silent-review conventions (Tool invocation conventions section, allowlist
+   a. Threat-model ADR + agent severity calibration.
+   b. Silent-review conventions (Tool invocation conventions section, allowlist
       additions, triage patterns file rename, dispatcher fallback, WebFetch grants
       on spec-review agents).
-   d. Safety harness — establishes the hooks.PreToolUse block (first entry, Bash matcher).
-   e. SCRATCH-write hook — appends the second entry to hooks.PreToolUse (Write matcher).
-      Apply after Stage d so the block-merge is a single pass.
+   c. Safety harness — establishes the hooks.PreToolUse block (first entry, Bash matcher).
+   d. SCRATCH-write hook — appends the second entry to hooks.PreToolUse (Write matcher).
+      Apply after Stage c so the block-merge is a single pass.
 
 5. **For each "Copy verbatim" file**, check whether a file at that path exists locally.
    If not, WebFetch the source and create it. If it does, treat as "merge carefully"
@@ -281,8 +272,8 @@ Please:
 
 12. **After applying, run the verification commands from the packet** and report results.
     Two test-suite checks catch partial rollouts:
-    - bash .claude/hooks/tests/safety-harness/run-tests.sh (Stage 4)
-    - bash .claude/hooks/tests/approve-scratch-write/run-tests.sh (Stage 5)
+    - bash .claude/hooks/tests/safety-harness/run-tests.sh (Stage 3)
+    - bash .claude/hooks/tests/approve-scratch-write/run-tests.sh (Stage 4)
     The test -f and grep -q checks are necessary but not sufficient — only the test
     runners confirm behaviour.
 ```
@@ -292,11 +283,7 @@ Please:
 Run each command below and report results. Most should exit 0; the safety-harness test suite should report 40/40 passing and the SCRATCH-write test suite should report 7/7 passing.
 
 ```bash
-# Stage 1: TEMPLATE-UPDATES bootstrap (skip if already had it)
-test -f REFERENCE/TEMPLATE-UPDATES/CLAUDE.md
-test -f REFERENCE/TEMPLATE-UPDATES/TEMPLATE.md
-
-# Stage 2: Threat-model ADR + calibration
+# Stage 1: Threat-model ADR + calibration
 test -f REFERENCE/decisions/2026-04-25-pr-review-threat-model.md
 grep -q '2026-04-25-pr-review-threat-model' REFERENCE/decisions/CLAUDE.md
 test -f REFERENCE/decisions/2026-04-26-allowlist-pinning-principle.md
@@ -304,7 +291,7 @@ grep -q '2026-04-26-allowlist-pinning-principle' REFERENCE/decisions/CLAUDE.md
 grep -q 'Severity calibration' .claude/agents/CLAUDE.md
 grep -q 'threat-model' .claude/agents/security-specialist.md
 
-# Stage 3: Silent reviews
+# Stage 2: Silent reviews
 grep -q 'Tool invocation conventions' .claude/agents/CLAUDE.md
 grep -q 'Tool grant asymmetry' .claude/agents/CLAUDE.md
 grep -q 'WebFetch' .claude/agents/technical-skeptic.md
@@ -331,7 +318,7 @@ grep -q 'Read(/SCRATCH/' .claude/settings.json                  # SCRATCH read a
 grep -q 'SCRATCH/' .claude/skills/review-pr/SKILL.md            # review skills point at scratch dir
 grep -q 'SCRATCH/' .claude/skills/review-pr-team/SKILL.md
 
-# Stage 4: Safety harness
+# Stage 3: Safety harness
 test -x .claude/hooks/safety-harness.sh                # chmod +x landed
 test -x .claude/hooks/tests/safety-harness/run-tests.sh
 test -f REFERENCE/safety-harness.md
@@ -343,7 +330,7 @@ grep -q 'safety-harness.sh' .claude/settings.json
 test "$(ls .claude/hooks/tests/safety-harness/fixtures/*.in.json 2>/dev/null | wc -l)" -eq 39
 test "$(ls .claude/hooks/tests/safety-harness/fixtures/*.expected.json 2>/dev/null | wc -l)" -eq 39
 
-# Stage 5: SCRATCH-write hook
+# Stage 4: SCRATCH-write hook
 test -x .claude/hooks/approve-scratch-write.sh         # chmod +x landed
 test -x .claude/hooks/tests/approve-scratch-write/run-tests.sh
 test -f .claude/hooks/lib/parse-tool-input.sh          # shared parse helper
@@ -367,14 +354,14 @@ bash .claude/hooks/tests/approve-scratch-write/run-tests.sh
 
 The fixture suites verify the hook scripts' JSON output. They cannot verify that Claude Code is actually firing the hooks before the relevant tool gates fire — that's a registration concern, and registration only fails empirically in a fresh session. Run all three smoke tests below; if any fails, the hook is not actually wired up and the corresponding test suite passing is a misleading green.
 
-1. **Safety-harness fires (Stage 4 registration check).** Type `rm -rf $HOME/test-nonexistent` at the prompt (the path doesn't exist, so it's a no-op even if it ran). The hook should block with a clear reason. Then prefix with `SAFETY_HARNESS_OFF=1 ` and confirm the bypass works. If the block doesn't fire, the hook is misregistered — the matcher in `.claude/settings.json` `hooks.PreToolUse[0]` is not pointing at the script, or the script isn't executable.
-2. **SCRATCH-write hook fires silently (Stage 5 registration check).** In a *fresh* Claude Code session (not the one that just merged the rollout — registration is read at session start), run any `/review-*` skill against any PR. The skill writes its comment body to `SCRATCH/review-pr-<N>-*.md` via the `Write` tool. **No approval prompt should appear.** If the prompt fires, the hook is misregistered — see [`REFERENCE/scratch-write-hook.md`](../../scratch-write-hook.md) → "Troubleshooting → The prompt still fires when writing to SCRATCH/" for the diagnosis steps.
-3. **Reviewer agents run silent (Stage 3 conventions check).** Run `/review-spec` once on any spec and confirm no Bash approval prompts surface during the reviewer agents' work. If prompts appear, the Tool invocation conventions section didn't land or the allowlist additions are incomplete.
+1. **Safety-harness fires (Stage 3 registration check).** Type `rm -rf $HOME/test-nonexistent` at the prompt (the path doesn't exist, so it's a no-op even if it ran). The hook should block with a clear reason. Then prefix with `SAFETY_HARNESS_OFF=1 ` and confirm the bypass works. If the block doesn't fire, the hook is misregistered — the matcher in `.claude/settings.json` `hooks.PreToolUse[0]` is not pointing at the script, or the script isn't executable.
+2. **SCRATCH-write hook fires silently (Stage 4 registration check).** In a *fresh* Claude Code session (not the one that just merged the rollout — registration is read at session start), run any `/review-*` skill against any PR. The skill writes its comment body to `SCRATCH/review-pr-<N>-*.md` via the `Write` tool. **No approval prompt should appear.** If the prompt fires, the hook is misregistered — see [`REFERENCE/scratch-write-hook.md`](../../scratch-write-hook.md) → "Troubleshooting → The prompt still fires when writing to SCRATCH/" for the diagnosis steps.
+3. **Reviewer agents run silent (Stage 2 conventions check).** Run `/review-spec` once on any spec and confirm no Bash approval prompts surface during the reviewer agents' work. If prompts appear, the Tool invocation conventions section didn't land or the allowlist additions are incomplete.
 
 ## Notes for the receiving Claude
 
 - **The threat model is the load-bearing assumption.** Do not silently ship the template's calibration into a project whose contributor model differs. Step 2 of the apply prompt is mandatory — surface the question, wait for the user to answer.
-- **Application order matters.** Stage 2 (threat-model ADR) must precede Stage 3 (silent-review conventions reference the ADR), Stage 4 (safety-harness docs link to the ADR's tightening checklist), and Stage 5 (SCRATCH-write hook ADR cross-references the threat-model ADR for symlink/exotic-filename carve-outs). Stage 5 must follow Stage 4 — both write into `hooks.PreToolUse` and adjacency makes the merge a single pass. If you apply the hooks before the ADR, the cross-references go nowhere.
+- **Application order matters.** Stage 1 (threat-model ADR) must precede Stage 2 (silent-review conventions reference the ADR), Stage 3 (safety-harness docs link to the ADR's tightening checklist), and Stage 4 (SCRATCH-write hook ADR cross-references the threat-model ADR for symlink/exotic-filename carve-outs). Stage 4 must follow Stage 3 — both write into `hooks.PreToolUse` and adjacency makes the merge a single pass. If you apply the hooks before the ADR, the cross-references go nowhere.
 - **`.claude/agents/CLAUDE.md` accumulates four sections.** Don't merge it as a single file — merge each section independently. The local file may have any subset of the four sections from earlier packets or piecemeal adoption.
 - **`.claude/settings.json` has three independent deltas.** The `env` block is likely already present (from the previous packet). The `permissions.allow` array gets new entries appended (and gains a `_comment_scratch_writes` key documenting why no `Write(/SCRATCH/...)` entries are present). The `hooks` block is new and contains TWO `PreToolUse` entries (Bash matcher → safety-harness, Write matcher → approve-scratch-write). Treat each delta as its own merge; do not overwrite the file wholesale.
 - **`triage-secret-patterns.txt` was renamed to `triage-scan-patterns.txt`.** If the receiving project is mid-adoption and has the old name, delete it. If it has neither, create the new name. Don't ship both.
@@ -382,5 +369,5 @@ The fixture suites verify the hook scripts' JSON output. They cannot verify that
 - **Two fixture directories need bulk-fetching.** The 39-pair safety-harness fixtures and the 6-pair SCRATCH-write fixtures are both small enough to fetch via the GitHub tree API. Do not manually list filenames in the apply plan — that's noise and risks transcription errors.
 - **The two test suites are the single most useful verification checks.** All the `test -f` and `grep -q` checks confirm presence; only the test runners confirm behaviour. If `bash .claude/hooks/tests/safety-harness/run-tests.sh` or `bash .claude/hooks/tests/approve-scratch-write/run-tests.sh` exits non-zero, something is wrong (likely a fixture missing, the script not executable, the parse helper missing, or a regex/bash quirk on the receiving system).
 - **Excluded files**: three template-internal files appear in the source PRs' diffs but should NOT be copied: `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md` (template's own historical spec record), `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` (diagnosis trail; the conclusion travels via the SCRATCH-write hook ADR, which points to the upstream URL for the trail), and `TEMPLATE-INSTRUCTIONS.md` (template-bootstrap doc).
-- **Shared parse helper at `.claude/hooks/lib/parse-tool-input.sh`** — used by both `safety-harness.sh` and `approve-scratch-write.sh`. Stage 4 may already have placed it; if so, Stage 5 doesn't need to re-fetch. If a content diff between local and source surfaces, flag it rather than overwriting — the helper is small and a difference would suggest local divergence worth investigating.
+- **Shared parse helper at `.claude/hooks/lib/parse-tool-input.sh`** — used by both `safety-harness.sh` and `approve-scratch-write.sh`. Stage 3 may already have placed it; if so, Stage 4 doesn't need to re-fetch. If a content diff between local and source surfaces, flag it rather than overwriting — the helper is small and a difference would suggest local divergence worth investigating.
 - **Project-specific stack mentions in `security-specialist.md`** — the template's reference includes generic mentions like "Supabase RLS", "Cloudflare Workers". If the receiving project uses different infrastructure, fold the threat-model-aware language in but keep local stack-specific guidance.
