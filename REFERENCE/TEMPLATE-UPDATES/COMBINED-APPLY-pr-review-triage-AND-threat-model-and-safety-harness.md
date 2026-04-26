@@ -236,8 +236,8 @@ Now that both rollout packets have landed, do a post-rollout consistency sweep o
 
   6. **Dead files on disk.** Files that exist but have no purpose:
      - `.bak` / `.orig` / `.swp` files from interrupted edits
-     - Stray temp files (`/tmp/review-pr-*` mid-flight artefacts shouldn't persist
-       in the repo, but check the project root too)
+     - Stray temp files (`/tmp/review-pr-*` legacy artefacts and any non-gitignored
+       contents of `SCRATCH/` shouldn't persist in the repo)
      - Empty directories
      - Scratch files left from the rollout work
      **Caution:** be conservative. Many files look unused but are referenced
