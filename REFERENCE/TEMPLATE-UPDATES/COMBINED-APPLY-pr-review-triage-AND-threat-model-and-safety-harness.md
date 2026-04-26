@@ -26,6 +26,12 @@ A single self-contained message to paste into a derivative project's Claude Code
 - If a third packet lands that should also be combined into this rollout, either extend this file (and rename it) or — better — create a new combined-apply file for the new pair/triple, leaving this one in place for projects that only need these two.
 - If either underlying packet is superseded, mark this file with a `**Superseded by:** [link]` line at the top rather than deleting it. Derivative projects on older forks may still reference it.
 
+## Magnus "pre-prompt prompt" to explain...
+
+Ok, we are going to try a new thing. I don't know if you recall, but the basic structure for this repo comes from a "template" I use when setting up collaborative projects with Claude. The template "lives" in its own repo, and I constantly improve it and sometimes rool the improvements out to projects that are "derivatives" of an earlier version of that template. I now have a set of improvements that are quite complex, that I can't simply roll out on a file by file basis. So I have tried creating a "template update" that works on a prompt level to use your knowledge of this local repo together with a definition of what imprvements to apply hosted in the updated template repo to try and "absorb" the improvements safely without ruining any local tweaks we have done.
+
+Makes sense? I have a prompt to get this started, if you are ready.
+
 ## The combined apply prompt
 
 ```
@@ -55,9 +61,11 @@ Steps:
 1. WebFetch the packet 1 README and read it end-to-end. The two ADRs it references are
    the best design-rationale context.
 2. Create a feature branch (e.g. `feature/adopt-pr-review-triage`). Do NOT work on main.
-3. For each file in "Copy verbatim", check whether a file at that path exists locally.
-   If not, WebFetch the source and create it. If it does, treat as "merge carefully" and
-   flag the conflict.
+3. For each file in "Copy verbatim" (including the "Predecessor files" sub-section),
+   check whether a file at that path exists locally. If not, WebFetch the source and
+   create it. If it does, treat as "merge carefully" and flag the conflict. The
+   predecessor files are required baseline that older forks may not have — fetch them
+   silently if absent rather than treating as a manifest gap.
 4. For each file in "Merge carefully", read the local version and WebFetch the source
    version. Identify the sections this rollout adds or modifies and propose a merged
    version that preserves any local customisation. Pay special attention to
