@@ -195,11 +195,13 @@ GROUND RULES (BOTH PACKETS)
 Run this prompt to do a repo wide sweep for consistency and any clean up.
 
 ```
-Now that both rollout packets have landed, do a post-rollout consistency sweep of the whole repo. Audit-only — surface findings in a structured report and wait for my confirmation before changing anything.
+Now that both rollout packets have landed, do a post-rollout consistency sweep
+  of the whole repo. Audit-only — surface findings in a structured report and
+  wait for my confirmation before changing anything.
 
   Scope: every documentation file, every agent, every skill, every hook, settings,
-  gitignore, ADR index, archive index. NOT SPECIFICATIONS/ phase files (active work,
-  read-only).
+  gitignore, ADR index, archive index. NOT SPECIFICATIONS/ phase files (active
+  work, read-only).
 
   Check these nine areas:
 
@@ -232,48 +234,68 @@ Now that both rollout packets have landed, do a post-rollout consistency sweep o
      - No orphan permission allow-list entries pointing at tools/paths the project
        doesn't actually use
      - No duplicated permission entries
-     - `enabledPlugins.frontend-design` (and any other QRious-specific keys)
-       preserved
+     - Any project-specific keys (e.g. `enabledPlugins.*` entries the template
+       doesn't ship) preserved
      On disk:
-     - `.claude/hooks/safety-harness.sh` and `.claude/hooks/tests/safety-harness/run-tests.sh`
-       both have executable bits set (`test -x`)
-     - Run `bash .claude/hooks/tests/safety-harness/run-tests.sh` once and report
-       pass/fail
+     - `.claude/hooks/safety-harness.sh` and
+       `.claude/hooks/tests/safety-harness/run-tests.sh` both have executable
+       bits set (`test -x`)
+     - `.claude/hooks/approve-scratch-write.sh` and
+       `.claude/hooks/tests/approve-scratch-write/run-tests.sh` both have
+       executable bits set (`test -x`)
+     - Run both `bash .claude/hooks/tests/safety-harness/run-tests.sh` and
+       `bash .claude/hooks/tests/approve-scratch-write/run-tests.sh` once and
+       report pass/fail for each
      - Fixture pair count matches the packet manifest
 
   5. **Legacy / stale content.** Search the whole repo for:
-     - References to the older single-pipeline `/review-pr` (pre-triage); replaced
-       by the triage dispatcher
-     - The old name `triage-secret-patterns.txt` (renamed to `triage-scan-patterns.txt`)
+     - References to the older single-pipeline `/review-pr` (pre-triage);
+       replaced by the triage dispatcher
+     - The old name `triage-secret-patterns.txt` (renamed to
+       `triage-scan-patterns.txt`)
      - Any mention of `TEMPLATE-FOLLOWUPS.md`
      - Older 2-tier review workflow language
      - Stale "Current phase" / status markers that don't match reality
 
   6. **Dead files on disk.** Files that exist but have no purpose:
      - `.bak` / `.orig` / `.swp` files from interrupted edits
-     - Stray temp files (`/tmp/review-pr-*` legacy artefacts and any non-gitignored
-       contents of `SCRATCH/` shouldn't persist in the repo)
+     - Stray temp files (`/tmp/review-pr-*` legacy artefacts and any
+       non-gitignored contents of `SCRATCH/` shouldn't persist in the repo)
      - Empty directories
      - Scratch files left from the rollout work
      **Caution:** be conservative. Many files look unused but are referenced
      indirectly (e.g. via WebFetch URL patterns or hook matchers). When unsure,
      list as a question rather than a removal recommendation.
 
-  7. **Local QRious customisation preserved.** Spot-check that the rollout didn't
-     silently drop project-specific content:
-     - REFERENCE entries: creature-engine, gazette, catalogue, ai-generation-worker
-     - All 5 local ADRs in `REFERENCE/decisions/`
+  7. **Local project customisation preserved.** Spot-check that the rollout
+     didn't silently drop project-specific content. The exact items vary by
+     project — adapt this list to what your project actually has:
+     - Project-specific REFERENCE entries (domain feature docs, integration
+       guides, environment notes that aren't from the template)
+     - Local ADRs in `REFERENCE/decisions/` that record project-specific
+       decisions (i.e. anything not dated from the template's packet rollouts)
      - Project-specific `.gitignore` entries
-     - Project context in root CLAUDE.md (Mary Anning content, phase index, stack
-       section, project naming)
-     - Any project-specific phase docs in SPECIFICATIONS/
+     - Project context in root CLAUDE.md (project name, project narrative,
+       phase index, stack section, naming inspiration)
+     - Project-specific phase docs in `SPECIFICATIONS/`
+     - Customised content in spec-review agent files
+       (`devils-advocate.md`, `requirements-auditor.md`, `technical-skeptic.md`)
+       where the template ships placeholders but the project has filled them
+       with concrete stack mentions
 
-  8. **Cross-packet coherence.** A few things should hook up across the two packets:
-     - Anchors pointing at `.claude/agents/CLAUDE.md#severity-calibration` resolve
-     - Anchors pointing at `.claude/agents/CLAUDE.md#untrusted-input-contract` resolve
-     - The threat-model ADR (`2026-04-25-pr-review-threat-model.md`) is referenced
-       correctly from `triage-reviewer.md`, `light-reviewer.md`, `security-specialist.md`
-     - The two packet-1 ADRs (`2026-04-22-...`) and the packet-2 ADR are all in
+  8. **Cross-packet coherence.** A few things should hook up across the two
+     packets:
+     - Anchors pointing at `.claude/agents/CLAUDE.md#severity-calibration`
+       resolve
+     - Anchors pointing at `.claude/agents/CLAUDE.md#untrusted-input-contract`
+       resolve
+     - The threat-model ADR (`2026-04-25-pr-review-threat-model.md`) is
+       referenced correctly from `triage-reviewer.md`, `light-reviewer.md`,
+       `security-specialist.md`
+     - The two packet-1 ADRs (`2026-04-22-...`) and the three packet-2 ADRs
+       (`2026-04-25-pr-review-threat-model.md`,
+       `2026-04-26-allowlist-pinning-principle.md`,
+       `2026-04-26-scratch-write-pretooluse-hook.md`) are all in
        `REFERENCE/decisions/CLAUDE.md`'s index
 
   9. **Branch / git state.** Confirm working tree is clean, on main, and any
@@ -290,8 +312,9 @@ Now that both rollout packets have landed, do a post-rollout consistency sweep o
   - Do NOT touch SPECIFICATIONS/ phase files
   - Do NOT propose stylistic changes that aren't actually broken (headline case,
     comment style, etc.) — focus on real drift
-  - If unsure whether something is drift or intentional QRious customisation,
+  - If unsure whether something is drift or intentional project customisation,
     list as a question, not a finding
 
-  When the report is ready, present it. I'll triage and approve specific fixes before you change anything.
+  When the report is ready, present it. I'll triage and approve specific fixes
+  before you change anything.
 ```
