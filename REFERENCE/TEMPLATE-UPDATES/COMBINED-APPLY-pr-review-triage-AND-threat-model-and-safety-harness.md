@@ -174,3 +174,109 @@ GROUND RULES (BOTH PACKETS)
 - Stop and report between packet 1 and packet 2 — don't run them back-to-back without
   giving me a chance to merge packet 1's PR first.
 ```
+
+## Post applying both packets
+
+Run this prompt to do a repo wide sweep for consistency and any clean up.
+
+```
+Now that both rollout packets have landed, do a post-rollout consistency sweep of the whole repo. Audit-only — surface findings in a structured report and wait for my confirmation before changing anything.
+
+  Scope: every documentation file, every agent, every skill, every hook, settings,
+  gitignore, ADR index, archive index. NOT SPECIFICATIONS/ phase files (active work,
+  read-only).
+
+  Check these nine areas:
+
+  1. **Markdown link integrity.** Every relative link in every .md file should
+     resolve. Every anchor (#section-name) should resolve to a real heading.
+     Common post-rollout breakage:
+     - Links to files renamed or deleted upstream (e.g. triage-secret-patterns →
+       triage-scan-patterns, anything that pointed at TEMPLATE-FOLLOWUPS.md)
+     - Anchors renamed when sections were restructured
+     - Cross-doc links from CLAUDE.md/SKILL.md/agent files that referenced
+       pre-rollout structure
+
+  2. **Index / catalogue consistency.** Each directory's CLAUDE.md should list
+     every file present in that directory, and only files that are present:
+     - `.claude/CLAUDE.md`, `.claude/agents/CLAUDE.md`, `.claude/skills/` (if it
+       has an index)
+     - `REFERENCE/CLAUDE.md`, `REFERENCE/decisions/CLAUDE.md`
+     - `SPECIFICATIONS/CLAUDE.md` (read-only — just check the list, don't propose
+       phase-status changes), `SPECIFICATIONS/ARCHIVE/CLAUDE.md`
+     For each: cross-check entries against `ls` of the directory. Flag orphan
+     entries (pointing at non-existent files) and unindexed files.
+
+  3. **Skill ↔ agent wiring.** Every skill that calls an agent via the Agent tool
+     should reference an agent file that exists. Every agent file should be
+     referenced from at least one skill or its directory's index. Orphan agents
+     are dead code.
+
+  4. **Settings + hook hookup.** In `.claude/settings.json`:
+     - Hook script paths point at files that exist on disk
+     - No orphan permission allow-list entries pointing at tools/paths the project
+       doesn't actually use
+     - No duplicated permission entries
+     - `enabledPlugins.frontend-design` (and any other QRious-specific keys)
+       preserved
+     On disk:
+     - `.claude/hooks/safety-harness.sh` and `.claude/hooks/tests/safety-harness/run-tests.sh`
+       both have executable bits set (`test -x`)
+     - Run `bash .claude/hooks/tests/safety-harness/run-tests.sh` once and report
+       pass/fail
+     - Fixture pair count matches the packet manifest
+
+  5. **Legacy / stale content.** Search the whole repo for:
+     - References to the older single-pipeline `/review-pr` (pre-triage); replaced
+       by the triage dispatcher
+     - The old name `triage-secret-patterns.txt` (renamed to `triage-scan-patterns.txt`)
+     - Any mention of `TEMPLATE-FOLLOWUPS.md`
+     - Older 2-tier review workflow language
+     - Stale "Current phase" / status markers that don't match reality
+
+  6. **Dead files on disk.** Files that exist but have no purpose:
+     - `.bak` / `.orig` / `.swp` files from interrupted edits
+     - Stray temp files (`/tmp/review-pr-*` mid-flight artefacts shouldn't persist
+       in the repo, but check the project root too)
+     - Empty directories
+     - Scratch files left from the rollout work
+     **Caution:** be conservative. Many files look unused but are referenced
+     indirectly (e.g. via WebFetch URL patterns or hook matchers). When unsure,
+     list as a question rather than a removal recommendation.
+
+  7. **Local QRious customisation preserved.** Spot-check that the rollout didn't
+     silently drop project-specific content:
+     - REFERENCE entries: creature-engine, gazette, catalogue, ai-generation-worker
+     - All 5 local ADRs in `REFERENCE/decisions/`
+     - Project-specific `.gitignore` entries
+     - Project context in root CLAUDE.md (Mary Anning content, phase index, stack
+       section, project naming)
+     - Any project-specific phase docs in SPECIFICATIONS/
+
+  8. **Cross-packet coherence.** A few things should hook up across the two packets:
+     - Anchors pointing at `.claude/agents/CLAUDE.md#severity-calibration` resolve
+     - Anchors pointing at `.claude/agents/CLAUDE.md#untrusted-input-contract` resolve
+     - The threat-model ADR (`2026-04-25-pr-review-threat-model.md`) is referenced
+       correctly from `triage-reviewer.md`, `light-reviewer.md`, `security-specialist.md`
+     - The two packet-1 ADRs (`2026-04-22-...`) and the packet-2 ADR are all in
+       `REFERENCE/decisions/CLAUDE.md`'s index
+
+  9. **Branch / git state.** Confirm working tree is clean, on main, and any
+     feature branches from the rollout that have been merged can be deleted.
+
+  Output format: structured report grouped by area. For each finding:
+  - File path (and line number if relevant)
+  - What's wrong
+  - Severity: blocker / drift / nit
+  - Proposed fix (one line) or "needs discussion"
+
+  Constraints:
+  - Audit only — do NOT write, edit, or delete files yet
+  - Do NOT touch SPECIFICATIONS/ phase files
+  - Do NOT propose stylistic changes that aren't actually broken (headline case,
+    comment style, etc.) — focus on real drift
+  - If unsure whether something is drift or intentional QRious customisation,
+    list as a question, not a finding
+
+  When the report is ready, present it. I'll triage and approve specific fixes before you change anything.
+```
