@@ -63,3 +63,26 @@ When you (the user) are in a derivative project and want to pull in a packet:
 - **British English** throughout, matching the rest of the project's docs.
 - **Evergreen language** — describe what the change *is*, not "the recent triage refactor". A packet read two years from now should still make sense.
 - **Don't archive applied packets** — they remain useful as reference for future derivative projects. If a packet is truly superseded by a later one, add a `**Superseded by:** [link]` line at the top of its README rather than deleting it.
+
+## Packet design principles
+
+Lessons captured from authoring and rolling out packets. Read these before authoring a new one.
+
+### Functional vs documentary dependencies
+
+When a packet has forward-references to a later packet (or to artefacts that don't yet exist when the packet is applied), distinguish two kinds:
+
+- **Functional dependency** — the system breaks without it. Example: `triage-scan-patterns.txt` was conceptually part of the threat-model packet but is referenced by `triage-reviewer.md` from the earlier triage packet; without the patterns file, every triage run hits the fail-closed branch and routes to `team` tier. Functional dependencies must be *pulled forward* into the earlier packet, even though they're conceptually part of the later one.
+- **Documentary dependency** — the reference is cosmetic only. Example: an agent file in an earlier packet that mentions an anchor (e.g. `#untrusted-input-contract`) which lives in a section added by the later packet. The link 404s in markdown previews until the later packet lands, but nothing breaks at runtime. Documentary dependencies should be *left as dead anchors* in the earlier packet and resolved when the later packet lands.
+
+The discipline: pulling forward functional deps is what makes a packet self-contained; pulling forward documentary deps unnecessarily blurs packet boundaries. When in doubt, ask: "Does the system fail-closed or just look ugly without this?" Fail-closed = pull forward. Ugly = leave alone (and document the deferred resolution in the later packet's "What changed" section).
+
+## Pending investigations
+
+Open questions or gaps in the packet system that don't have enough data to act on yet. Revisit when a relevant rollout surfaces a real case rather than writing speculative guidance.
+
+### Settings.json merge guidance for non-trivial-local case
+
+Rollouts 1 and 2 hit derivatives with minimal local `.claude/settings.json` (just `env` and `enabledPlugins`). The "source-as-base, restore local additions" pattern worked cleanly for both. But the packet manifest doesn't address the case where a derivative has substantial existing `permissions.allow` entries or its own `hooks.PreToolUse` block (project-specific paths, custom binaries, a hook scoped to a different tool).
+
+The right guidance probably looks like "cherry-pick per delta-group from source — env, permissions, hooks treated independently — and document the merge in the PR". But the specific shape depends on what actually shows up in a real derivative. When rollout 3 (or later) hits a non-trivial local settings.json, draft the guidance from what genuinely differs and add it to the relevant packet's settings.json merge entry. Until then, this stays an open question.
