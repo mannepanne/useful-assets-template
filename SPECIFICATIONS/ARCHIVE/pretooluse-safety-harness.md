@@ -2,7 +2,6 @@
 
 **Status:** Implemented. Hook script is live; how-it-works documentation is at [`REFERENCE/safety-harness.md`](../../REFERENCE/safety-harness.md). This file is the implementation history.
 **Type:** Template tooling (not a derivative-project phase)
-**Related:** [TEMPLATE-FOLLOWUPS.md](../../TEMPLATE-FOLLOWUPS.md) → "PreToolUse safety-harness hook"
 
 ---
 
