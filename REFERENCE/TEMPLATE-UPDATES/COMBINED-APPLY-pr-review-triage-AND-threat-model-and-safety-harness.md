@@ -28,7 +28,7 @@ A single self-contained message to paste into a derivative project's Claude Code
 
 ## Magnus "pre-prompt prompt" to explain...
 
-Ok, we are going to try a new thing. I don't know if you recall, but the basic structure for this repo comes from a "template" I use when setting up collaborative projects with Claude. The template "lives" in its own repo, and I constantly improve it and sometimes rool the improvements out to projects that are "derivatives" of an earlier version of that template. I now have a set of improvements that are quite complex, that I can't simply roll out on a file by file basis. So I have tried creating a "template update" that works on a prompt level to use your knowledge of this local repo together with a definition of what imprvements to apply hosted in the updated template repo to try and "absorb" the improvements safely without ruining any local tweaks we have done.
+Ok, we are going to try a new thing. I don't know if you recall, but the basic structure for this repo comes from a "template" I use when setting up collaborative projects with Claude. The template "lives" in its own repo, and I constantly improve it and sometimes roll the improvements out to projects that are "derivatives" of an earlier version of that template. I now have a set of improvements that are quite complex, that I can't simply roll out on a file by file basis. So I have tried creating a "template update" that works on a prompt level to use your knowledge of this local repo together with a definition of what improvements to apply hosted in the updated template repo to try and "absorb" the improvements safely without ruining any local tweaks we have done.
 
 Makes sense? I have a prompt to get this started, if you are ready.
 
