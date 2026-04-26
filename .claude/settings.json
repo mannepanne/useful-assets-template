@@ -51,6 +51,10 @@
       "Bash(node_modules/.bin/tsc * | tail *)",
       "Bash(npx vitest * | tail *)",
       "Bash(npx tsc * | tail *)",
+      "Bash(python3 -m json.tool:*)",
+      "Bash(python3 -m json.tool * > /dev/null)",
+      "Bash(python3 -m json.tool * > /dev/null && echo *)",
+      "Bash(python3 -m json.tool * && echo *)",
       "Write(/tmp/review-pr-*)",
       "Write(/tmp/spec-review-*)"
     ],
