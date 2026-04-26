@@ -58,6 +58,9 @@ Files that did not exist before this rollout. Add them as-is unless a same-named
 **Threat-model ADR**
 - `REFERENCE/decisions/2026-04-25-pr-review-threat-model.md` — the threat-model ADR with less-experienced-user sub-case
 
+**Allow-list pinning principle ADR**
+- `REFERENCE/decisions/2026-04-26-allowlist-pinning-principle.md` — companion to the threat-model ADR; the granularity rule for individual `permissions.allow` entries (subcommand-pin for code-eval-capable binaries, binary-level for pure data transformers). Read this before adding new tooling rules to a derivative project's settings.json.
+
 **TEMPLATE-UPDATES bootstrap (only if absent locally — projects that already applied a previous packet via this system will have these)**
 - `REFERENCE/TEMPLATE-UPDATES/CLAUDE.md` — index + author/apply guide
 - `REFERENCE/TEMPLATE-UPDATES/TEMPLATE.md` — skeleton for new packets
@@ -95,7 +98,7 @@ Don't treat this file as a single merge. Apply each delta independently:
     - **Plain prefix forms:** `Bash(npm test:*)`, `Bash(npm run test:*)`, `Bash(npm run typecheck:*)`, `Bash(npm run lint:*)`, `Bash(bun test:*)`, `Bash(bun run test:*)`, `Bash(bun run typecheck:*)`, `Bash(bun run lint:*)`, `Bash(node_modules/.bin/vitest:*)`, `Bash(node_modules/.bin/jest:*)`, `Bash(node_modules/.bin/tsc:*)`, `Bash(npx vitest:*)`, `Bash(npx tsc:*)`.
     - **Pipe-aware forms** for common output-truncation patterns Claude reaches for (`| tail -<n>`, `| head -<n>`, `| grep <pattern>`): `Bash(npm test * | tail/head/grep *)`, `Bash(npm run test * | tail/head/grep *)`, `Bash(npm run typecheck * | tail *)`, `Bash(npm run lint * | tail *)`, `Bash(bun run test * | tail/head/grep *)`, `Bash(bun run typecheck * | tail *)`, `Bash(bun run lint * | tail *)`, `Bash(node_modules/.bin/vitest * | tail/head/grep *)`, `Bash(node_modules/.bin/jest * | tail *)`, `Bash(node_modules/.bin/tsc * | tail *)`, `Bash(npx vitest * | tail *)`, `Bash(npx tsc * | tail *)`. The pipe variants are **necessary**, not redundant — the permission matcher checks the full compound command against the pattern, so `Bash(node_modules/.bin/vitest:*)` alone won't silence `vitest run X 2>&1 | tail -30`. The same reason the manifest's git-pipe rules (`Bash(git show * | tail *)` etc) exist as siblings of `Bash(git -C * show *)`.
     - The set is broad on purpose (npm + bun + raw binaries + npx) so it works regardless of which package manager the receiving project uses; entries that don't apply to the local toolchain are harmless no-ops. If a derivative project's existing settings have narrow exact-match forms like `Bash(bun run test)`, it's safe to leave them — but broadening to `:*` form silences flag variants like `--watch` and `--coverage`.
-  - **Validation tooling entries** (silent JSON syntax checks and field extraction Claude reaches for after editing settings/config files):
+  - **Validation tooling entries** (silent JSON syntax checks and field extraction Claude reaches for after editing settings/config files). The granularity choices below follow the **allow-list pinning principle** ADR (`REFERENCE/decisions/2026-04-26-allowlist-pinning-principle.md`) — read it before adding more tooling rules:
     - **`python3 -m json.tool` (pinned narrowly):** `Bash(python3 -m json.tool:*)`, `Bash(python3 -m json.tool * > /dev/null)`, `Bash(python3 -m json.tool * > /dev/null && echo *)`, `Bash(python3 -m json.tool * && echo *)`. The risk is the binary, not the module — `Bash(python3:*)` or `Bash(python3 -m *)` would silently allow `python3 -c "import os; os.system(...)"` (full arbitrary code execution) and any other Python module. Pin to the specific subcommand only.
     - **`jq` (binary-level allow):** `Bash(jq:*)` plus pipe siblings `Bash(jq * | tail *)`, `Bash(jq * | head *)`, `Bash(jq * | grep *)`. **Different risk profile from Python** — `jq` has no escape hatch to arbitrary code execution: no `-c`-equivalent, no shell-out, no module imports, no file writes. It's a pure JSON-in / JSON-out transformer. So binary-level allow at `Bash(jq:*)` is genuinely safe; the pipe siblings cover jq-as-source patterns. (jq-as-sink — `<command> | jq *` — is intentionally NOT allow-listed broadly: the matcher checks the full compound, so `Bash(* | jq *)` would smuggle in any source command. Add narrow source-piped-to-jq rules only as specific sources surface as pain points.)
   - Append entries that are absent locally; do not deduplicate or reorder existing local entries. The `_comment` is a no-op key for documentation purposes — fine to add.
@@ -249,6 +252,8 @@ test -f REFERENCE/TEMPLATE-UPDATES/TEMPLATE.md
 # Stage 2: Threat-model ADR + calibration
 test -f REFERENCE/decisions/2026-04-25-pr-review-threat-model.md
 grep -q '2026-04-25-pr-review-threat-model' REFERENCE/decisions/CLAUDE.md
+test -f REFERENCE/decisions/2026-04-26-allowlist-pinning-principle.md
+grep -q '2026-04-26-allowlist-pinning-principle' REFERENCE/decisions/CLAUDE.md
 grep -q 'Severity calibration' .claude/agents/CLAUDE.md
 grep -q 'threat-model' .claude/agents/security-specialist.md
 
