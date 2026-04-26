@@ -78,7 +78,7 @@ Steps:
 8. Commit, push, open a PR, wait for me to merge it before continuing to packet 2.
 
 ================================================================================
-PACKET 2 — Threat-model calibration, silent reviews, and safety-harness hook
+PACKET 2 — Threat-model calibration, silent reviews, safety-harness, and SCRATCH-write hook
 ================================================================================
 
 (Only proceed once packet 1's PR is merged.)
@@ -86,7 +86,8 @@ PACKET 2 — Threat-model calibration, silent reviews, and safety-harness hook
 Migration packet README:
   https://github.com/mannepanne/useful-assets-template/blob/main/REFERENCE/TEMPLATE-UPDATES/2026-04-threat-model-and-safety-harness/README.md
 
-Source PRs in mannepanne/useful-assets-template: #18, #19, #21, #22, #23, #24, #25
+Source PRs in mannepanne/useful-assets-template: #18, #19, #21, #22, #23, #24, #25,
+#30, #31, #32, #33, #34
 
 Steps:
 
@@ -109,14 +110,16 @@ Steps:
 3. Create a feature branch (e.g. `feature/adopt-threat-model-and-safety-harness`).
    Do NOT work on main.
 
-4. Apply the four sub-changes IN ORDER (see the packet's "Application order" section):
+4. Apply the FIVE sub-changes IN ORDER (see the packet's "Application order" section):
    a. TEMPLATE-UPDATES bootstrap — only if `REFERENCE/TEMPLATE-UPDATES/CLAUDE.md` does
       NOT already exist locally.
    b. Threat-model ADR + agent severity calibration.
    c. Silent-review conventions (Tool invocation conventions section, allowlist
       additions, triage patterns file rename, dispatcher fallback, WebFetch grants on
       spec-review agents).
-   d. Safety harness.
+   d. Safety harness — establishes the `hooks.PreToolUse` block (first entry, Bash matcher).
+   e. SCRATCH-write hook — appends the second entry to `hooks.PreToolUse` (Write matcher).
+      Apply after Stage d so the block-merge is a single pass.
 
 5. For each "Copy verbatim" file, check existence; WebFetch + create if absent, treat as
    "merge carefully" if present.
@@ -125,39 +128,51 @@ Steps:
    conflict files (`.claude/agents/CLAUDE.md`, `.claude/settings.json`). Read the local
    version section-by-section, WebFetch source, identify what to add/replace, propose
    per-section merge. Do NOT treat `.claude/settings.json` as a single-file merge — its
-   three deltas (env, permissions.allow, hooks.PreToolUse) must apply independently.
+   three deltas (env, permissions.allow, hooks.PreToolUse) must apply independently. The
+   `hooks.PreToolUse` block now contains TWO entries (safety-harness + approve-scratch-write);
+   append both if neither is present, or just the missing one.
 
 7. Triage patterns file rename: if the local file exists under the OLD name
    (`triage-secret-patterns.txt`), delete it and create the new name
    (`triage-scan-patterns.txt`). If neither exists, create the new name only.
 
-8. `chmod +x` on these two .sh files immediately after WebFetching them. Raw GitHub URLs
-   do not preserve the executable bit. Without this step, the hook silently fails:
+8. `chmod +x` on these four .sh files immediately after WebFetching them. Raw GitHub URLs
+   do not preserve the executable bit. Without this step, the hooks silently fail:
    - `.claude/hooks/safety-harness.sh`
    - `.claude/hooks/tests/safety-harness/run-tests.sh`
+   - `.claude/hooks/approve-scratch-write.sh`
+   - `.claude/hooks/tests/approve-scratch-write/run-tests.sh`
 
-9. The 39 fixture pairs (78 files) under `.claude/hooks/tests/safety-harness/fixtures/`:
-   do NOT enumerate them in the apply plan. Use the GitHub tree API to list the
-   directory once, then WebFetch each file:
+9. Two fixture directories need bulk-fetching:
+   - `.claude/hooks/tests/safety-harness/fixtures/` — 39 pairs (78 files)
+   - `.claude/hooks/tests/approve-scratch-write/fixtures/` — 6 pairs (12 files)
+
+   Do NOT enumerate them in the apply plan. Use the GitHub tree API to list both
+   directories once, then WebFetch each file:
 
      https://api.github.com/repos/mannepanne/useful-assets-template/git/trees/main?recursive=1
 
-   Filter to entries with path prefix `.claude/hooks/tests/safety-harness/fixtures/`,
-   fetch each via the raw URL pattern.
+   Filter to entries with path prefix `.claude/hooks/tests/safety-harness/fixtures/` and
+   `.claude/hooks/tests/approve-scratch-write/fixtures/`, fetch each via the raw URL
+   pattern.
 
 10. For "Conditional" files, evaluate the stated condition before deciding.
 
 11. Excluded files — do NOT fetch even though they appear in the source PRs' diffs:
     - `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md`
     - `TEMPLATE-INSTRUCTIONS.md`
+    Note: `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` IS
+    in the manifest (Copy verbatim → Investigation log) and SHOULD be fetched — it's
+    referenced by project-relative path from the SCRATCH-write hook ADR and ops doc.
 
 12. Before writing ANY changes, list every proposed edit with a one-line rationale and
     flag every place where local customisation could be lost. Wait for my confirmation.
 
-13. After applying, run the packet's verification commands and report results. The
-    test-suite check (`bash .claude/hooks/tests/safety-harness/run-tests.sh`) is the
-    one that catches a partially-applied hook — `test -f` and `grep -q` checks are
-    necessary but not sufficient.
+13. After applying, run the packet's verification commands and report results. The two
+    test-suite checks catch partial rollouts:
+    - `bash .claude/hooks/tests/safety-harness/run-tests.sh` (Stage d, expect 40/40)
+    - `bash .claude/hooks/tests/approve-scratch-write/run-tests.sh` (Stage e, expect 7/7)
+    `test -f` and `grep -q` checks are necessary but not sufficient.
 
 14. Commit, push, open a PR.
 
