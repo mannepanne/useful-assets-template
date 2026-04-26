@@ -53,13 +53,10 @@ Run the gate defined in [`.claude/skills/review-gate.md`](../review-gate.md) →
 
 Resolve the spec file:
 - If `$ARGUMENTS` is a full path, use it directly
-- If it's a partial name, search `SPECIFICATIONS/` for a matching file:
-  ```bash
-  find SPECIFICATIONS/ -name "*$ARGUMENTS*" -not -path "*/ARCHIVE/*"
-  ```
+- If it's a partial name, search `SPECIFICATIONS/` for a matching file using the `Glob` tool with pattern `SPECIFICATIONS/*$ARGUMENTS*` and (if nothing matches) `SPECIFICATIONS/**/*$ARGUMENTS*`. Filter out any path containing `/ARCHIVE/` from the results.
 - If ambiguous, ask the user to clarify
 
-Confirm the spec file exists and read the first 50 lines to understand its scope before proceeding.
+Use `Glob`, not `find`, so the resolution stays silent — `find` against arbitrary paths prompts; `Glob` doesn't. Confirm the spec file exists and read the first 50 lines with the `Read` tool to understand its scope before proceeding.
 
 ---
 
