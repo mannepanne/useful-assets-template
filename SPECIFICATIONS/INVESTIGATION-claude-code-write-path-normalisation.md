@@ -1,7 +1,7 @@
 # Investigation: Claude Code Write path-normalisation for allowlist matching
 
-**Type:** Open investigation (not yet a phase — repro conditions need characterising before any fix is scoped)
-**Status:** Intermittent — observed once, couldn't reproduce on the next run.
+**Type:** Open investigation (root cause not understood; symptom now sidestepped by abandoning `/tmp/` for scratch files)
+**Status:** Symptom sidestepped, root cause still open.
 
 ---
 
@@ -9,7 +9,15 @@
 
 During PR 19's team review the dispatcher tried to write `/tmp/review-pr-19-triage.md` and was prompted, despite `Write(/tmp/review-pr-*)` being in the allowlist. The displayed path in the permission prompt was `../../../../../../tmp/review-pr-19-triage.md`.
 
-On a follow-up dispatcher run (PR 20's light review, post-merge of PR 19, fresh session), the same Write call ran silently with the same allowlist entry — no prompt. Repro conditions are not yet characterised.
+On a follow-up dispatcher run (PR 20's light review, post-merge of PR 19, fresh session), the same Write call ran silently with the same allowlist entry — no prompt.
+
+**Third sighting (2026-04-26, derivative project):** during a `/review-pr 67` team review the dispatcher tried to write `/tmp/review-pr-67-triage.md` and was prompted with the same `../../../../../../tmp/...` traversal form. Same six-level depth as PR 19. Three sightings now (PR 19 prompted, PR 20 silent, PR 67 prompted) — the intermittency is real but unexplained.
+
+## Resolution path taken
+
+Rather than ship a relative-form workaround pinned to a particular directory depth (brittle across derivative projects clone locations), the review skills were migrated to write into `.claude/scratch/` — a project-relative path that doesn't trigger the absolute-vs-relative form question, gitignored to avoid leaking artifacts. The allowlist entries became `Write(.claude/scratch/*)` and `Read(.claude/scratch/*)`.
+
+This sidesteps the symptom but does **not** explain or fix the underlying matcher behaviour. If the same intermittency surfaces with project-relative paths in the future, this file is the place to add the next sighting.
 
 ## Working hypothesis
 
