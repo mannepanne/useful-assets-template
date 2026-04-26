@@ -28,6 +28,7 @@ Three separate improvements landed across these four PRs and now form a coherent
 - **`/review-pr` rewritten** as a triage-first dispatcher (`.claude/skills/review-pr/SKILL.md`) that delegates to `light-reviewer`, `code-reviewer`, or the team based on classification.
 - **Conversational opt-in pitch** in `.claude/CLAUDE.md` describing when to proactively surface the prompt and when to stay quiet.
 - **Workflow docs updated:** `REFERENCE/pr-review-workflow.md` reflects the three tiers and the opt-in model.
+- **Predecessor backfill:** seven older review agents (`code-reviewer`, `security-specialist`, `product-reviewer`, `architect-reviewer`, `devils-advocate`, `requirements-auditor`, `technical-skeptic`) and the `triage-scan-patterns.txt` file are listed in the manifest as conditional/forward-pulled additions. They predate this rollout's PRs but are required for the review system to function end-to-end; older derivative forks may not have them, so the manifest closes the gap silently.
 
 For the full diff and design rationale, follow the PR links above. The two ADRs in `REFERENCE/decisions/` are the most useful starting point for understanding the reasoning.
 
@@ -41,8 +42,21 @@ Files that did not exist before this rollout. Add them as-is unless a same-named
 - `.claude/agents/triage-reviewer.md` — risk classifier dispatcher
 - `.claude/agents/light-reviewer.md` — terse-path reviewer for low-risk changes
 - `.claude/agents/technical-writer.md` — documentation completeness reviewer
+- `.claude/agents/triage-scan-patterns.txt` — secret-shape patterns loaded by `triage-reviewer.md` via `grep -E -f`. Technically introduced in the next packet (`2026-04-threat-model-and-safety-harness`), but pulled forward because the version of `triage-reviewer.md` on `main` already references this file; copying the agent without the patterns file would leave triage fail-closed on every run until packet 2 lands.
 - `REFERENCE/decisions/2026-04-22-tiered-pr-review-dispatcher.md` — ADR for the dispatcher design
 - `REFERENCE/decisions/2026-04-22-prreviewmode-opt-in-config.md` — ADR for the opt-in mechanism
+
+#### Predecessor files (assumed baseline; copy if absent locally)
+
+These files predate this rollout but are required for the review system to function. Older derivative forks (cut from a template state before PR #13 introduced the triage dispatcher) won't have them; newer forks already will. For each file: check existence, fetch and copy verbatim if absent, leave the local version untouched if present.
+
+- `.claude/agents/code-reviewer.md` — full-stack PR reviewer (used by `/review-pr` standard tier and `/review-pr-team`)
+- `.claude/agents/security-specialist.md` — security-focused reviewer (`/review-pr-team`)
+- `.claude/agents/product-reviewer.md` — product-perspective reviewer (`/review-pr-team`)
+- `.claude/agents/architect-reviewer.md` — architecture-perspective reviewer (`/review-pr-team`)
+- `.claude/agents/devils-advocate.md` — challenges WHY a spec is the right solution (`/review-spec`)
+- `.claude/agents/requirements-auditor.md` — completeness check on specs (`/review-spec`)
+- `.claude/agents/technical-skeptic.md` — buildability assessment on specs (`/review-spec`)
 
 ### Merge carefully
 
@@ -91,9 +105,11 @@ Please:
    exists and WHAT changed before touching any file. The two linked ADRs are the best
    design-rationale context.
 2. Create a feature branch (e.g. `feature/adopt-pr-review-triage`). Do NOT work on main.
-3. For each file in "Copy verbatim", check whether a file at that path exists locally.
-   If not, WebFetch the source and create it. If it does, treat it as "merge carefully"
-   instead and flag the conflict.
+3. For each file in "Copy verbatim" (including the "Predecessor files" sub-section),
+   check whether a file at that path exists locally. If not, WebFetch the source and
+   create it. If it does, treat it as "merge carefully" instead and flag the conflict.
+   The predecessor files are required baseline that older forks may not have — fetch
+   them silently if absent rather than treating as a manifest gap.
 4. For each file in "Merge carefully", read the local version and WebFetch the source
    version. Identify the sections this rollout adds or modifies, and propose a merged
    version that preserves any local customisation. Pay special attention to
@@ -116,6 +132,16 @@ test -f .claude/skills/review-gate.md
 test -f .claude/agents/triage-reviewer.md
 test -f .claude/agents/light-reviewer.md
 test -f .claude/agents/technical-writer.md
+test -f .claude/agents/triage-scan-patterns.txt
+
+# Predecessor agents present (required baseline; backfilled if missing)
+test -f .claude/agents/code-reviewer.md
+test -f .claude/agents/security-specialist.md
+test -f .claude/agents/product-reviewer.md
+test -f .claude/agents/architect-reviewer.md
+test -f .claude/agents/devils-advocate.md
+test -f .claude/agents/requirements-auditor.md
+test -f .claude/agents/technical-skeptic.md
 
 # All three review skills reference the gate (catches partial Step-0 merges)
 grep -q review-gate .claude/skills/review-pr/SKILL.md
@@ -151,3 +177,5 @@ Manual check (can't be scripted): run `/review-pr` once and confirm the opt-in p
 - **If the target project's review skills look identical to the template's older form** (no Step 0, no triage step), wholesale replacement of the SKILL.md files is safe. If they've been modified locally, treat them as merge-carefully.
 - **The two new ADRs are dated `2026-04-22`** — keep that date as-is when copying; ADR filenames are evergreen identifiers, not records of when they were *applied* in a derivative project.
 - **Partially-adopted predecessor:** if the target project adopted PR #15 (opt-in mechanism) but not PR #16 (review-gate extraction), the gate logic — state machine, pitch text, persistence rules — will be duplicated inside `.claude/CLAUDE.md`. The merge for that file must *remove* the inline gate logic and replace it with a one-line reference to `.claude/skills/review-gate.md`, otherwise the project ends up with two sources of truth that will drift.
+- **Predecessor agent backfill is silent.** If any of the seven predecessor agents (`code-reviewer`, `security-specialist`, `product-reviewer`, `architect-reviewer`, `devils-advocate`, `requirements-auditor`, `technical-skeptic`) are missing locally, fetch and create them as part of this rollout. They predate this packet but are required for `/review-pr` standard tier, `/review-pr-team`, and `/review-spec` to work. Do not flag their absence as a manifest gap — silently backfill.
+- **`triage-scan-patterns.txt` is pulled forward from packet 2.** It belongs conceptually to the `2026-04-threat-model-and-safety-harness` packet (introduced in PR #21), but the version of `triage-reviewer.md` on `main` already references it. Without the patterns file, every `/review-pr` invocation hits the fail-closed branch and routes to team tier. If the next packet later re-mentions this file, it's already present from this packet's adoption — no double-fetch needed.
