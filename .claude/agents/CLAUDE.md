@@ -29,6 +29,10 @@ Agents define personas, roles, and behaviors that can be spawned by skills. Sepa
 - **[technical-skeptic.md](./technical-skeptic.md)** - Feasibility: DB implications, blast radius, hidden complexity, integration risks
 - **[devils-advocate.md](./devils-advocate.md)** - Strategy: is this the right solution? Simpler alternatives? Wrong assumptions?
 
+### Supporting files
+
+- **[triage-scan-patterns.txt](./triage-scan-patterns.txt)** - Regex patterns used by `triage-reviewer.md` for the secret-shape scan in PR diffs; loaded via `grep -E -f` so the patterns can be edited independently of the agent prompt
+
 ## Usage Pattern
 
 Agent files use YAML frontmatter to register as named sub-agents. Skills invoke them by name — the agent's body is its system prompt, so there's no need to "read the file".
