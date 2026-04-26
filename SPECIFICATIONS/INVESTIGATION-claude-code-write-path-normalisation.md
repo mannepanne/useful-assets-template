@@ -1,0 +1,47 @@
+# Investigation: Claude Code Write path-normalisation for allowlist matching
+
+**Type:** Open investigation (not yet a phase — repro conditions need characterising before any fix is scoped)
+**Status:** Intermittent — observed once, couldn't reproduce on the next run.
+
+---
+
+## Symptom
+
+During PR 19's team review the dispatcher tried to write `/tmp/review-pr-19-triage.md` and was prompted, despite `Write(/tmp/review-pr-*)` being in the allowlist. The displayed path in the permission prompt was `../../../../../../tmp/review-pr-19-triage.md`.
+
+On a follow-up dispatcher run (PR 20's light review, post-merge of PR 19, fresh session), the same Write call ran silently with the same allowlist entry — no prompt. Repro conditions are not yet characterised.
+
+## Working hypothesis
+
+Claude Code's permission matcher *may* not normalise relative-vs-absolute paths before applying allowlist patterns, so absolute-form entries fail to match relative-form tool inputs in some sessions. The PR 19 observation is consistent with this; the PR 20 silent run is not.
+
+Possible explanations for the inconsistency:
+- The matcher does normalise, and the PR 19 prompt was caused by something else (a `settings.json` change without session restart, missing entry at the time, transient cache issue).
+- The matcher has session-scoped state that hasn't been identified.
+- The displayed path differs between sessions for reasons unrelated to allowlist matching.
+
+## Why this matters
+
+If the matcher genuinely doesn't normalise, then every `Write(/tmp/…)` and `Bash(... /tmp/…)` allowlist entry is unreliable depending on session state. That's a footgun worth understanding even if the current symptoms are mild.
+
+## Next step
+
+Deliberate repro. Try toggling:
+
+- (a) `settings.json` edits without session restart vs. with restart.
+- (b) Fresh session vs. resumed session.
+- (c) Different invocation paths (skill-driven Write vs. agent-driven Write).
+
+Capture the exact displayed path in each case. Once the conditions are characterised, decide between:
+
+- File an upstream bug.
+- Ship the relative-form belt-and-braces workaround as a permanent precaution.
+- Close the entry as a session-state quirk that doesn't need a fix.
+
+## If a workaround is needed later
+
+Add a second matching entry in relative-traversal form alongside each absolute-form `Write(/tmp/…)` entry — e.g. `Write(../../../../../../tmp/review-pr-*)` next to `Write(/tmp/review-pr-*)`. The literal traversal depth depends on where Claude Code starts the relative path from, so capture the exact form from a fresh permission prompt rather than guessing.
+
+## Promotion path
+
+When repro conditions are characterised and a fix path is chosen, promote this file to a numbered phase under `SPECIFICATIONS/` and run `/review-spec` before implementing. If the conclusion is "no fix needed", move this file to `SPECIFICATIONS/ARCHIVE/` with a one-paragraph closing note rather than deleting it — the working hypothesis is useful context if the symptom resurfaces.
