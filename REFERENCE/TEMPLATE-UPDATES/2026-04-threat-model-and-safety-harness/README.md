@@ -89,7 +89,13 @@ This file accumulates four sections across the rolled-up PRs. Treat each as an i
 Don't treat this file as a single merge. Apply each delta independently:
 
 - **`env.CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS = "1"`** — already required by the previous packet (`2026-04-pr-review-triage`); it's listed here only because it appears in the source file. **If already present locally with the same value, no change.** If absent, add.
-- **`permissions.allow` additions** — multiple new entries: `Bash(git fetch *)`, `Bash(git -C * log/show/diff/status *)`, `Bash(git show * | sed -n *)` and the related git-pipe siblings, `Bash(gh pr diff * | grep *)`, `Write(/tmp/review-pr-*)`, `Write(/tmp/spec-review-*)`, plus a `_comment` field describing the threat-model assumption. Append entries that are absent locally; do not deduplicate or reorder existing local entries. The `_comment` is a no-op key for documentation purposes — fine to add.
+- **`permissions.allow` additions** — multiple new entries across two thematic groups, plus a `_comment` field describing the threat-model assumption:
+  - **Review-tooling entries** (the silent-reviews work): `Bash(git fetch *)`, `Bash(git -C * log/show/diff/status *)`, `Bash(git show * | sed -n *)` and the related git-pipe siblings, `Bash(gh pr diff * | grep *)`, `Write(/tmp/review-pr-*)`, `Write(/tmp/spec-review-*)`.
+  - **Test / typecheck / lint entries** (silent test runs across common JS/TS toolchains). Two shape families, both needed:
+    - **Plain prefix forms:** `Bash(npm test:*)`, `Bash(npm run test:*)`, `Bash(npm run typecheck:*)`, `Bash(npm run lint:*)`, `Bash(bun test:*)`, `Bash(bun run test:*)`, `Bash(bun run typecheck:*)`, `Bash(bun run lint:*)`, `Bash(node_modules/.bin/vitest:*)`, `Bash(node_modules/.bin/jest:*)`, `Bash(node_modules/.bin/tsc:*)`, `Bash(npx vitest:*)`, `Bash(npx tsc:*)`.
+    - **Pipe-aware forms** for common output-truncation patterns Claude reaches for (`| tail -<n>`, `| head -<n>`, `| grep <pattern>`): `Bash(npm test * | tail/head/grep *)`, `Bash(npm run test * | tail/head/grep *)`, `Bash(npm run typecheck * | tail *)`, `Bash(npm run lint * | tail *)`, `Bash(bun run test * | tail/head/grep *)`, `Bash(bun run typecheck * | tail *)`, `Bash(bun run lint * | tail *)`, `Bash(node_modules/.bin/vitest * | tail/head/grep *)`, `Bash(node_modules/.bin/jest * | tail *)`, `Bash(node_modules/.bin/tsc * | tail *)`, `Bash(npx vitest * | tail *)`, `Bash(npx tsc * | tail *)`. The pipe variants are **necessary**, not redundant — the permission matcher checks the full compound command against the pattern, so `Bash(node_modules/.bin/vitest:*)` alone won't silence `vitest run X 2>&1 | tail -30`. The same reason the manifest's git-pipe rules (`Bash(git show * | tail *)` etc) exist as siblings of `Bash(git -C * show *)`.
+    - The set is broad on purpose (npm + bun + raw binaries + npx) so it works regardless of which package manager the receiving project uses; entries that don't apply to the local toolchain are harmless no-ops. If a derivative project's existing settings have narrow exact-match forms like `Bash(bun run test)`, it's safe to leave them — but broadening to `:*` form silences flag variants like `--watch` and `--coverage`.
+  - Append entries that are absent locally; do not deduplicate or reorder existing local entries. The `_comment` is a no-op key for documentation purposes — fine to add.
 - **`hooks.PreToolUse` block** — new top-level `hooks` key with the `PreToolUse` array containing the Bash matcher, the `if`-filter alternation (`rm * | dd * | mkfs* | diskutil* | git push * | git reset * | gh repo * | psql * | supabase * | chmod *`), and the command pointing at `$CLAUDE_PROJECT_DIR/.claude/hooks/safety-harness.sh`. If `hooks.PreToolUse` is absent, add the whole block. If present with other entries, append the safety-harness entry as an additional array element. **Do not overwrite local hook entries.**
 
 **`.claude/agents/triage-reviewer.md`**
@@ -256,6 +262,8 @@ grep -q 'Read-then-Write' .claude/skills/review-pr/SKILL.md
 grep -q 'Read-then-Write' .claude/skills/review-pr-team/SKILL.md
 grep -q 'Glob' .claude/skills/review-spec/SKILL.md
 grep -q 'Bash(git fetch \*)' .claude/settings.json
+grep -q 'Bash(npm test:\*)' .claude/settings.json       # test/lint/typecheck allow-list applied
+grep -q 'Bash(node_modules/.bin/vitest:\*)' .claude/settings.json
 
 # Stage 4: Safety harness
 test -x .claude/hooks/safety-harness.sh                # chmod +x landed
