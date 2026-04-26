@@ -67,7 +67,7 @@ The review-skill workflow writes intermediate comment-body files into a top-leve
 
 **Prevents/complicates:**
 - Hook-shaped logic must be maintained inside `.claude/hooks/`, with an associated test suite and reference doc. The maintenance burden is real but small (one script, ~90 lines).
-- Derivative projects that don't apply the hook see the prompt return. The TEMPLATE-UPDATES packet at https://github.com/mannepanne/useful-assets-template/tree/main/REFERENCE/TEMPLATE-UPDATES/2026-04-threat-model-and-safety-harness/ carries the hook script, the parse helper, the test suite, the registration, this ADR, and the ops doc as one unit — derivative projects applying the packet inherit the fix in full.
+- Derivative projects that don't apply the hook see the prompt return. The TEMPLATE-UPDATES packet at [`REFERENCE/TEMPLATE-UPDATES/2026-04-threat-model-and-safety-harness/`](https://github.com/mannepanne/useful-assets-template/tree/main/REFERENCE/TEMPLATE-UPDATES/2026-04-threat-model-and-safety-harness/) carries the hook script, the parse helper, the test suite, the registration, this ADR, and the ops doc as one unit — derivative projects applying the packet inherit the fix in full.
 - Concurrent extension to `Edit`/`MultiEdit` would require either expanding the hook's matcher or registering a sibling hook; not a problem today, but documented so a future change knows to look here.
 
 ---
