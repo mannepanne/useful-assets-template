@@ -29,6 +29,11 @@ Common issues and solutions for local development, deployment, and API integrati
 
 How to use `/review-spec` (pre-implementation), `/review-pr`, and `/review-pr-team` skills.
 
+### [safety-harness.md](./safety-harness.md)
+**When to read:** A safety-harness block or ask dialog fired and you want to understand what's going on, you want to add a pattern, or you want to bypass the hook for a legitimate use.
+
+What's caught at block / ask tier, what's deliberately not caught, how the inline `SAFETY_HARNESS_OFF=1` bypass works (and its limits), how the hook composes with the allowlist, how to extend patterns + tests.
+
 ### [decisions/](./decisions/)
 **When to read:** Making architectural decisions, choosing between alternatives, or looking up why something was built the way it was.
 
