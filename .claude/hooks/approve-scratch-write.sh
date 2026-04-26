@@ -2,17 +2,14 @@
 # ABOUT: PreToolUse hook — auto-approve Write tool calls into <project>/SCRATCH/.
 # ABOUT: Workaround for the documented Write allowlist not silencing prompts.
 #
-# Background: SPECIFICATIONS/INVESTIGATION-claude-code-write-path-normalisation.md
-# documents that allowlist entries like Write(/SCRATCH/*), Write(SCRATCH/*),
-# Write(/SCRATCH/**), Write(SCRATCH/**) all fail to silence the Write prompt
-# in fresh sessions, even though the documented `/path` semantics say they
-# should match. After exhausting glob-shape variants (fifth sighting in a
-# fresh session, with all four shapes present), hypothesis #3 wins: the Write
-# tool gates beyond the allowlist matcher. PreToolUse hooks bypass the matcher
-# and emit an explicit permissionDecision, so this script is the fallback path.
+# Decision rationale: REFERENCE/decisions/2026-04-26-scratch-write-pretooluse-hook.md
+# Operations / extension / removal: REFERENCE/scratch-write-hook.md
+# Diagnosis trail: SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md
 #
-# Scope: only Write tool calls, only paths under $CLAUDE_PROJECT_DIR/SCRATCH/.
-# Anything else falls through unchanged.
+# Scope: only Write tool calls, only paths textually under $CLAUDE_PROJECT_DIR/SCRATCH/.
+# Anything else falls through unchanged. Path matching is textual prefix, not
+# realpath — symlinks inside SCRATCH/ that point outside the project will be
+# approved. Out-of-scope per the threat-model ADR; see REFERENCE/scratch-write-hook.md.
 #
 # Bypass: this hook only emits "allow" — it cannot block anything. There is
 # no SAFETY_HARNESS_OFF style escape because there is nothing destructive to
@@ -20,27 +17,12 @@
 
 set -u
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+. "$SCRIPT_DIR/lib/parse-tool-input.sh"
+
 INPUT=$(cat)
-
-# Parse tool_name and file_path. base64 round-trip avoids whitespace/newline
-# splitting issues if the file_path ever contains odd characters.
-read -r TOOL_NAME FILE_PATH_B64 <<< "$(printf '%s' "$INPUT" | python3 -c "
-import sys, json, base64
-try:
-    data = json.loads(sys.stdin.read())
-    name = data.get('tool_name', '')
-    fp = data.get('tool_input', {}).get('file_path', '')
-    fp_b64 = base64.b64encode(fp.encode('utf-8')).decode('ascii')
-    print(name, fp_b64)
-except Exception:
-    print('', '')
-" 2>/dev/null)"
-
-if [ -n "${FILE_PATH_B64:-}" ]; then
-    FILE_PATH=$(printf '%s' "$FILE_PATH_B64" | base64 --decode 2>/dev/null)
-else
-    FILE_PATH=""
-fi
+parse_tool_input "$INPUT" "file_path"
+FILE_PATH="$TOOL_INPUT_VALUE"
 
 # Only operate on Write. Hook is registered with matcher "Write" but if the
 # matcher behaviour ever changes, fail safe by exiting silently for other tools.
@@ -79,7 +61,7 @@ print(json.dumps({
     'hookSpecificOutput': {
         'hookEventName': 'PreToolUse',
         'permissionDecision': 'allow',
-        'permissionDecisionReason': 'Auto-approved: Write into project SCRATCH directory. See SPECIFICATIONS/INVESTIGATION-claude-code-write-path-normalisation.md for why the allowlist alone does not silence this prompt.'
+        'permissionDecisionReason': 'Auto-approved: Write into project SCRATCH directory. See REFERENCE/decisions/2026-04-26-scratch-write-pretooluse-hook.md for why the hook is needed instead of an allow-list entry.'
     }
 }))
 "

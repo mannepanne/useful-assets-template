@@ -1,7 +1,12 @@
 # Investigation: Claude Code Write path-normalisation for allowlist matching
 
-**Type:** Open investigation (root cause not understood; symptom now silenced by a `PreToolUse` hook fallback, root cause still open)
-**Status:** Symptom **silenced via PreToolUse hook** (PR following PR 32). Allowlist matching for `Write` is empirically broken across all four documented glob shapes — hypothesis #3 confirmed. Root cause still open and worth filing upstream.
+**Type:** Closed investigation (symptom silenced; root cause unresolved upstream)
+**Status:** **Closed 2026-04-26.** Symptom silenced via the `PreToolUse` hook at `.claude/hooks/approve-scratch-write.sh` (PR 33). Hypothesis #3 confirmed: the `Write` tool's allow-list matcher does not silence prompts for any of `Write(/SCRATCH/*)`, `Write(/SCRATCH/**)`, `Write(SCRATCH/*)`, `Write(SCRATCH/**)` in fresh sessions. Step 4 fresh-session smoke test confirmed the hook silences the `Write` prompt as intended.
+
+**Decision rationale:** [`REFERENCE/decisions/2026-04-26-scratch-write-pretooluse-hook.md`](../../REFERENCE/decisions/2026-04-26-scratch-write-pretooluse-hook.md)
+**Operations reference:** [`REFERENCE/scratch-write-hook.md`](../../REFERENCE/scratch-write-hook.md)
+
+**Closing note.** Root cause inside Claude Code's `Write` allow-list matcher is unknown and unaddressed upstream. The hook is the supported path until the upstream defect is fixed and verified — at which point follow the rollback procedure in the operations reference. The five-sighting diagnosis trail below is preserved so a future verification of an upstream fix can replay the test cases.
 
 ---
 
@@ -111,6 +116,12 @@ Restart Claude Code, run any review that writes into `SCRATCH/`. Two outcomes:
 
 If the matcher behaviour genuinely diverges from documented semantics, every `/path/...` entry in the allowlist is unreliable. The current symptom is mild (an extra approval click), but the same ambiguity affects any future allowlist tightening — including the threat-model-driven defaults shipped with this template.
 
-## Promotion path
+## Outcome
 
-When repro conditions are characterised and a fix path is chosen, promote this file to a numbered phase under `SPECIFICATIONS/` and run `/review-spec` before implementing. If the conclusion is "no fix needed", move this file to `SPECIFICATIONS/ARCHIVE/` with a one-paragraph closing note rather than deleting it — the working hypotheses are useful context if the symptom resurfaces.
+Step 4 fresh-session smoke test passed. The `PreToolUse` hook silences the `Write` prompt for paths under `<project>/SCRATCH/` as intended. The hook is now the supported path; this investigation is archived.
+
+If the upstream `Write` matcher is fixed in a future Claude Code release:
+
+1. Add `Write(/SCRATCH/*)` back to `.claude/settings.json` and verify in a fresh session that the prompt is silenced.
+2. If silent, follow the hook-removal procedure in [`REFERENCE/scratch-write-hook.md`](../../REFERENCE/scratch-write-hook.md) → "How to remove the hook (if upstream `Write` allow-list is fixed)".
+3. Supersede [`REFERENCE/decisions/2026-04-26-scratch-write-pretooluse-hook.md`](../../REFERENCE/decisions/2026-04-26-scratch-write-pretooluse-hook.md) with a new ADR describing the upstream fix and the rollback.
