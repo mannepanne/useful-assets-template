@@ -72,6 +72,8 @@
       "Bash(node_modules/.bin/tsc * | tail *)",
       "Bash(npx vitest * | tail *)",
       "Bash(npx tsc * | tail *)",
+      "Bash(.claude/hooks/tests/safety-harness/run-tests.sh:*)",
+      "Bash(.claude/hooks/tests/approve-scratch-write/run-tests.sh:*)",
       "Bash(python3 -m json.tool:*)",
       "Bash(python3 -m json.tool * > /dev/null)",
       "Bash(python3 -m json.tool * > /dev/null && echo *)",
