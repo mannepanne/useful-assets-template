@@ -169,7 +169,6 @@ Files that may or may not be relevant depending on whether the target project ha
 ## Excluded by design — do NOT copy these even though they appear in the source PRs' diffs
 
 - `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md` — template-internal historical spec record (the implementation is what matters; the spec is preserved for the template's own audit trail)
-- `TEMPLATE-FOLLOWUPS.md` — template-internal tracker for forward-looking improvements; derivative projects track their own follow-ups elsewhere
 - `TEMPLATE-INSTRUCTIONS.md` — template-internal bootstrap doc; derivative projects either delete it after first clone or have their own version
 
 ## Apply prompt
@@ -267,9 +266,9 @@ Please:
 
 9. **For "Conditional" files**, evaluate the stated condition before deciding.
 
-10. **Excluded files**: do NOT fetch SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md,
-    TEMPLATE-FOLLOWUPS.md, or TEMPLATE-INSTRUCTIONS.md even though they appear in the
-    source PRs' diffs. They are template-internal. Note:
+10. **Excluded files**: do NOT fetch SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md
+    or TEMPLATE-INSTRUCTIONS.md even though they appear in the source PRs' diffs. They
+    are template-internal. Note:
     SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md IS in
     the manifest (Copy verbatim → Investigation log) and should be fetched — it is
     referenced from the SCRATCH-write hook ADR and ops doc via project-relative paths.
@@ -378,6 +377,6 @@ Manual checks (can't be scripted):
 - **`chmod +x` on all four `.sh` files is essential.** Raw GitHub URLs do not preserve executable bits. Without this step, the hooks silently fail (Claude Code will error trying to invoke a non-executable script) and the test runners won't run. Apply `chmod +x` immediately after WebFetch for each. The four files are: `safety-harness.sh`, `safety-harness/run-tests.sh`, `approve-scratch-write.sh`, `approve-scratch-write/run-tests.sh`.
 - **Two fixture directories need bulk-fetching.** The 39-pair safety-harness fixtures and the 6-pair SCRATCH-write fixtures are both small enough to fetch via the GitHub tree API. Do not manually list filenames in the apply plan — that's noise and risks transcription errors.
 - **The two test suites are the single most useful verification checks.** All the `test -f` and `grep -q` checks confirm presence; only the test runners confirm behaviour. If `bash .claude/hooks/tests/safety-harness/run-tests.sh` or `bash .claude/hooks/tests/approve-scratch-write/run-tests.sh` exits non-zero, something is wrong (likely a fixture missing, the script not executable, the parse helper missing, or a regex/bash quirk on the receiving system).
-- **Excluded files**: `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md`, `TEMPLATE-FOLLOWUPS.md`, `TEMPLATE-INSTRUCTIONS.md` are template-internal. They appear in the source PRs' diffs but should not be copied. The "What changed" section explains why each is template-internal. Note that `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` IS in the manifest (Copy verbatim → Investigation log) and SHOULD be fetched — it is referenced by project-relative path from the SCRATCH-write hook ADR and ops doc, and skipping it leaves dangling links.
+- **Excluded files**: `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md` and `TEMPLATE-INSTRUCTIONS.md` are template-internal. They appear in the source PRs' diffs but should not be copied. The "What changed" section explains why each is template-internal. Note that `SPECIFICATIONS/ARCHIVE/INVESTIGATION-claude-code-write-path-normalisation.md` IS in the manifest (Copy verbatim → Investigation log) and SHOULD be fetched — it is referenced by project-relative path from the SCRATCH-write hook ADR and ops doc, and skipping it leaves dangling links.
 - **Shared parse helper at `.claude/hooks/lib/parse-tool-input.sh`** — used by both `safety-harness.sh` and `approve-scratch-write.sh`. Stage 4 may already have placed it; if so, Stage 5 doesn't need to re-fetch. If a content diff between local and source surfaces, flag it rather than overwriting — the helper is small and a difference would suggest local divergence worth investigating.
 - **Project-specific stack mentions in `security-specialist.md`** — the template's reference includes generic mentions like "Supabase RLS", "Cloudflare Workers". If the receiving project uses different infrastructure, fold the threat-model-aware language in but keep local stack-specific guidance.
