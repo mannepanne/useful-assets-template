@@ -143,6 +143,15 @@ Adding a pattern is a deliberate per-PR decision. Steps:
 
 Use the inline bypass: `SAFETY_HARNESS_OFF=1 <your command>`. If the same legitimate pattern is hitting block repeatedly, that's a regex-too-broad bug — file a follow-up to tighten the pattern (or move it to ask tier so the user can confirm rather than bypass).
 
+### Prose containing destructive-command vocabulary triggers a block
+
+The hook matches the literal command string, so prose with destructive-command patterns fires it — typical case is a `git commit -m "..."` or `gh pr create --body "..."` whose body documents an `rm -rf` or similar for context. The block is correct in the strict sense (the literal string is in the command), but the operation is benign — you're recording text, not executing it. Two mitigations:
+
+- **Inline bypass:** `SAFETY_HARNESS_OFF=1 git commit -m "..."`. Quick and visible.
+- **Move prose to a file:** `git commit -F SCRATCH/msg.md` or `gh pr create --body-file SCRATCH/body.md`. The Write to `SCRATCH/` is silenced by the SCRATCH-write hook (see [`scratch-write-hook.md`](./scratch-write-hook.md)); the subsequent `git`/`gh` invocation passes a file path, so the destructive vocabulary never enters the bash command string.
+
+The file-based approach is preferred for any prose long enough to justify it — composes cleanly from two harness-friendly operations and avoids quoting headaches.
+
 ### The hook isn't firing on a command I expected to catch
 
 1. Check the `if` filter in `.claude/settings.json`. The hook script only spawns when the command matches one of the filter alternatives. If your pattern's command family isn't in the filter, the script never runs.
@@ -154,7 +163,7 @@ Use the inline bypass: `SAFETY_HARNESS_OFF=1 <your command>`. If the same legiti
 
 ### `systemMessage` doesn't show up
 
-The hook does not use `systemMessage` — interactive Claude Code does not render it. `chmod 777`'s educational message rides on the ask-dialog reason instead. (See [`SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md`](../SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md) § Implementation findings for the discovery context.)
+The hook does not use `systemMessage` — interactive Claude Code does not render it. `chmod 777`'s educational message rides on the ask-dialog reason instead.
 
 ### Patterns suddenly stopped firing
 
@@ -176,4 +185,4 @@ Either:
 
 The pattern set is adapted from [`davekilleen/Dex`'s `dex-safety-guard.sh`](https://github.com/davekilleen/Dex/blob/main/.claude/hooks/dex-safety-guard.sh). We diverge from Dex in three ways: we use the current `hookSpecificOutput.permissionDecision` JSON contract (not the deprecated `decision`/`reason` shape Dex uses); we add the ask tier (Dex is binary block/allow); and we narrow `dd`/`mkfs` to output-device patterns rather than matching the bare commands.
 
-Implementation history and the full review trail are at [`SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md`](../SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md).
+Implementation history and the full review trail are at [`SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md`](https://github.com/mannepanne/useful-assets-template/blob/main/SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md) in the upstream template repo.

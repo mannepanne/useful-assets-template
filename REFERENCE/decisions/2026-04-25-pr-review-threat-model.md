@@ -125,5 +125,5 @@ If your project doesn't match the in-scope profile above, change these defaults 
   - `.claude/settings.json` `permissions.allow` — comment block references this ADR
   - `.claude/agents/security-specialist.md` — severity defaults reference the in/out-of-scope split (PR 21 onwards)
   - `.claude/agents/CLAUDE.md` — shared bash conventions section references this ADR for severity calibration
-  - `REFERENCE/safety-harness.md` — how-it-works for the safety-harness hook (calibrated against the less-experienced-user sub-case introduced in this ADR); implementation history at `SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md`
+  - `REFERENCE/safety-harness.md` — how-it-works for the safety-harness hook (calibrated against the less-experienced-user sub-case introduced in this ADR)
 - Discussion that produced this ADR: PR 19 review thread on `mannepanne/useful-assets-template`
