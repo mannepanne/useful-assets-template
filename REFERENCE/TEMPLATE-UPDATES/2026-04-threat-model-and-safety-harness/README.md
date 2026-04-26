@@ -63,7 +63,7 @@ Files that did not exist before this rollout. Add them as-is unless a same-named
 - `REFERENCE/TEMPLATE-UPDATES/TEMPLATE.md` — skeleton for new packets
 
 **Triage patterns file** (RENAMED — see "Easy-to-miss mechanics" below)
-- `.claude/agents/triage-scan-patterns.txt` — secret-shape patterns, loaded via `grep -E -f` to keep regex off the command line
+- `.claude/agents/triage-scan-patterns.txt` — secret-shape patterns, loaded via `grep -E -f` to keep regex off the command line. **Note:** the previous packet (`2026-04-pr-review-triage`) now also ships this file, so projects that adopted that packet first will already have it. Skip this entry if the file is already present locally.
 
 **Safety-harness implementation**
 - `.claude/hooks/safety-harness.sh` — the hook script (**must `chmod +x` after fetch**)
