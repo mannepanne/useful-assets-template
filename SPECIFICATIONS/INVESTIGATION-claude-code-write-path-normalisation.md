@@ -15,6 +15,12 @@ On a follow-up dispatcher run (PR 20's light review, post-merge of PR 19, fresh 
 
 **Fourth sighting (2026-04-26, this repo, post-PR-31-merge session):** with `Write(/SCRATCH/*)` and `Read(/SCRATCH/*)` committed in `.claude/settings.json` and a Write to `<project>/SCRATCH/review-pr-31-standard.md`, the prompt **still fired**. The exact displayed path was not captured (next-session task — see "Next step").
 
+**Fifth sighting (2026-04-26, this repo, fresh session, `/review-pr 32`):** prompt fired again on `Write` to `SCRATCH/review-pr-32-light.md`. Key new evidence:
+- **Displayed path was bare cwd-relative form**: `SCRATCH/review-pr-32-light.md` — *not* the `../../../../../../tmp/...` traversal form, *not* `/SCRATCH/...`. Different display shape from the `/tmp/` sightings.
+- **Only the Write tool prompted.** Triage-reviewer, light-reviewer, and technical-writer subagents all ran silently — including their `gh pr view`, `gh pr diff`, and Bash calls. The post-approval `Bash(gh pr comment ... --body-file SCRATCH/...)` also ran silently.
+- **Fresh session**, so hypothesis #1 (stale in-memory allowlist) is **eliminated**.
+- **Reproduces in a separate derivative project** with the same template state — eliminates project-specific weirdness.
+
 ## Primary-source semantics (confirmed)
 
 Verified against https://code.claude.com/docs/en/permissions.md (§ "Read and Edit"):
@@ -55,22 +61,47 @@ A previous version of this doc claimed:
 
 **This claim is false.** It was based on a single intra-session observation; the next attempted Write in the same session prompted again. The leading-slash semantics are correct per docs, but something else is preventing the match in practice.
 
-## Live hypotheses (ordered by likelihood)
+## Live hypotheses (ordered by likelihood after fifth sighting)
 
-1. **Stale in-memory allowlist.** Claude Code may read `settings.json` only at session start. If the entry is added mid-session (or the session was started before the commit landed), the in-memory matcher doesn't have it. **Test:** start a fresh Claude Code session in this repo and trigger a Write to `SCRATCH/`. If silent, this hypothesis is confirmed and the doc-correct entry shape needs no change.
+1. ~~**Stale in-memory allowlist.**~~ **Eliminated** by fifth sighting (fresh session still prompts).
 
-2. **Glob-shape pickiness.** Docs say `*` matches a single directory level. `Write(/SCRATCH/*)` should match `SCRATCH/file.md` (no segment boundary to cross), but if the matcher disagrees, `Write(/SCRATCH/**)` is a more permissive form. **Test:** if hypothesis 1 fails, swap to `**` and re-test in a fresh session.
+2. **Glob-shape pickiness.** Docs say `*` matches a single directory level and `/path` is project-root-relative. `Write(/SCRATCH/*)` should match `SCRATCH/file.md`, but the matcher displays the input path as bare cwd-relative `SCRATCH/...` (no leading slash) — that display divergence is suggestive that the leading-slash and bare forms aren't being treated as equivalent at match time. **Now the leading hypothesis.**
 
-3. **Undocumented gate on the Write tool.** Possibly Write has additional approval logic beyond the documented protected-directory list — e.g. fires for any new file creation, or any write outside an explicit allowlist match shape we haven't tried. Hard to test without primary-source confirmation; would surface as "no glob shape silences it."
+3. **Undocumented gate on the Write tool.** Write tool may have approval logic beyond the documented allowlist — e.g. unconditional gating on new-file creation regardless of glob match. The fifth sighting evidence that *only* the Write tool prompted (Bash, Read, subagent invocations all silent) keeps this live. Surfaces as "no glob shape silences it" in the experiment below.
 
-## Next step
+## Active experiment (running now — refresh from here after session restart)
 
-**Capture the exact path string the prompt displays** when it fires next time. That's the matcher's view of the input and is the most discriminating evidence we don't yet have. The displayed string for the `/tmp/` cases (`../../../../../../tmp/...`) is what tied the original observation to the project-relative-normalisation theory; we need the same evidence for the SCRATCH/ case before we can do more than guess.
+**Working theory:** the matcher canonicalises Write paths to bare cwd-relative form (`SCRATCH/file.md`) for matching, but the documented `/path` semantics (project-root-relative) mean `Write(/SCRATCH/*)` is being parsed as a literal-leading-slash glob that doesn't match the canonicalised form. Belt-and-braces: add every plausible glob shape simultaneously so at least one matches.
 
-After capture, run hypotheses in order:
-1. Fresh-session retry with current `Write(/SCRATCH/*)` entry. Note whether it prompts.
-2. If still prompts, swap to `Write(/SCRATCH/**)` and `Read(/SCRATCH/**)`, fresh-session retry.
-3. If still prompts, file an upstream bug with the captured path string — at that point we have docs saying X, observation showing Y, and shape variants exhausted.
+**Step 1 — done in this session (commit on branch `fix/investigation-doc-update`):**
+
+Added all four glob-shape variants for both `Write` and `Read` to `.claude/settings.json`:
+
+```jsonc
+"Write(/SCRATCH/*)",
+"Write(/SCRATCH/**)",
+"Write(SCRATCH/*)",
+"Write(SCRATCH/**)",
+"Read(/SCRATCH/*)",
+"Read(/SCRATCH/**)",
+"Read(SCRATCH/*)",
+"Read(SCRATCH/**)"
+```
+
+Glob lists are additive — any single matching entry silences the prompt. Commit this on the feature branch before restarting the session so the change is loaded at session start.
+
+**Step 2 — requires fresh session:**
+
+Magnus restarts Claude Code, runs `/review-pr 32` (or any review that triggers a Write to `SCRATCH/`). Two outcomes:
+
+- **Silent (no prompt fires):** hypothesis #2 confirmed. The `/SCRATCH/*` shape doesn't match in practice despite docs. Bisect later to find the minimum entry that works (one fresh session per shape — drop entries one at a time until prompt returns) and trim the allowlist to just the working shape. Then update this investigation with the conclusion and move to `SPECIFICATIONS/ARCHIVE/`.
+- **Still prompts:** hypothesis #3 is now the survivor. The Write tool has gating beyond the allowlist matcher entirely. Move to fallback below.
+
+**Fallback if Step 2 still prompts:**
+
+Add a `PreToolUse` hook that auto-approves `Write` to `SCRATCH/*.md`. The repo already has hook infrastructure (commit 0d810ea — `safety-harness.sh`), so this is a well-trodden path. Hooks bypass the allowlist matcher entirely — if even that fails we know the tool itself has unconditional gating. At that point file an upstream bug with this investigation as the report, since we'll have docs saying X, fresh-session observation showing Y across two projects, and all glob-shape variants exhausted.
+
+**Why not jump straight to the hook?** Because the hook is a workaround, not a diagnosis. If we hop to it now we never learn whether the documented `/path` semantics work at all in practice, and every other `/path` allowlist entry in this template stays unreliable. One fresh-session test costs nothing and tells us whether the matcher honours the documented semantics.
 
 ## Why this matters
 
