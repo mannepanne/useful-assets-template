@@ -1,8 +1,8 @@
 # Spec: PreToolUse safety-harness hook
 
-**Status:** Implemented. Hook script is live; how-it-works documentation is at [`REFERENCE/safety-harness.md`](../REFERENCE/safety-harness.md). This file is the implementation history.
+**Status:** Implemented. Hook script is live; how-it-works documentation is at [`REFERENCE/safety-harness.md`](../../REFERENCE/safety-harness.md). This file is the implementation history.
 **Type:** Template tooling (not a derivative-project phase)
-**Related:** [TEMPLATE-FOLLOWUPS.md](../TEMPLATE-FOLLOWUPS.md) → "PreToolUse safety-harness hook"
+**Related:** [TEMPLATE-FOLLOWUPS.md](../../TEMPLATE-FOLLOWUPS.md) → "PreToolUse safety-harness hook"
 
 ---
 
@@ -14,7 +14,7 @@ This is **distinct from the allowlist**. The allowlist exists to silence UX fric
 
 ## Threat model alignment
 
-This spec inherits the threat model from [`REFERENCE/decisions/2026-04-25-pr-review-threat-model.md`](../REFERENCE/decisions/2026-04-25-pr-review-threat-model.md), and is calibrated specifically against the **less-experienced-user sub-case** introduced in that ADR's *Sub-cases within in-scope* section. The PR review system is calibrated for the experienced-user sub-case (silent execution on safe ops); the safety harness is calibrated for the less-experienced-user sub-case (catch dangerous ops, prompt on ambiguous ones).
+This spec inherits the threat model from [`REFERENCE/decisions/2026-04-25-pr-review-threat-model.md`](../../REFERENCE/decisions/2026-04-25-pr-review-threat-model.md), and is calibrated specifically against the **less-experienced-user sub-case** introduced in that ADR's *Sub-cases within in-scope* section. The PR review system is calibrated for the experienced-user sub-case (silent execution on safe ops); the safety harness is calibrated for the less-experienced-user sub-case (catch dangerous ops, prompt on ambiguous ones).
 
 The harness is sized for **honest mistakes**, not malicious actors. The contributor already trusts Claude Code with bash access; the hook is not a defence against an adversarial AI or hostile committer. It exists to catch:
 
@@ -300,6 +300,15 @@ The three open questions raised during `/review-spec` were all settled by live s
 
 4. **The inline-prefix bypass needed an explicit hook-side check.** The original hook checked `[ "$SAFETY_HARNESS_OFF" = "1" ]` against the script's own environment. That works for parent-shell export (the env var propagates from the shell that started `claude`) but NOT for the inline form (`SAFETY_HARNESS_OFF=1 rm -rf ~/old`) — Claude Code spawns the hook script before the command shell exists, so an inline prefix on the user's command never reaches the hook's environment. **Resolution:** the hook now explicitly checks the *command string* for a leading `SAFETY_HARNESS_OFF=1 ` prefix as well, in addition to its own environment. This was discovered during fixture generation when bypassing the hook to write test data with destructive command strings — the inline form silently failed until the explicit check was added. The behaviour the spec promised is now actually delivered.
 
+5. **Three regex bugs surfaced by the team PR review.** A `/review-pr-team` pass on the implementation found three regex bugs that the test suite hadn't caught — the empty `block-mkfs-disk.expected.json` fixture was encoding the C1 bug as expected behaviour, hiding it from the suite. Findings:
+   - **`mkfs.ext4 /dev/disk2` (canonical 2-token form) silently allowed.** The regex required an extra whitespace-separated token between `mkfs.*` and `/dev/`. Fix: make that group optional — `mkfs(\.[a-z0-9]+)?[[:space:]]+(.*[[:space:]])?/dev/(disk|sd|nvme|rdisk)`.
+   - **`chmod 0777` (zero-padded octal) silently allowed.** `\b777\b` doesn't match because `\b` doesn't sit between `0` and `7`. Fix: `0?777\b`.
+   - **`git push --force origin master-prod` silently allowed.** `\b(main|master)\b` matched the `master` substring inside `master-prod`, so the exclusion fired and prevented the ask. Fix: anchor end-of-arg with `(main|master)([[:space:]]|$)`.
+
+   Plus a structural fix to the test runner: a fixture-naming convention check (`block-*` and `ask-*` must have non-empty `.expected.json`; `allow-*` and `bypass-*` must have empty) catches the empty-expected class of bug at suite-startup. The runner also now `unset`s `SAFETY_HARNESS_OFF` at the top so it doesn't pass silently when a developer has the bypass exported.
+
+   The team review's deeper architectural lesson: three of four findings were the same shape — *claim made in markdown, no machine check that the claim holds*. Beyond the script-level fixture-naming check, the broader template should consider a markdown-link validator at the same validation layer to catch the class of bug where a file move (like the SPECIFICATIONS → SPECIFICATIONS/ARCHIVE move that broke this spec's outbound `../` links) silently rots references. Captured as a future-extension idea below.
+
 **Sentinel-file escape hatch — still deferred.** Revisit if AI-self-bypass becomes a real failure mode in practice. The v1 design doesn't foreclose it.
 
 ## Future extensions (not in v1)
@@ -309,6 +318,8 @@ The three open questions raised during `/review-spec` were all settled by live s
 - Per-project pattern overrides (a `safety-harness-patterns.local.json` ignored by git, so derivative projects can tighten without forking the script)
 - A second hook for `Read` to catch attempts to print secrets to chat output (different threat shape — accidental leakage, not destruction)
 - Supabase-specific patterns at `ask` tier (`supabase db reset`, `supabase db push --linked`) once a real workflow surfaces
+- Filter-alternation extension for alternative SQL tooling (`mysql`, `sqlite3`, `dropdb`) — the script's DROP regex catches them, but the `if` filter's command-family alternation doesn't currently include them so the script never spawns. Add when a real workflow surfaces.
+- Markdown-link validator at the project's pre-merge layer (e.g. `markdown-link-check` over `SPECIFICATIONS/` and `REFERENCE/`) — would catch the class of bug where a file move silently breaks outbound references.
 
 These are listed so the v1 design doesn't accidentally foreclose them, not as commitments.
 

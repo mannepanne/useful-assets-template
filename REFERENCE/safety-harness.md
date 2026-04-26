@@ -30,8 +30,8 @@ When a block fires, the AI sees the reason via Claude Code's hook system reminde
 | Pattern | Reason |
 |---|---|
 | `git reset --hard` (any form) | Discards uncommitted changes and any commits ahead of the target |
-| `git push --force` (or `-f`) to non-main/master branches | Rewrites personal-branch history; routine during rebases but worth a confirm pause |
-| `chmod 777`, `chmod -R 777` | Grants read/write/execute to everyone — the dialog reason explains this and suggests `chmod 750` or `chmod 755` instead |
+| `git push --force` (or `-f`) to non-main/master branches | Rewrites personal-branch history; routine during rebases but worth a confirm pause. "Non-main/master" is matched strictly — `master-prod`, `main-old`, `release/master`, `staging` all fire the dialog. Only the literal `main` and `master` branches are excluded (because branch protection on the remote covers them) |
+| `chmod 777`, `chmod -R 777`, `chmod 0777` | Grants read/write/execute to everyone — the dialog reason explains this and suggests `chmod 750` or `chmod 755` instead. The 4-digit zero-padded form is also caught |
 
 The dialog is rendered by Claude Code's standard permission UI. **The AI cannot see the dialog content and cannot auto-answer it** — only the human at the terminal can approve or deny. This is structurally how the harness stays useful even when an AI is driving the work.
 
@@ -54,16 +54,21 @@ These slip through because they require a parser, not pattern matching, and the 
 - Base64'd / obfuscated commands: `echo "cm0gLXJmIC8=" | base64 -d | sh`
 - Commands written to a file and then sourced: `echo "rm -rf /" > /tmp/x.sh && sh /tmp/x.sh`
 
-### Compound commands — mostly caught for free
+### Compound commands — mostly caught via substring matching
 
-Claude Code's built-in subcommand matching breaks `&&`/`;`/`|`/`xargs` chains apart for hook evaluation, so:
+The hook greps the **whole command string** as a single substring, so any compound form that places the destructive command + protected path as a literal substring is caught:
 
-- `git status && rm -rf /` — caught (the `rm -rf /` subcommand fires the regex)
-- `echo / | xargs rm -rf` — caught (xargs+rm pattern)
-- `cat <<'EOF' | bash\nrm -rf /\nEOF` — caught (heredoc body is part of the command string)
-- `sh -c "rm -rf /"` — caught (explicit `sh -c` pattern in the hook)
+- `git status && rm -rf /` — caught (the `rm -rf /` substring fires the regex)
+- `echo done; rm -rf /Users/foo` — caught
+- `cat <<'EOF' | bash\nrm -rf /\nEOF` — caught (the heredoc body is part of the command string)
+- `sh -c "rm -rf /"` — caught (the inner `rm -rf /` is in the command string)
+- `` echo `rm -rf /Users/foo` `` and `echo $(rm -rf /Users/foo)` — caught
 
-You don't need to write separate patterns for compound forms in most cases.
+**Forms that route the path via stdin/pipes are not caught**, because the path arrives at runtime and never appears in the command string the hook inspects:
+
+- `echo /Users/foo | xargs rm -rf` — **not caught** (path comes through xargs at runtime)
+
+This is a known gap. Honest mistakes don't typically construct xargs pipelines for destructive ops, so the trade-off is acceptable per the threat model — but it means you should not rely on the harness as a defence against deliberate construction or sophisticated tooling chains.
 
 ---
 
@@ -138,7 +143,11 @@ Use the inline bypass: `SAFETY_HARNESS_OFF=1 <your command>`. If the same legiti
 
 ### `systemMessage` doesn't show up
 
-It's not supposed to. The originally-planned warn tier used `systemMessage` to show educational text without blocking the command, but live testing during implementation showed `systemMessage` doesn't render in interactive Claude Code. The warn tier was dropped; `chmod 777` (the only warn pattern) was moved to ask, where the educational message rides on the dialog reason and actually reaches the user.
+The hook does not use `systemMessage` — interactive Claude Code does not render it. `chmod 777`'s educational message rides on the ask-dialog reason instead. (See [`SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md`](../SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md) § Implementation findings for the discovery context.)
+
+### Patterns suddenly stopped firing
+
+The hook depends on `python3` for JSON parsing. If `python3` is missing from `PATH` or crashes, the script silently exits 0 and the harness does nothing — fail-open. Verify with `which python3`. On macOS the system Python is at `/usr/bin/python3`; on Linux it varies. If the harness ever appears to stop working, this is the first thing to check.
 
 ### The hook is making every Bash call slow
 

@@ -2,7 +2,7 @@
 # ABOUT: PreToolUse hook — guardrail against honest mistakes on Bash tool calls.
 # ABOUT: Two tiers (block/ask) calibrated for less-experienced users.
 #
-# Spec: SPECIFICATIONS/pretooluse-safety-harness.md
+# Spec: SPECIFICATIONS/ARCHIVE/pretooluse-safety-harness.md
 # Pattern set adapted from https://github.com/davekilleen/Dex/blob/main/.claude/hooks/dex-safety-guard.sh
 # JSON contract per https://docs.claude.com/en/docs/claude-code/hooks.md (current shape).
 #
@@ -107,8 +107,13 @@ if printf '%s' "$COMMAND" | grep -qE 'dd[[:space:]]+.*of=/dev/(disk|sd|nvme|rdis
     emit deny "Blocked: dd writing to a raw disk device — this overwrites the device. $BYPASS_HINT"
 fi
 
-# mkfs against a raw disk device.
-if printf '%s' "$COMMAND" | grep -qE 'mkfs(\.[a-z0-9]+)?[[:space:]]+.*[[:space:]]/dev/(disk|sd|nvme|rdisk)'; then
+# mkfs against a raw disk device. The (.*[[:space:]])? group is OPTIONAL so the
+# canonical two-token form `mkfs.ext4 /dev/disk2` matches as well as the
+# three-token form `mkfs.ext4 -F /dev/disk2`. The earlier regex required an
+# extra whitespace-separated token between mkfs.* and /dev/, silently allowing
+# the most common honest-mistake form — see SPECIFICATIONS/ARCHIVE/pretooluse-
+# safety-harness.md § Implementation findings (post-merge fixes).
+if printf '%s' "$COMMAND" | grep -qE 'mkfs(\.[a-z0-9]+)?[[:space:]]+(.*[[:space:]])?/dev/(disk|sd|nvme|rdisk)'; then
     emit deny "Blocked: mkfs formatting a raw disk device. $BYPASS_HINT"
 fi
 
@@ -141,7 +146,12 @@ fi
 # layer for that, and the explicit rule in .claude/CLAUDE.md covers the local
 # convention.
 if printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+push[[:space:]]+.*(-f\b|--force\b)'; then
-    if ! printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+push[[:space:]]+.*[[:space:]](main|master)\b'; then
+    # Anchor the main/master exclusion at end-of-arg ([[:space:]]|$). \b alone
+    # treats the dash in master-prod / main-old as a word boundary, so those
+    # branch names slipped the exclusion → no ask prompt fired. They are NOT
+    # the design's "literally main/master" case (which is excluded because
+    # branch protection covers it remotely).
+    if ! printf '%s' "$COMMAND" | grep -qE 'git[[:space:]]+push[[:space:]]+.*[[:space:]](main|master)([[:space:]]|$)'; then
         emit ask "git push --force rewrites branch history. Continue if this is your personal branch and you intended to rebase."
     fi
 fi
@@ -150,7 +160,7 @@ fi
 # systemMessage) but moved to ask tier during implementation when systemMessage
 # was found not to render in interactive Claude Code. Ask-tier confirmation
 # preserves the educational signal in a form that actually reaches the user.
-if printf '%s' "$COMMAND" | grep -qE 'chmod[[:space:]]+(-R[[:space:]]+)?777\b'; then
+if printf '%s' "$COMMAND" | grep -qE 'chmod[[:space:]]+(-R[[:space:]]+)?0?777\b'; then
     emit ask "chmod 777 grants read/write/execute to everyone including other users on the system. Usually chmod 750 (owner+group full, others nothing) or chmod 755 (owner full, others read+execute) is what's wanted. Continue with 777?"
 fi
 
