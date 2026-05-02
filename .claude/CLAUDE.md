@@ -234,12 +234,7 @@ I value clean git history, but not at the expense of losing work or slowing down
 - Use `/review-pr-team` when you want to skip triage and force a full multi-perspective team review (2–7 min).
 - See project-specific pr-review-workflow.md in REFERENCE/ for complete guide.
 
-**Branch strategy:**
-- Keep main clean and deployable
-- Use feature branches for ALL changes
-- WIP branches fine for exploration
-- PR required before merging to main
-- Suggest release tags at project milestones
+**Branch strategy:** Keep main clean and deployable. WIP branches fine for exploration. Suggest release tags at project milestones. (Feature-branch-and-PR rule covered in CRITICAL above.)
 
 **Commit message style:**
 - First line: brief summary of what changed
@@ -251,27 +246,13 @@ The goal is tracking our work and enabling collaboration, not perfect git aesthe
 
 ## Claude Code specific guidelines
 
-### Tool usage
-- Use concurrent tool calls when possible (batch independent operations).
-- Prefer the Agent tool (with `subagent_type: Explore`) for complex codebase searches to protect the main context window.
-- Use TaskCreate / TaskUpdate / TaskList for task tracking and project visibility.
-
-### Communication
-- Be concise in responses (aim for < 4 lines unless detail requested)
-- Use `file_path:line_number` format when referencing code locations
-- Avoid unnecessary preamble or postamble
-- When you are using /compact, please focus on our conversation, your most recent (and most significant) learnings, and what you need to do next. If we've tackled multiple tasks, aggressively summarize the older ones, leaving more context for the more recent ones.
-
-### File operations
-- Always prefer editing existing files over creating new ones
-- Use Read tool before Write/Edit operations
-- Check file structure and patterns before making changes
+### Compaction
+When using `/compact`, focus on our recent conversation, your most significant learnings, and what to do next. Aggressively summarise older tasks to preserve context for recent work.
 
 ### Learning and memory management
-- Use and update the project documentation frequently to capture technical insights, failed approaches, and user preferences.
-- Before starting complex tasks, search the project documentation for relevant past experiences and lessons learned.
+- Use and update project documentation frequently to capture technical insights, failed approaches, and user preferences.
+- Before starting complex tasks, search project documentation for relevant past experiences and lessons learned.
 - Document architectural decisions and their outcomes for future reference.
-- Track patterns in user feedback to improve collaboration over time.
 - **Architecture Decision Records (ADRs):** When making decisions that affect architecture beyond today's PR (library choice, architectural pattern, API design, deciding NOT to do something):
   - Prompt user: "This decision affects future architecture. Should I create an ADR in REFERENCE/decisions/?"
   - If confirmed, create ADR documenting: decision, context, alternatives considered, reasoning, trade-offs accepted
@@ -281,25 +262,9 @@ The goal is tracking our work and enabling collaboration, not perfect git aesthe
 
 ## Problem solving and debugging
 
-I value a scientific approach to debugging - let's understand what's actually happening before we start fixing things.
+Scientific approach: read errors first, find root causes (not symptoms), change one thing at a time, check what changed recently, find working examples. When stuck, say "I don't understand X" rather than guessing. If the first fix doesn't work, stop and reassess.
 
-### Core debugging mindset
-- **Read the error messages first** - they're usually trying to tell us exactly what's wrong
-- **Look for root causes, not symptoms** - fixing the underlying issue prevents it from coming back
-- **One change at a time** - if we change multiple things, we won't know what actually worked
-- **Check what changed recently** - git diff and recent commits often point to the culprit
-- **Find working examples** - there's usually similar code in the project that works correctly
-
-### When things get tricky
-- **Say "I don't understand X"** rather than guessing - I'd rather help figure it out together
-- **Look for patterns** - is this breaking in similar ways elsewhere? Are we missing a dependency?
-- **Test your hypothesis** - make the smallest change possible to test one specific theory
-- **If the first fix doesn't work, stop and reassess** - piling on more fixes usually makes things worse
-
-### Practical reality check
-Sometimes you need to move fast, sometimes the "proper" approach isn't practical. That's fine - just let me know when you're taking shortcuts so we can come back and clean things up later if needed. And as mentioned before, if accruing technical debt or planning to come back later and fix a shortcut, write it down in the project documentation so we don't forget.
-
-The goal is sustainable progress, not perfect process.
+**Detailed mindset and patterns:** [debugging-mindset.md](./COLLABORATION/debugging-mindset.md)
 
 ## Documentation standards
 
