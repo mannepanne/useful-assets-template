@@ -20,3 +20,8 @@ Product Operating Model, four big risks framework, PM mental models, and archety
 **When to read:** Selecting frameworks, libraries, services, or making technology stack decisions.
 
 Platform-specific technology preferences and selection criteria across the stack.
+
+### [debugging-mindset.md](./debugging-mindset.md)
+**When to read:** Working on a tricky bug, considering a workaround vs root-cause fix, or deciding when to ask for help.
+
+Scientific debugging principles, what to do when stuck, and the practical reality check on shortcuts vs proper fixes.
