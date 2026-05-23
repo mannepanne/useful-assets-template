@@ -70,7 +70,6 @@ Development is organised into numbered phases with clear deliverables, testing r
 ### REFERENCE/
 How-it-works documentation for implemented features:
 - [testing-strategy.md](./REFERENCE/testing-strategy.md) - Testing philosophy and approach
-- [technical-debt.md](./REFERENCE/technical-debt.md) - Known issues and accepted risks
 - [environment-setup.md](./REFERENCE/environment-setup.md) - API keys and environment configuration
 - [troubleshooting.md](./REFERENCE/troubleshooting.md) - Common issues and solutions
 - [TEMPLATE-UPDATES/](./REFERENCE/TEMPLATE-UPDATES/) - Migration packets for rolling out template improvements to derivative projects
@@ -152,7 +151,7 @@ npm run test:coverage     # Coverage report
 **Reference Docs:**
 - **Setting up environment?** → [environment-setup.md](./REFERENCE/environment-setup.md)
 - **Testing strategy?** → [testing-strategy.md](./REFERENCE/testing-strategy.md)
-- **Known issues?** → [technical-debt.md](./REFERENCE/technical-debt.md)
+- **Known issues / technical debt?** → GitHub Issues with `technical-debt` label
 - **Getting unstuck?** → [troubleshooting.md](./REFERENCE/troubleshooting.md)
 - **Architecture decisions?** → [decisions/](./REFERENCE/decisions/) - ADRs explaining why things are this way
 - **Rolling out a template improvement?** → [TEMPLATE-UPDATES/](./REFERENCE/TEMPLATE-UPDATES/) - Migration packets for derivative projects
