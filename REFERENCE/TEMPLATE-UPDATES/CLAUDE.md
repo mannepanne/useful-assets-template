@@ -31,6 +31,11 @@ TEMPLATE-UPDATES/
 
 **When to apply:** After `2026-04-pr-review-triage` has landed (this packet builds on the triage system). Apply if the derivative project still has reviewer agents flagging worst-case findings without a documented threat model, `/review-pr` runs that prompt the user repeatedly, the SCRATCH/ Write prompt is still firing despite allow-list entries, no safety net against destructive commands, or hasn't yet adopted the TEMPLATE-UPDATES system itself. The packet is idempotent — re-applying on a project that already has an earlier shape of it picks up only the new pieces (typically the SCRATCH-write hook, its ADR, the ops doc, and the investigation log).
 
+### [2026-05-post-review-follow-through/](./2026-05-post-review-follow-through/)
+**What it rolls out:** A shared post-review follow-through protocol (`.claude/skills/post-review-follow-through.md`) that re-buckets every review finding into one of three action tiers — handle in this PR, your call, track as GitHub issue. Both `/review-pr` and `/review-pr-team` reference it from Step 4, replacing the old bullet-list summary. Also retires `REFERENCE/technical-debt.md` in favour of GitHub issues with a `technical-debt` label. Covers PRs #43 and #44.
+
+**When to apply:** After `2026-04-pr-review-triage` has landed (the review skill files must exist). Apply if the derivative project's review skills still emit the old-style Step 4 summary (tier / count / recommendation / link), `REFERENCE/technical-debt.md` still exists, or technical debt tracking has no clear protocol. Check whether the local `technical-debt.md` has real entries before deleting it — those need converting to GitHub issues first.
+
 ---
 
 ## Authoring a new packet
