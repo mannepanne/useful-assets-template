@@ -127,7 +127,7 @@ If the triage decision looks wrong, you can interrupt and force a deeper tier wi
 
 `/review-pr` is a **dispatcher**. It does not review the PR itself — it classifies risk first, then hands off to the reviewer (or team) best suited to the change. The goal: use the cheapest review that's still safe.
 
-**The three phases:**
+**The four phases:**
 
 1. **Triage** — a lightweight classifier reads the PR's changed paths, size, and a couple of targeted greps (for secret-shaped strings and Supabase RLS keywords). It does not read file contents in depth. ~30 seconds on its own; adds ~30 seconds of overhead to the total review time quoted in the tier table above.
 2. **Announce** — the dispatcher tells you the tier and rationale in plain language *before* spawning the reviewer, so you can intervene if it got it wrong.
