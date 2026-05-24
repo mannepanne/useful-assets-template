@@ -8,7 +8,7 @@ You don't need to be technical. You need an idea and a willingness to chat about
 
 ## A note before you start
 
-The collaboration style baked into this template (in `.claude/CLAUDE.md` and the `.claude/COLLABORATION/` files) is quite Magnus-flavoured — Swedish directness, particular tech preferences, a specific way of working. That works for me. If you want it to feel like *yours*, just say so to Claude early on ("rewrite the collaboration files to fit how I want to work") and have a chat about how you'd like to be treated. Or leave it as-is and inherit a slightly opinionated Swedish 50-something SciFi-geek for a co-pilot. Up to you.
+**The template will introduce itself.** The first time you open Claude in this project, it will notice that the collaboration profile hasn't been personalised yet and walk you through a quick setup before anything else — your name, background, and how you like to work. Takes about a minute. After that, Claude will prompt you to describe your project and you're off. If you'd rather skip setup and keep the default profile as-is, just say so when Claude asks.
 
 **Heads-up:** the template ships with an automated PR review system that's opt-in. The first time you (or Claude) trigger it, you'll be asked once whether to enable it for this project — yes / no / later. It's optional and you can change your mind later by editing `.claude/project-config.json`.
 

@@ -4,6 +4,16 @@ Auto-loaded when working with files in this directory. Navigation index for coll
 
 ## Files in this directory
 
+### [personal-profile.md](./personal-profile.md)
+**When to read:** Every session — tells you who you're working with, how they like to be addressed, their background, communication preferences, and PM style.
+
+If the file contains `<!-- profile_status: default -->`, run the setup flow in `profile-setup-flow.md` before anything else.
+
+### [profile-setup-flow.md](./profile-setup-flow.md)
+**When to read:** When `PERSONAL_PROFILE_SETUP_REQUIRED` fires at session start (hook detected the default sentinel in `personal-profile.md`).
+
+Step-by-step instructions for personalising the profile, handling the "keep as-is" case, making the file private, and guiding the operator to the project-outline conversation.
+
 ### [documentation-standards.md](./documentation-standards.md)
 **When to read:** Creating or updating project documentation, README files, or reference guides.
 
