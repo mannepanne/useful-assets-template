@@ -33,7 +33,7 @@ Reference guide for selecting technologies across projects.
 | Object / blob storage | Cloudflare R2 | Files, documents, media — S3-compatible, no egress fees |
 | Image hosting with transforms | Cloudflare Images | Resizing, optimisation, and global delivery built in |
 | Stateful coordination / real-time | Cloudflare Durable Objects | Per-instance persistent state — rate limiting, presence, real-time counters, leader election |
-| Email | Cloudflare Email Workers + MailChannels, or Resend as fallback | MailChannels delivers transactional email free via Cloudflare; Resend is the clean fallback with excellent developer experience |
+| Email | Cloudflare Email Sending (Beta), or Resend as fallback | Cloudflare's first-party transactional email — native Workers bindings, built-in DNS auth (SPF/DKIM/DMARC), 1,000 emails/day on paid Workers plan. Resend is the clean fallback with excellent developer experience |
 | Authentication | Magic links (or Cloudflare Zero Trust for internal tools) | No password management; simple and secure for most use cases |
 | Payment processing | Stripe | Industry standard with excellent developer experience and global coverage |
 | Web analytics | Cloudflare Web Analytics | Privacy-focused, cookie-free — no consent banner required |
