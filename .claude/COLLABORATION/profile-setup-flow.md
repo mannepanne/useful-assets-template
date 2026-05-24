@@ -54,4 +54,8 @@ Tell them:
 
 ### Step 5: Guide to the next step
 
-> "You're all set. Now — tell me about the project you want to build. I'll ask whatever I need to understand the idea, then write it up as `project-outline.md` in `SPECIFICATIONS/ORIGINAL_IDEA/` so we have a starting point for a specification to work from."
+> "You're all set. Here's how this works: we'll have a conversation about your project, then I'll write it up as `project-outline.md` in `SPECIFICATIONS/ORIGINAL_IDEA/` — a starting point we'll use to build out a full specification before any code gets written.
+>
+> Before we dive in: if you have anything written already — notes, a brief, mockups, sketches, a rough doc — drop it into the `SPECIFICATIONS/ORIGINAL_IDEA/` folder now. It'll become part of the input and save us from covering ground you've already mapped out.
+>
+> Ready when you are. Tell me about the project."
