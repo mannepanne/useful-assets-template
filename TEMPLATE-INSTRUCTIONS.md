@@ -14,6 +14,26 @@ You don't need to be technical. You need an idea and a willingness to chat about
 
 ---
 
+## The services this template recommends
+
+This template is opinionated about technology. Claude follows a set of defaults chosen for cost, quality, and developer experience. The key services:
+
+| What for | Recommended |
+|---|---|
+| Hosting & edge | [Cloudflare](https://cloudflare.com) (Workers, KV, D1, R2) |
+| Database | [Cloudflare D1](https://developers.cloudflare.com/d1/) or [Supabase](https://supabase.com) |
+| Email | [Resend](https://resend.com) |
+| Payments | [Stripe](https://stripe.com) |
+| Frontend | Next.js (React) |
+
+Not every project needs all of these — only the ones your project actually uses. Most have generous free tiers.
+
+**You'll need accounts on the relevant services before you can deploy.** Claude will identify which ones apply when it writes your project spec — that's the right moment to sign up if you haven't already.
+
+If you'd rather use different services, say so during the project conversation. The defaults are a strong starting point, not a requirement.
+
+---
+
 ## The shape of things to come
 
 If you get lost, this is the basic outline:

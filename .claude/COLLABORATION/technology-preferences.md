@@ -22,14 +22,14 @@ Reference guide for selecting technologies across projects.
 
 | Use Case | Preferred Technology | Reason |
 | --- | --- | --- |
-| CLI/Headless projects | Python | Simplicity and extensive libraries |
+| CLI/Headless projects | Python | Simplicity and extensive standard library |
 | Web application projects | TypeScript (strict mode) | Industry standard type safety |
-| Web frontend framework | Next.js (React) with App Router | Server-side rendering and SEO |
-| Web frontend design | TailWind CSS for styling with shadcn/ui as component library | Great starting point |
-| Hosting of websites and web apps | CloudFlare.com | I already have an account |
-| CDN / DNS / Basic data storage | Cloudflare KV | Key-value storage, then other CF options |
-| Database, Storage | CloudFlare D1, CloudFlare R2, CloudFlare Images or Supabase where CloudFlare falls short | I already have an account |
-| Email communication | CloudFlare Email Sending (Beta) or Resend.com where CloudFlare falls short | I already have an account |
-| Authentication | Magic link systems (or CloudFlare ZeroTrust) | Simple and secure |
-| Payment processing | Stripe.com | Industry leader |
-| Web analytics | Cloudflare Web Analytics | Privacy-focused, cookie-free analytics |
+| Web frontend framework | Next.js (React) with App Router | Server-side rendering, SEO, and strong ecosystem |
+| Web frontend design | Tailwind CSS with shadcn/ui | Utility-first styling with a solid accessible component library |
+| Hosting of websites and web apps | Cloudflare | Global edge network, generous free tier, excellent Workers platform for serverless |
+| CDN / DNS / Basic data storage | Cloudflare KV | Tightly integrated with Cloudflare hosting; fast and low-cost |
+| Database, Storage | Cloudflare D1, R2, Images or Supabase where Cloudflare falls short | Cloudflare-native options keep infrastructure consolidated; Supabase covers relational depth that D1 doesn't yet handle |
+| Email communication | Cloudflare Email Routing or Resend where Cloudflare falls short | Resend is developer-friendly with excellent deliverability; Cloudflare handles basic routing for free |
+| Authentication | Magic link systems (or Cloudflare Zero Trust) | No password management; simple and secure for most use cases |
+| Payment processing | Stripe | Industry standard with excellent developer experience and global coverage |
+| Web analytics | Cloudflare Web Analytics | Privacy-focused, cookie-free — no consent banner required |
