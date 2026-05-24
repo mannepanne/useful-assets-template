@@ -22,14 +22,18 @@ Reference guide for selecting technologies across projects.
 
 | Use Case | Preferred Technology | Reason |
 | --- | --- | --- |
-| CLI/Headless projects | Python | Simplicity and extensive libraries |
+| CLI/Headless projects | Python | Simplicity and extensive standard library |
 | Web application projects | TypeScript (strict mode) | Industry standard type safety |
-| Web frontend framework | Next.js (React) with App Router | Server-side rendering and SEO |
-| Web frontend design | TailWind CSS for styling with shadcn/ui as component library | Great starting point |
-| Hosting of websites and web apps | CloudFlare.com | I already have an account |
-| CDN / DNS / Basic data storage | Cloudflare KV | Key-value storage, then other CF options |
-| Database, Storage | CloudFlare D1, CloudFlare R2, CloudFlare Images or Supabase where CloudFlare falls short | I already have an account |
-| Email communication | CloudFlare Email Sending (Beta) or Resend.com where CloudFlare falls short | I already have an account |
-| Authentication | Magic link systems (or CloudFlare ZeroTrust) | Simple and secure |
-| Payment processing | Stripe.com | Industry leader |
-| Web analytics | Cloudflare Web Analytics | Privacy-focused, cookie-free analytics |
+| Web APIs and backend services | [Hono.js](https://hono.dev/) on Cloudflare Workers | Lightweight, edge-native, excellent TypeScript support — ideal for APIs and Worker-first services |
+| Web frontend / full-stack | Next.js (React) with App Router | Full-stack framework for consumer-facing products needing SSR, SEO, and a strong ecosystem |
+| Web frontend design | Tailwind CSS with shadcn/ui | Utility-first styling with a solid accessible component library |
+| Hosting | Cloudflare Workers | Global edge network, generous free tier; all services stay on one platform |
+| Key-value storage / sessions / config | Cloudflare KV | Fast global reads; ideal for caching, feature flags, and session state |
+| SQL / relational data | Cloudflare D1 or Supabase for complex needs | D1 (SQLite-based, native Workers binding) for most cases; Supabase when relational depth, row-level security, or realtime subscriptions are needed |
+| Object / blob storage | Cloudflare R2 | Files, documents, media — S3-compatible, no egress fees |
+| Image hosting with transforms | Cloudflare Images | Resizing, optimisation, and global delivery built in |
+| Stateful coordination / real-time | Cloudflare Durable Objects | Per-instance persistent state — rate limiting, presence, real-time counters, leader election |
+| Email | Cloudflare Email Sending (Beta), or Resend as fallback | Cloudflare's first-party transactional email — native Workers bindings, built-in DNS auth (SPF/DKIM/DMARC), 1,000 emails/day on paid Workers plan. Resend is the clean fallback with excellent developer experience |
+| Authentication | Magic links (or Cloudflare Zero Trust for internal tools) | No password management; simple and secure for most use cases |
+| Payment processing | Stripe | Industry standard with excellent developer experience and global coverage |
+| Web analytics | Cloudflare Web Analytics | Privacy-focused, cookie-free — no consent banner required |
