@@ -6,7 +6,7 @@ Instructions for Claude when `PERSONAL_PROFILE_SETUP_REQUIRED` fires at session 
 
 ## When this runs
 
-The hook at `.claude/hooks/check-profile-setup.sh` detects the `<!-- profile_status: default -->` sentinel in `.claude/COLLABORATION/personal-profile.md` and emits the signal. This means the project is using the default (Magnus's) profile and hasn't been personalised yet.
+The hook at `.claude/hooks/check-profile-setup.sh` detects that `personal-profile.local.md` does not exist and that `.claude/COLLABORATION/personal-profile.md` still contains the `<!-- profile_status: default -->` sentinel. This means the project hasn't been personalised for this machine yet.
 
 ---
 
@@ -16,40 +16,42 @@ The hook at `.claude/hooks/check-profile-setup.sh` detects the `<!-- profile_sta
 
 Open with:
 
-> "I see this project is using the default profile. If you're Magnus and want to keep it as-is, just say so and I'll clear the setup flag so this won't fire again. Otherwise, I'll ask a few quick questions so we can make it yours."
+> "This project is using the default collaboration profile — it hasn't been personalised for you yet. If it already describes how you work, just say so and I'll set it up as-is. Otherwise, a few quick questions and we'll make it yours."
 
 ### Step 2a: Keep as-is
 
-If they confirm they want to keep it (e.g. "that's me", "keep it", "I'm Magnus"):
-- Remove the `<!-- profile_status: default -->` line from `.claude/COLLABORATION/personal-profile.md`
-- Skip the rest of this flow and continue with whatever they came to do
+If they say they want to keep it (e.g. "keep it", "that's fine", "I'm Magnus"):
+- Create `.claude/COLLABORATION/personal-profile.local.md` as a copy of `.claude/COLLABORATION/personal-profile.md`, with the `<!-- profile_status: default -->` sentinel line removed
+- Tell them: "Done — your profile is saved to `personal-profile.local.md`, which is gitignored and private by default. This prompt won't fire again on this machine."
+- Skip to Step 5
 
 ### Step 2b: Personalise
 
-Ask three questions one at a time — wait for the answer before asking the next:
+Ask four questions one at a time — wait for the answer before asking the next:
 
 1. *"What's your name, and how would you like me to address you?"*
 2. *"What's your background? I calibrate how I explain things based on this — whether you're a developer, designer, non-technical founder, or something else entirely."*
-3. *"How direct should I be? Think: whether to call out bad ideas bluntly, how much technical detail to include, whether a bit of humour is welcome."*
+3. *"How direct should I be? Think bluntness: should I call out bad ideas plainly, or soften the edges?"*
+4. *"How technical should my explanations be? Think: whether to use ELI5 analogies or go deep on the details. And is occasional humour welcome?"*
 
 If they mention product work, add:
 
-4. *"One more — when we're in product-thinking mode (strategy, discovery, requirements), how do you see yourself? Technical PM, domain expert, generalist, something else?"*
+5. *"One more — when we're in product-thinking mode (strategy, discovery, requirements), how do you see yourself? Technical PM, domain expert, generalist, something else?"*
 
-### Step 3: Rewrite the profile
+### Step 3: Write the profile
 
-Rewrite `.claude/COLLABORATION/personal-profile.md` based on their answers:
-- Remove the sentinel line
+Create `.claude/COLLABORATION/personal-profile.local.md` based on their answers:
 - Keep the same section structure (Identity, Background and role, Communication style)
-- Add a PM profile section only if they mentioned product work
+- Add a PM profile section only if they mentioned product work (question 5)
 - Write in first person from the operator's perspective, matching the style of the default profile
+- Do NOT include the `<!-- profile_status: default -->` sentinel
 
-### Step 4: Privacy offer
+### Step 4: Confirm privacy
 
-> "The profile is saved to the repo by default. If the repo is private that's fine — it stays with the code. If the repo is public, or you'd rather keep your profile separate from the code, I can add it to `.gitignore`. Worth knowing: because the file is already committed, you'd also need to run `git rm --cached .claude/COLLABORATION/personal-profile.md` to untrack it — I can handle that too. Want me to make it private?"
+Tell them:
 
-If yes: add `.claude/COLLABORATION/personal-profile.md` to `.gitignore` and run `git rm --cached .claude/COLLABORATION/personal-profile.md`.
+> "Your profile is saved to `personal-profile.local.md`, which is gitignored — it won't be committed to the repo. If you'd like it checked in (for example, for a team setup where others should see your preferences), just say so and I can move it."
 
-### Step 5: Guide to next step
+### Step 5: Guide to the next step
 
 > "You're all set. Now — tell me about the project you want to build. I'll ask whatever I need to understand the idea, then write it up as `project-outline.md` in `SPECIFICATIONS/ORIGINAL_IDEA/` so we have a starting point for a specification to work from."

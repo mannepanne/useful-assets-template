@@ -4,10 +4,10 @@ Auto-loaded when working with files in this directory. Navigation index for coll
 
 ## Files in this directory
 
-### [personal-profile.md](./personal-profile.md)
+### [personal-profile.md](./personal-profile.md) / [personal-profile.local.md](./personal-profile.local.md)
 **When to read:** Every session — tells you who you're working with, how they like to be addressed, their background, communication preferences, and PM style.
 
-If the file contains `<!-- profile_status: default -->`, run the setup flow in `profile-setup-flow.md` before anything else.
+Read `personal-profile.local.md` if it exists (gitignored, operator's personalised copy); otherwise fall back to `personal-profile.md` (the committed template default). The SessionStart hook handles detection — if it fires `PERSONAL_PROFILE_SETUP_REQUIRED`, run the setup flow in `profile-setup-flow.md` before anything else.
 
 ### [profile-setup-flow.md](./profile-setup-flow.md)
 **When to read:** When `PERSONAL_PROFILE_SETUP_REQUIRED` fires at session start (hook detected the default sentinel in `personal-profile.md`).

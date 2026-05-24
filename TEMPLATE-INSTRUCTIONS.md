@@ -8,7 +8,7 @@ You don't need to be technical. You need an idea and a willingness to chat about
 
 ## A note before you start
 
-**The template will introduce itself.** The first time you open Claude in this project, it will notice that the collaboration profile hasn't been personalised yet and walk you through a quick setup before anything else — your name, background, and how you like to work. Takes about a minute. After that, Claude will prompt you to describe your project and you're off. If you'd rather skip setup and keep the default profile as-is, just say so when Claude asks.
+**The template will introduce itself.** The first time you open Claude in this project, it will notice that the collaboration profile hasn't been personalised yet and walk you through a quick setup before anything else — your name, background, and how you like to work. Takes a couple of minutes. After that, Claude will prompt you to describe your project and you're off. If you'd rather skip setup and keep the default profile as-is, just say so when Claude asks.
 
 **Heads-up:** the template ships with an automated PR review system that's opt-in. The first time you (or Claude) trigger it, you'll be asked once whether to enable it for this project — yes / no / later. It's optional and you can change your mind later by editing `.claude/project-config.json`.
 
