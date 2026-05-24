@@ -161,6 +161,11 @@ service-account*.json
 # dogfooding on the template repo) without flipping the committed default.
 .claude/project-config.local.json
 
+# Per-machine collaboration profile. The committed personal-profile.md always
+# ships the default sentinel so cloners are prompted to personalise. This local
+# file holds the operator's actual profile for their machine — never committed.
+.claude/COLLABORATION/personal-profile.local.md
+
 # Project-specific (add your own below this line)
 # Example:
 # /data/

@@ -24,6 +24,11 @@ Common issues and solutions for local development, deployment, and API integrati
 
 How to use `/review-spec` (pre-implementation), `/review-pr`, and `/review-pr-team` skills.
 
+### [profile-setup-hook.md](./profile-setup-hook.md)
+**When to read:** The profile setup prompt fired and you want to understand what's going on, you want to suppress or disable the hook, or you want to extend the setup flow.
+
+What the hook detects, the `.local` file pattern, how the signal is consumed by Claude, test command, extension points, and removal steps. Decision rationale at [`decisions/2026-05-24-personal-profile-setup-sentinel.md`](./decisions/2026-05-24-personal-profile-setup-sentinel.md).
+
 ### [safety-harness.md](./safety-harness.md)
 **When to read:** A safety-harness block or ask dialog fired and you want to understand what's going on, you want to add a pattern, or you want to bypass the hook for a legitimate use.
 
