@@ -134,7 +134,7 @@ When you surface it, use the verbatim pitch text from [`.claude/skills/review-ga
 
 We prefer free/low-cost, state-of-the-art solutions. Always use latest stable versions and follow best practices.
 
-**Key preferences:** TypeScript for web apps, Next.js for frontend, Cloudflare for hosting, Supabase for database, Python for CLI tools.
+**Key preferences:** TypeScript for web apps, Hono.js for APIs/Workers, Next.js for full-stack consumer apps, Cloudflare for hosting and storage (D1/KV/R2), Supabase as relational fallback, Python for CLI tools.
 
 **Complete technology preferences:** [technology-preferences.md](./COLLABORATION/technology-preferences.md)
 

@@ -22,7 +22,7 @@ This template is opinionated about technology. Claude follows a set of defaults 
 |---|---|
 | Hosting & edge | [Cloudflare](https://cloudflare.com) (Workers, KV, D1, R2) |
 | Database | [Cloudflare D1](https://developers.cloudflare.com/d1/) or [Supabase](https://supabase.com) |
-| Email | [Resend](https://resend.com) |
+| Email | Cloudflare Email Workers + MailChannels (or [Resend](https://resend.com) as fallback) |
 | Payments | [Stripe](https://stripe.com) |
 | Frontend | Next.js (React) |
 
