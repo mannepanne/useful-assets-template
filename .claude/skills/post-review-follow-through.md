@@ -32,14 +32,14 @@ Use this exact format. **Skip any bucket that has nothing in it — don't emit e
 
 > **Done — [N] critical issue(s) to fix before merge.** *(or: no blockers)*
 >
-> **I'll handle these in this PR** *(confirm and I'll go — reply "yes" or "go ahead" and I'll apply the changes to the current PR branch and commit them):*
+> **I'll handle these in this PR** *(confirm and I'll go — reply "yes" for all, or name the specific items you want handled; I'll apply the changes to the current PR branch and commit them):*
 > - Update `REFERENCE/api.md` — the new endpoint isn't documented
 > - Add ABOUT comments to `src/lib/auth.ts` (new file)
 >
 > **Your call:**
 > - The auth flow skips email verification on social logins — users may be surprised. My recommendation: add a "verify on first login" prompt. Your choice.
 >
-> **Tracking as GitHub issues** *(shall I create these?):*
+> **Tracking as GitHub issues** *(shall I create these? Reply "yes" for all, or name specific ones):*
 > - `BUG: Pre-existing race condition in payment retry path — unrelated to this PR, needs separate investigation`
 > - `ENHANCEMENT: Add SAML SSO login — came up in review discussion, distinct piece of work`
 
