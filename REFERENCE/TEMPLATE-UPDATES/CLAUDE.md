@@ -36,6 +36,11 @@ TEMPLATE-UPDATES/
 
 **When to apply:** After `2026-04-pr-review-triage` has landed (the review skill files must exist). Apply if the derivative project's review skills still emit the old-style Step 4 summary (tier / count / recommendation / link), `REFERENCE/technical-debt.md` still exists, or technical debt tracking has no clear protocol. Check whether the local `technical-debt.md` has real entries before deleting it — those need converting to GitHub issues first.
 
+### [2026-05-reduce-github-issue-bias/](./2026-05-reduce-github-issue-bias/)
+**What it rolls out:** Tightens the "Track as issue" tier in the post-review follow-through protocol: work must now be both out of scope *and* non-trivial to become a GitHub Issue. Adds an explicit anti-pattern list (documentation gaps, ABOUT comments, minor code quality fixes should never become issues), a cost-asymmetry note, and replaces a bad worked example. Covers PR #50.
+
+**When to apply:** After `2026-05-post-review-follow-through` has landed. Apply if reviews are still producing GitHub Issues for minor documentation or code quality findings that could be fixed immediately in the PR.
+
 ---
 
 ## Authoring a new packet
