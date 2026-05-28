@@ -18,9 +18,9 @@ Reviewer output uses 🔴/⚠️/💡 severity. Translate each finding into one 
 
 | Tier | Criteria |
 |---|---|
-| **Handle in this PR** | Technical solution is clear, within the PR's scope: bugs, code quality, doc gaps for code the PR touched, missing ABOUT comments, failing tests. **Default bucket — most findings land here.** |
+| **Handle in this PR** | Technical solution is clear: bugs, code quality, doc gaps for code the PR touched, missing ABOUT comments, failing tests, minor tech debt, small style/convention fixes. **Default bucket — most findings land here. Minor does not mean defer — if it can be done in a few minutes, do it now.** |
 | **Your call** | Involves a UX or scope tradeoff the operator needs to decide. Present the options in plain English with your recommendation. A 🔴 in this tier still blocks merge until decided. |
-| **Track as issue** | Genuinely outside this PR's scope: pre-existing bug, separate feature, broader architectural problem. GitHub issues are the **only** allowed form of deferral — never say "we'll do that later" without creating a ticket. |
+| **Track as issue** | Out of scope **and** non-trivial: work that requires a separate investigation, affects unrelated systems, or represents a distinct feature/story. The bar is high — only reach for this bucket when the work truly cannot be done as part of this PR. **Never create a GitHub Issue for:** documentation gaps, ABOUT comments, evergreen-language fixes, minor code quality or style improvements, or anything resolvable in a few lines. A GitHub Issue for a 5-minute fix costs more (time spent triaging it later) than just fixing it now. |
 
 When in doubt, default to **Handle in this PR**.
 
@@ -40,8 +40,8 @@ Use this exact format. **Skip any bucket that has nothing in it — don't emit e
 > - The auth flow skips email verification on social logins — users may be surprised. My recommendation: add a "verify on first login" prompt. Your choice.
 >
 > **Tracking as GitHub issues** *(shall I create these?):*
-> - `BUG: Error message on failed payment exposes stack trace`
-> - `ENHANCEMENT: Password reset email uses old brand colours`
+> - `BUG: Pre-existing race condition in payment retry path — unrelated to this PR, needs separate investigation`
+> - `FEATURE: Add SAML SSO login — came up in review discussion, distinct piece of work`
 
 Plain English throughout. No technical jargon in the "Your call" or "Tracking" sections unless it genuinely aids clarity.
 
