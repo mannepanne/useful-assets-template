@@ -41,6 +41,11 @@ TEMPLATE-UPDATES/
 
 **When to apply:** After `2026-05-post-review-follow-through` has landed. Apply if reviews are still producing GitHub Issues for minor documentation or code quality findings that could be fixed immediately in the PR.
 
+### [2026-05-tighten-post-review-follow-through/](./2026-05-tighten-post-review-follow-through/)
+**What it rolls out:** Three protocol contracts surfaced by empirical downstream use: (1) "Your call" must always carry a default recommendation — no hedging allowed; (2) GitHub Issue bodies now follow a fixed three-section skeleton (Finding / Source / Suggested fix) for consistency across batches; (3) Partial confirmation (e.g. "yes to 1 and 3, skip 2") has an explicit contract — Claude must state which items it is acting on before making changes. Also adds partial-confirmation hints to the Step 2 prompts. Covers PR #55.
+
+**When to apply:** After `2026-05-reduce-github-issue-bias` has landed. Apply if reviews are parking findings in "Your call" without a recommendation, creating GitHub Issues with inconsistent bodies, or handling partial confirmations by reading between the lines rather than following an explicit contract.
+
 ---
 
 ## Authoring a new packet
