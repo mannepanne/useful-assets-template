@@ -1,6 +1,6 @@
 # Post-review follow-through
 
-Referenced by `/review-pr` (Step 4) and `/review-pr-team` (Step 3) after a PR review comment has been posted.
+Referenced by `/review-pr` (Step 4) and `/review-pr-team` (Step 3, substep 4) after a PR review comment has been posted.
 
 ---
 
@@ -41,7 +41,7 @@ Use this exact format. **Skip any bucket that has nothing in it — don't emit e
 >
 > **Tracking as GitHub issues** *(shall I create these?):*
 > - `BUG: Pre-existing race condition in payment retry path — unrelated to this PR, needs separate investigation`
-> - `FEATURE: Add SAML SSO login — came up in review discussion, distinct piece of work`
+> - `ENHANCEMENT: Add SAML SSO login — came up in review discussion, distinct piece of work`
 
 Plain English throughout. No technical jargon in the "Your call" or "Tracking" sections unless it genuinely aids clarity.
 
@@ -62,3 +62,5 @@ Plain English throughout. No technical jargon in the "Your call" or "Tracking" s
 3. Issue body: what was found, which PR surfaced it, recommended fix if known.
 
 **Standard labels:** `bug` · `documentation` · `enhancement` · `technical-debt`
+
+`bug`, `documentation`, and `enhancement` are GitHub default labels and exist in all new repositories. `technical-debt` is created on demand in step 1 above. If a repo has deleted a default label, `gh issue create --label "<name>"` will fail — recreate the label manually before retrying.
