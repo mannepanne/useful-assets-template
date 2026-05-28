@@ -37,3 +37,11 @@ Reference guide for selecting technologies across projects.
 | Authentication | Magic links (or Cloudflare Zero Trust for internal tools) | No password management; simple and secure for most use cases |
 | Payment processing | Stripe | Industry standard with excellent developer experience and global coverage |
 | Web analytics | Cloudflare Web Analytics | Privacy-focused, cookie-free — no consent banner required |
+
+## Security and launch auditing tools
+
+These are not stack components — they are validation tools to run at key project milestones (pre-launch, post-deploy, and periodically in production). Treat them as required checklist items, not optional extras.
+
+| Tool | Purpose | When to use |
+| --- | --- | --- |
+| [securityheaders.com](https://securityheaders.com/) | Scans a live URL and grades the HTTP security headers your server sends (Content-Security-Policy, Strict-Transport-Security, X-Frame-Options, Referrer-Policy, Permissions-Policy, etc.) on an A+ to F scale | Before launch (on staging), immediately after first production deploy, and after any significant infrastructure or middleware change. Aim for A grade minimum; A+ where feasible. If the score is below B, do not consider the project production-ready |
