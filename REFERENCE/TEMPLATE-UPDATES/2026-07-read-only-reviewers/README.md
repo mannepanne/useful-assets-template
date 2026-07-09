@@ -2,6 +2,19 @@
 
 **Status:** Active
 **Authoritative source:** https://github.com/mannepanne/useful-assets-template/pull/58
+**Prerequisite:** [`2026-07-fan-out-review-synthesis`](../2026-07-fan-out-review-synthesis/README.md) must be applied first — see [Ordering](#ordering) below.
+
+---
+
+## Ordering
+
+**Apply `2026-07-fan-out-review-synthesis` before this packet, back to back in one sitting.**
+
+Two of this packet's three skill edits anchor on steps that packet introduces: `review-pr-team` Step 1 (*"Issue all four `Agent` calls in a single message"*) and `review-spec` Step 2 (*"Issue all three `Agent` calls…"*). In a pre-fan-out project those steps still read `Create Agent Team`, and there are no `Agent` spawn calls to attach `isolation: "worktree"` to. Only the `/review-pr` triage/light/standard spawns would land.
+
+Do not stop between the two packets. The source files on `main` already contain both changes, so a fan-out-only rollout pulls in skill files that reference `#read-only-contract` and pass `isolation: "worktree"` before this packet has created the contract or corrected the agents.
+
+**If reviews are running today and you must triage:** this packet's *agent* edits — the read-only contract, the corrected step 4, the `git show FETCH_HEAD:` recipe — apply cleanly to a pre-fan-out project on their own, and they are the part that stops the work-losing bug. The worktree isolation layer is what needs fan-out first. Applying the agent edits alone is a legitimate emergency stop; just come back and do both packets properly.
 
 ---
 
