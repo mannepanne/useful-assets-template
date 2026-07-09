@@ -2,6 +2,11 @@
 
 **Status:** Active
 **Authoritative source:** https://github.com/mannepanne/useful-assets-template/pull/56
+**Apply before:** [`2026-07-read-only-reviewers`](../2026-07-read-only-reviewers/README.md) — that packet's skill edits anchor on the parallel-spawn steps this one introduces. Apply the two back to back, in one sitting.
+
+---
+
+> **Note.** The source files on `main` already contain the read-only-reviewers changes too, so the skill files you fetch here will mention `isolation: "worktree"` and link to `#read-only-contract`. Those references stay dangling until you apply the read-only packet immediately afterwards. That is expected — do not try to strip them out.
 
 ---
 
