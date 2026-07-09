@@ -51,6 +51,11 @@ TEMPLATE-UPDATES/
 
 **When to apply:** After `2026-04-pr-review-triage` has landed (the review skill files must exist). Apply if the derivative project's `/review-pr-team` or `/review-spec` still instruct reviewers to broadcast findings and debate severity — symptoms are reviews that run far longer than the advertised 2–7 minutes and discussion phases with no clear termination. Independent of the follow-through packets; can be applied before or after them.
 
+### [2026-07-read-only-reviewers/](./2026-07-read-only-reviewers/)
+**What it rolls out:** Stops reviewer agents mutating the operator's working tree. Adds a read-only contract to `.claude/agents/CLAUDE.md` inherited by all ten reviewer agents, corrects the step-4 instruction that told five agents to read PR-changed files with the `Read` tool (which reads the working tree, not the PR — the contradiction that drove agents to `git checkout`), codifies `git fetch origin pull/<N>/head` + `git show FETCH_HEAD:<path>` as the correct read, and spawns all `/review-pr` and `/review-pr-team` reviewers with `isolation: "worktree"`. `/review-spec` is deliberately exempt. Covers PR #58.
+
+**When to apply:** Urgently, if the project's reviewer agents still say "Read full file context where needed using the Read tool". The bug it fixes silently moves you off your branch mid-review, so later commits miss the PR — a downstream project lost two commits to it before catching it by hand. Especially urgent if the project runs with permissive tool settings (`bypassPermissions`, `dontAsk`, or a broadened git allowlist), because then nothing prompts before the checkout. Independent of the other 2026-07 packet; apply in either order.
+
 ---
 
 ## Authoring a new packet
