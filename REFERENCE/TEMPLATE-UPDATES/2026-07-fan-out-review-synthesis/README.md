@@ -105,9 +105,13 @@ Please:
    `.claude/skills/review-pr/SKILL.md` (only two small edits — do not overwrite it
    wholesale) and `.claude/settings.json` (remove one key, not the whole env block, if
    other keys are present).
-6. If this project has added its OWN reviewer agents beyond the seven listed, they will
-   also have debate instructions. Apply the same `## Team Collaboration` →
-   `## Reporting to the orchestrator` treatment to them, preserving any scope guidance.
+6. The template ships TEN reviewer agents. Seven are listed in the manifest above. The
+   other three — `code-reviewer`, `light-reviewer`, `triage-reviewer` — never had debate
+   instructions and must NOT be touched. If this project has added reviewer agents of its
+   OWN beyond those ten, check whether they carry a `## Team Collaboration` section; if
+   so, give them the same `## Reporting to the orchestrator` treatment, preserving any
+   scope guidance. If there are no project-specific agents, this step is expected to be a
+   no-op — say so and move on.
 7. Before writing ANY changes, list every proposed edit with a one-line rationale, and
    flag any place where local customisation would be lost. Wait for my confirmation.
 8. After I confirm and you've applied the changes, run the verification commands from
