@@ -46,6 +46,11 @@ TEMPLATE-UPDATES/
 
 **When to apply:** After `2026-05-reduce-github-issue-bias` has landed. Apply if reviews are parking findings in "Your call" without a recommendation, creating GitHub Issues with inconsistent bodies, or handling partial confirmations by reading between the lines rather than following an explicit contract.
 
+### [2026-07-fan-out-review-synthesis/](./2026-07-fan-out-review-synthesis/)
+**What it rolls out:** Removes the multi-round "collaborative discussion" phase from `/review-pr-team` and `/review-spec`. Reviewer agents now fan out in parallel, report findings to the orchestrator, and the orchestrator deduplicates by `file:line` and reconciles severity disagreements itself — recording both positions where the reports don't settle one. Adds a findings contract (`file:line` + severity + evidence) to `.claude/agents/CLAUDE.md`, strips the `## Team Collaboration` section from all seven reviewer agents, and drops the now-unused `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` flag. Covers PR #56.
+
+**When to apply:** After `2026-04-pr-review-triage` has landed (the review skill files must exist). Apply if the derivative project's `/review-pr-team` or `/review-spec` still instruct reviewers to broadcast findings and debate severity — symptoms are reviews that run far longer than the advertised 2–7 minutes and discussion phases with no clear termination. Independent of the follow-through packets; can be applied before or after them.
+
 ---
 
 ## Authoring a new packet
