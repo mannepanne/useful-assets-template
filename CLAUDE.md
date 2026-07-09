@@ -112,7 +112,7 @@ How-it-works documentation for implemented features:
 4. Implement with tests (run tests + type checking)
 5. Create PR for review:
   - **`/review-pr`** - Smart dispatcher: triages the change and routes to light / standard / team (1–5 min end-to-end; longer when auto-escalated to team tier)
-  - **`/review-pr-team`** - Force team review, skip triage (2–7 min)
+  - **`/review-pr-team`** - Force full four-perspective review, skip triage (2–4 min)
   - **See:** [pr-review-workflow.md](./REFERENCE/pr-review-workflow.md)
 
 ## TypeScript configuration
