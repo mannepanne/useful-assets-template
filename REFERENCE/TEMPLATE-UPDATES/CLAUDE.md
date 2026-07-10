@@ -74,11 +74,23 @@ When a template improvement should be propagated:
    - **Copy verbatim** — files that don't exist in the target project and should be added as-is (typically new skills, agents, ADRs).
    - **Merge carefully** — files that likely exist in the target project but with different content; needs section-level merging, not overwrite.
    - **Conditional** — files that may or may not be relevant depending on whether the target project uses a related feature.
-5. **Write the apply prompt** — the literal text the user will paste into the receiving project's Claude. Make it self-contained: the receiving Claude won't see this template's CLAUDE.md.
+5. **Write the apply prompt** — the literal text the user will paste into the receiving project's Claude. Make it self-contained: the receiving Claude won't see this template's CLAUDE.md. It must instruct retrieval via `gh api ... -H 'Accept: application/vnd.github.raw'` (see [Retrieval must be byte-exact](#retrieval-must-be-byte-exact)) and must include a byte-identity check over the "Copy verbatim" files.
 6. **Add an entry to the index above** in this file.
 7. **Run `bash REFERENCE/TEMPLATE-UPDATES/verify-packets.sh` before merging.** A packet's own
    `## Verification` block must pass against the template itself. If it cannot, the check is
    wrong — fix the check, not the template.
+
+### Retrieval must be byte-exact
+
+A packet's deliverable is exact wording. `WebFetch` cannot deliver it: it converts the page to markdown and answers a prompt against it *using a small fast model*, so what comes back is that model's answer, not the file's bytes. It also caches per URL for 15 minutes. Asked to reproduce a file verbatim, it may summarise it, truncate it, or decline and return commentary instead — and the result varies between runs, so a spot check that looks clean proves nothing about the next fetch.
+
+Apply prompts must therefore instruct:
+
+```bash
+gh api repos/<owner>/<repo>/contents/<path> -H 'Accept: application/vnd.github.raw'
+```
+
+which returns exact bytes and works against private forks. `curl -fsSL https://raw.githubusercontent.com/<owner>/<repo>/main/<path>` is the equivalent no-auth fallback for public repos. `WebFetch` remains fine for reading a rendered page you only need the *sense* of — it is never right for a file whose contents you are about to write to disk.
 
 ### Verification checks must fail loudly
 
@@ -94,6 +106,12 @@ all three have shipped in this repo:
 - Greps scoped too broadly. `grep -rn "technical-debt.md" REFERENCE/` matches the packet
   README that *describes* retiring `technical-debt.md`. Anchor the pattern (`^\s*"Write\(`)
   or exclude `--exclude-dir=TEMPLATE-UPDATES`.
+- **Anchor greps over a "Copy verbatim" file.** `grep -q '^\*\*Untrusted input:\*\* inherits'`
+  proves one line survived, not that the file is the file. A paraphrase, a truncation, or a
+  hand-typed reconstruction keeps the anchor strings and loses everything around them, and the
+  check reports green. Verbatim files need a `diff` against re-fetched source — see
+  [Retrieval must be byte-exact](#retrieval-must-be-byte-exact). Anchor greps stay useful for
+  *merge carefully* files, where a diff would false-positive by design.
 
 Test a new check by **breaking the thing it asserts** and confirming it goes red. A check that
 cannot fail is worse than no check: it reports green over a real defect.

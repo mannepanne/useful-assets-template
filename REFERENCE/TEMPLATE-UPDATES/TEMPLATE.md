@@ -53,23 +53,33 @@ at:
 
 Source PR(s): [PR links]
 
-How to fetch source files: use WebFetch on the raw GitHub URL pattern
+How to fetch source files: use `gh api` with the raw media type, which returns the file's
+exact bytes:
 
-  https://raw.githubusercontent.com/[OWNER]/[REPO]/main/<path>
+  gh api repos/[OWNER]/[REPO]/contents/<path> -H 'Accept: application/vnd.github.raw'
 
 substituting <path> for any file listed in the manifest (e.g.
-`.claude/skills/review-gate.md`). Do NOT invent file contents — every source file must come
-from the raw URL above.
+`.claude/skills/review-gate.md`). If `gh` is not authenticated, `curl -fsSL
+https://raw.githubusercontent.com/[OWNER]/[REPO]/main/<path>` is an equivalent fallback for
+public repos.
+
+Do NOT use WebFetch to retrieve source files. WebFetch answers a prompt against the page
+using a small model, so it returns a paraphrase rather than the file, and its output is
+cached for 15 minutes. A summary written into a source file still satisfies grep-based
+checks, so the damage passes verification silently.
+
+Do NOT invent, reconstruct, or type out file contents from memory. Every file must arrive
+as bytes from the command above.
 
 Please:
 
-1. WebFetch the packet README first and read it end-to-end. Understand WHY the change
+1. Fetch the packet README first and read it end-to-end. Understand WHY the change
    exists and WHAT changed before touching any file.
 2. Create a feature branch (e.g. `feature/adopt-[slug]`). Do NOT work on main.
 3. For each file in "Copy verbatim", check whether a file at that path exists locally.
-   If not, WebFetch the source and create it. If it does, treat it as "merge carefully"
-   instead and flag the conflict.
-4. For each file in "Merge carefully", read the local version and WebFetch the source
+   If not, fetch the source and write it unmodified. If it does, treat it as "merge
+   carefully" instead and flag the conflict.
+4. For each file in "Merge carefully", read the local version and fetch the source
    version. Identify the sections this packet adds or modifies, and propose a merged
    version that preserves any local customisation.
 5. For each "Conditional" file, evaluate the stated condition before deciding.
@@ -83,12 +93,26 @@ Please:
 
 Each check below should be a single shell command the receiving Claude can run and report on. Prefer `test -f`, `grep -q`, or other mechanical checks over English assertions.
 
+**Every packet must include a byte-identity check over its "Copy verbatim" files.** Anchor greps confirm that a string is present; they cannot tell a real file from a summary that happens to contain the same string. Re-fetching the source and diffing is the only check that catches a paraphrased, truncated, or hand-typed file — and it holds regardless of how the file was retrieved.
+
 ```bash
-# Examples — replace with packet-specific checks:
+# Byte-identity over every "Copy verbatim" file. List them here, space-separated.
+for p in path/to/new-file.md; do
+  src=$(mktemp)
+  gh api "repos/[OWNER]/[REPO]/contents/$p" -H 'Accept: application/vnd.github.raw' > "$src" \
+    || { echo "FETCH FAILED: $p"; exit 1; }
+  diff -u "$src" "$p" || { echo "DRIFT: $p does not match source"; exit 1; }
+  rm -f "$src"
+done
+echo "all verbatim files byte-identical to source"
+
+# Packet-specific checks — replace with your own:
 test -f path/to/new-file.md
 grep -q "expected-string" path/to/existing-file.md
 grep -q "ignored-pattern" .gitignore
 ```
+
+Do **not** extend the byte-identity loop to "Merge carefully" files. Those are expected to diverge from source — a diff there fails on correct work.
 
 Add at least one check that would catch a *partial* merge (e.g. a key added to one file but a corresponding reference missing from another).
 
