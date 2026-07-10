@@ -58,7 +58,7 @@ Full reasoning, alternatives, trade-offs: `REFERENCE/decisions/2026-07-09-read-o
 ### Merge carefully
 
 - `.claude/agents/CLAUDE.md` — adds a `### Read-only contract` subsection under "Shared agent contracts" (place it *before* the findings contract), and changes the first two rows of the tool-invocation table so `Read` is no longer the blanket default. Leave the untrusted-input contract, tool grant asymmetry, and severity calibration untouched.
-- `.claude/agents/code-reviewer.md` — Role gains a `**Read-only:**` inheritance line; step 4's "Read full file context using the Read tool" bullet replaced with the `git show FETCH_HEAD:` recipe; the "Why gather your own context?" note corrected.
+- `.claude/agents/code-reviewer.md` — Role gains a `**Read-only:**` inheritance line; step 4's "Read full file context using the Read tool" bullet replaced with the `git show FETCH_HEAD:` recipe; the "Why gather your own context?" note corrected. **The source file also carries an `**Untrusted input:**` line directly above the read-only one** — that came from a later template fix closing a contract-coverage gap. If your local copy lacks it, take both lines; if your project already added its own, keep yours and append the read-only line beneath it. Never resolve this by taking upstream's Role block wholesale — that can delete a contract you already had.
 - `.claude/agents/security-specialist.md` — same three edits.
 - `.claude/agents/product-reviewer.md` — same three edits.
 - `.claude/agents/architect-reviewer.md` — same three edits.
@@ -171,4 +171,5 @@ grep -q "2026-07-09-read-only-reviewer-agents" REFERENCE/decisions/CLAUDE.md
 - **`light-reviewer` and `triage-reviewer` need only the Role line.** Neither ever read changed files — they work from `gh pr diff`. Adding the recipe to them is noise.
 - **Do not give `/review-spec` worktree isolation.** Its reviewers read a spec in the operator's working tree, possibly uncommitted. A worktree would hide the file under review. The asymmetry with the PR skills is deliberate and the skill file says so.
 - **Do not reach for `permissions.deny` or `safety-harness.sh`.** It looks like the rigorous fix and it is the wrong layer — session-wide, blind to subagents, would block the operator's own `git checkout`. The verification suite above actively asserts you did *not* do this.
+- **Role-section inheritance lines have a fixed order:** `**Untrusted input:**` then `**Read-only:**`, as a contiguous block at the end of the Role section. New contracts append to the bottom. If your local agents put them in a different order, normalise to this one while applying — it is what makes future packets append cleanly instead of colliding.
 - **If this project runs with permissive tool settings** (`bypassPermissions`, `dontAsk`, or a broadened git allowlist), worktree isolation is the *only* thing standing between a non-compliant reviewer and your branch. Don't skip layer 2 as "belt and braces".
