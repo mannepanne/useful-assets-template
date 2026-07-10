@@ -313,7 +313,9 @@ grep -q 'safety-harness/run-tests.sh:\*' .claude/settings.json  # safety-harness
 grep -q 'approve-scratch-write/run-tests.sh:\*' .claude/settings.json  # SCRATCH-write test-runner allow-list applied
 test -f SCRATCH/.gitignore                                      # scratch dir present
 grep -q 'Read(/SCRATCH/' .claude/settings.json                  # SCRATCH read allow-list applied
-! grep -q 'Write(/SCRATCH/' .claude/settings.json               # dead Write entries must be absent
+# Anchor to a JSON array entry. A bare `grep -q 'Write(/SCRATCH/'` also matches the
+# _comment_scratch_writes prose that DESCRIBES the absent entry, so it can never pass.
+! grep -qE '^[[:space:]]*"Write\(/SCRATCH' .claude/settings.json   # dead Write entries must be absent
 ! grep -q 'Write(SCRATCH/' .claude/settings.json
 grep -q 'SCRATCH/' .claude/skills/review-pr/SKILL.md            # review skills point at scratch dir
 grep -q 'SCRATCH/' .claude/skills/review-pr-team/SKILL.md

@@ -101,6 +101,14 @@ Prerequisite: this packet assumes `gh` is authenticated against this repo
 ## Verification
 
 ```bash
+# Cross-reference drift guard. post-review-follow-through.md names the step in each
+# skill that invokes it. Renumbering a skill's steps silently invalidates that pointer
+# -- it happened once when the fan-out packet restructured review-pr-team. Assert the
+# named step actually exists and actually invokes the protocol.
+grep -q '`/review-pr-team` (Step 4)' .claude/skills/post-review-follow-through.md
+grep -q '^### Step 4: User summary and follow-through' .claude/skills/review-pr-team/SKILL.md
+grep -q '^### Step 4: User summary and follow-through' .claude/skills/review-pr/SKILL.md
+
 # New protocol file is present
 test -f .claude/skills/post-review-follow-through.md && echo "OK: post-review-follow-through.md present" || echo "MISSING: post-review-follow-through.md"
 
@@ -111,10 +119,13 @@ grep -q "post-review-follow-through" .claude/skills/review-pr/SKILL.md && echo "
 grep -q "post-review-follow-through" .claude/skills/review-pr-team/SKILL.md && echo "OK: review-pr-team references protocol" || echo "MISSING: review-pr-team/SKILL.md reference"
 
 # technical-debt.md is gone
-test ! -f REFERENCE/technical-debt.md && echo "OK: technical-debt.md removed" || echo "NOT REMOVED: REFERENCE/technical-debt.md still present"
+test ! -f REFERENCE/technical-debt.md
 
-# No dangling references to technical-debt.md in docs
-grep -rn "technical-debt\.md" CLAUDE.md REFERENCE/ SPECIFICATIONS/ 2>/dev/null && echo "WARNING: dangling technical-debt.md references found above" || echo "OK: no dangling references"
+# No dangling references to technical-debt.md in docs.
+# Exclude TEMPLATE-UPDATES/: migration packets legitimately DESCRIBE the retirement of
+# technical-debt.md, so scanning them makes this assertion impossible to satisfy in any
+# project that keeps its packets. Only live docs must be clean.
+! grep -rn "technical-debt\.md" CLAUDE.md REFERENCE/ SPECIFICATIONS/ --exclude-dir=TEMPLATE-UPDATES 2>/dev/null
 
 # GitHub issues label convention is referenced somewhere
 grep -q "technical-debt" CLAUDE.md && echo "OK: technical-debt label mentioned in CLAUDE.md" || echo "WARNING: CLAUDE.md may not reference the GitHub label"

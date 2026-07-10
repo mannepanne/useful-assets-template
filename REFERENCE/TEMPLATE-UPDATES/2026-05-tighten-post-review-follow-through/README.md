@@ -104,7 +104,7 @@ grep -q "## Finding" .claude/skills/post-review-follow-through.md && echo "OK: i
 grep -q "full PR URL" .claude/skills/post-review-follow-through.md && echo "OK: full-PR-URL note present" || echo "MISSING: full-PR-URL note not found"
 
 # Step 2 prompts hint at partial confirmation
-grep -q "yes for all" .claude/skills/post-review-follow-through.md && echo "OK: partial-confirmation hint in prompts" || echo "MISSING: partial-confirmation hint not found in prompts"
+grep -qi '"yes" for all' .claude/skills/post-review-follow-through.md || { echo "FAIL: partial-confirmation hint not found in prompts"; exit 1; }
 ```
 
 ## Notes for the receiving Claude
