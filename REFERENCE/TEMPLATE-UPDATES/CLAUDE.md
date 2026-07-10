@@ -76,6 +76,27 @@ When a template improvement should be propagated:
    - **Conditional** — files that may or may not be relevant depending on whether the target project uses a related feature.
 5. **Write the apply prompt** — the literal text the user will paste into the receiving project's Claude. Make it self-contained: the receiving Claude won't see this template's CLAUDE.md.
 6. **Add an entry to the index above** in this file.
+7. **Run `bash REFERENCE/TEMPLATE-UPDATES/verify-packets.sh` before merging.** A packet's own
+   `## Verification` block must pass against the template itself. If it cannot, the check is
+   wrong — fix the check, not the template.
+
+### Verification checks must fail loudly
+
+Write checks that **exit non-zero** when they fail. Three idioms silently defeat this, and
+all three have shipped in this repo:
+
+- `grep -q "x" file && echo "OK" || echo "MISSING"` — **always exits 0.** It announces the
+  failure on stdout and returns success, so nobody notices. Prefer a bare `grep -q "x" file`,
+  or `grep -q "x" file || { echo "FAIL: ..."; exit 1; }`.
+- `! grep -q "x" file` — correct as an assertion, but `set -e` **does not abort** on a failing
+  `!`-prefixed pipeline (POSIX exempts them). The harness re-evaluates these separately; just
+  be aware the idiom cannot carry a whole script on its own.
+- Greps scoped too broadly. `grep -rn "technical-debt.md" REFERENCE/` matches the packet
+  README that *describes* retiring `technical-debt.md`. Anchor the pattern (`^\s*"Write\(`)
+  or exclude `--exclude-dir=TEMPLATE-UPDATES`.
+
+Test a new check by **breaking the thing it asserts** and confirming it goes red. A check that
+cannot fail is worse than no check: it reports green over a real defect.
 
 ## Applying a packet (in a derivative project)
 
