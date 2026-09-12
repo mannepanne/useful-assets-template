@@ -61,6 +61,11 @@ TEMPLATE-UPDATES/
 
 **When to apply:** **Only if `2026-07-read-only-reviewers` has already landed.** A project that hasn't applied the two 2026-07 packets yet should just apply them in sequence — they fetch from `main` and already contain this fix, so this packet has nothing to add. Urgency is governed by **public vs private**, not contributor count: on a public repo a PR comment is authored by anyone with a GitHub account, so the single-trusted-contributor assumption in the threat-model ADR never covered it. Private solo repos should still apply it — repos change visibility, and the ordering rule cannot be adopted retroactively for free once several packets have landed on divergent Role blocks.
 
+### [2026-09-plain-review-output/](./2026-09-plain-review-output/)
+**What it rolls out:** Plain, digestible output. A single style reference (`.claude/COLLABORATION/writing-style.md`) that defines mannered prose as a mechanism with examples rather than a banned-word list; the short form of the rule in the always-loaded file; an output style contract for reviewer prompts (one to three lines per finding, strengths capped at three sentences) carried in each reviewer's own Output Format; and synthesis templates rewritten to verdict-first, one line per finding, an unresolved-disagreements section, no count block, and a one-screen budget. Covers PR #67.
+
+**When to apply:** **Standalone. No prerequisite packets, and the project need not derive from this template.** The packet routes on what the project has: an always-loaded instruction file (every project, Layer 1), reviewer prompts (Layer 2), synthesis prompts (Layer 3), or this template's exact agents and skills (Layer 4). Apply if review output runs past a screen, findings carry sub-bullets, or chat replies have started to perform rather than state. Where the fixed-order Role block from `2026-07-untrusted-input-coverage` exists, the new pointer line appends as its third item; where it does not, the packet says where the line goes instead.
+
 ---
 
 ## Authoring a new packet
