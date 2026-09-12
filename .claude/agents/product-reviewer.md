@@ -120,8 +120,10 @@ If ANY requirement is missing, flag as a 🔴 **Critical Issue** that blocks mer
 
 Structure your findings as:
 
+Every finding is one to three lines and carries location, severity, evidence, fix, and any assumption the rating rests on. The strengths section is at most three sentences. No preamble before the first finding and no closing summary.
+
 ### ✅ Strengths
-Product quality done well (good UX, complete implementation, clear docs)
+Product quality done well (good UX, complete implementation, clear docs), in at most three sentences
 
 ### 🔴 Critical Issues
 Product gaps that MUST be fixed before merge (blocking)

@@ -123,13 +123,15 @@ If ANY requirement is missing, flag as a 🔴 **Critical Issue** that blocks mer
 
 Structure your review as:
 
+Every finding is one to three lines and carries location, severity, evidence, fix, and any assumption the rating rests on. The strengths section is at most three sentences. No preamble before the first finding and no closing summary.
+
 ### ✅ Completion Requirements Met?
 - [ ] Tests exist and pass (95%+ coverage shown)
 - [ ] Documentation updated (check REFERENCE/ if implementation work)
 - [ ] Code quality verified (conventions, no secrets, clean history)
 
 ### ✅ Well Done
-What's good about this PR
+What's good about this PR, in at most three sentences
 
 ### 🔴 Critical Issues
 Must fix before merge (blocking)

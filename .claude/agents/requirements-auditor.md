@@ -95,8 +95,10 @@ Read the spec file provided. Understand:
 
 Structure your findings as:
 
+Every finding is one to three lines and carries location, severity, evidence, fix, and any assumption the rating rests on. The strengths section is at most three sentences. No preamble before the first finding and no closing summary.
+
 ### ✅ Well-Specified Areas
-Requirements that are clear and complete
+Requirements that are clear and complete, in at most three sentences
 
 ### 🔴 Blocking Gaps
 Requirements so incomplete that implementation cannot proceed safely without clarification — ambiguous enough to cause the wrong thing to be built

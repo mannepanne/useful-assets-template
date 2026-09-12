@@ -117,7 +117,7 @@ Reviewed independently by Requirements Auditor (RA), Technical Skeptic (TS) and 
 - **A finding appears once.** Do not restate a blocking issue under conditions or suggestions.
 - **Divergences stay in their own section**, because that is where the human's judgement is needed. Keep the higher severity on an unresolved one.
 - **No count block.** The bullets are the summary; a table of per-reviewer tallies restates them as numbers and adds nothing the reader can act on.
-- **Length budget: one screen, about forty lines, unless there are more than eight findings.** If the assessment runs longer than that, findings have grown sub-bullets or prose has crept in between sections. Cut it back before presenting.
+- **Length budget: one screen, about forty lines, unless there are more than eight findings.** If the assessment runs longer than that, findings have grown sub-bullets or prose has crept in between sections. Cut prose, never findings or their evidence.
 - **No preamble before the title and no closing paragraph after the last section.** The verdict line at the top is the summary.
 
 Present this synthesis directly in the conversation — do **not** post to a PR or write to a file unless the user asks.

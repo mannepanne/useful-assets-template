@@ -75,33 +75,34 @@ You now hold every report. This step is the review — do it properly rather tha
 
 Reviewed independently by 🛡️ Security, 📦 Product, 🏗️ Architecture and ✍️ Docs. [If a reviewer failed, say which perspective is missing here.]
 
-**Completion requirements:** tests [✅ / ❌ one clause] · documentation [✅ / ❌ one clause] · code quality [✅ / ❌ one clause]
+**Completion requirements:** tests [✅ / ❌ one clause] · documentation [✅ / ❌ one clause] · code quality [✅ / ❌ one clause: conventions, no secrets, clean history]
 
 ### 🔴 Must fix before merge
-- `config.ts:42` Hardcoded API key. Fix: read from an environment variable with validation at startup. — 🛡️ 🏗️
+- `[file:line]` [Finding]. Fix: [fix]. — 🛡️ 🏗️
 
 ### ⚠️ Should address
-- `handler.ts:17` No error handling on user input. Security rated 🔴 assuming the input was unvalidated; Architecture confirms validation at `routes.ts:31`, so ⚠️. Fix: defensive handling for future callers. — 🛡️ 📦
-- `migrations/004.sql` Drops `legacy_id`. Unresolved: Architecture reads the column as dead, Product believes an external consumer still reads it, and neither report settles it. Decide before merge. — 🏗️ 📦
+- `[file:line]` [Finding]. [Reviewer A] rated 🔴 assuming [X]; [Reviewer B]'s report shows [Y], so ⚠️. Fix: [fix]. — 🛡️ 📦
+
+### ⚖️ Unresolved — your call
+- `[file:line]` [Finding]. [Reviewer A] says [X]; [Reviewer B] says [Y]. Neither report settles it because [reason]; [what would]. Decide before merge. — 🏗️ 📦
 
 ### 💡 Suggestions
-- `lib/cache.ts:8` [One line]. — 🏗️
+- `[file:line]` [Finding]. Fix: [fix]. — 🏗️
 
 ### ✅ Solid
-[At most three sentences on what the PR does well. Omit the section if nothing stands out.]
-
-*Four specialists reviewed this PR independently; findings were deduplicated and reconciled into the verdict above.*
+[At most three sentences on what the PR does well. When there are no findings this section is the review, so keep at least one sentence; otherwise omit it if nothing stands out.]
 ```
 
 **Rules for the comment:**
 
 - **One bullet per finding, one to three lines.** Location in a code span, then the finding, then the fix, then the reviewer tags. Sub-bullets only for a genuine second point.
-- **Reconciliation is a clause on the line**, as in the examples: what each reviewer rated, what settled it, the result. An unresolved disagreement keeps the higher severity and says "Unresolved" on the line.
+- **Reconciliation is a clause on the line**, as in the template: what each reviewer rated, what settled it, the result.
+- **Unresolved disagreements get their own section.** They are where the human's judgement is needed, and the PR comment is the record. Keep the higher severity and say what would settle it.
 - **Every empty section is omitted.** No empty headers, no "none found".
 - **A finding appears once.** Do not restate a critical issue under warnings or suggestions.
 - **No count block.** The bullets are the summary; per-reviewer tallies restate them as numbers and add nothing the reader can act on.
-- **Length budget: one screen, about forty lines, unless there are more than eight findings.** If the comment runs longer, findings have grown sub-bullets or prose has crept in between sections. Cut it back before posting.
-- **No preamble before the title and no closing paragraph** beyond the one-line attribution footer.
+- **Length budget: one screen, about forty lines, unless there are more than eight findings.** If the comment runs longer, findings have grown sub-bullets or prose has crept in between sections. Cut prose, never findings or their evidence.
+- **No preamble before the title and no closing paragraph.** The paths in the template are placeholders; every location in the posted comment comes from a reviewer's report.
 
 ### Step 3: Post the review
 
@@ -117,7 +118,7 @@ Using `--body-file` avoids the brittle heredoc-quoting pattern (where a synthesi
 
 ### Step 4: User summary and follow-through
 
-Give a one-line status: recommendation (block / approve with changes / approve) and a link to the PR comment. Say whether any severity disagreements were left unresolved — that's the thing most worth the human's attention. Do not paste the posted comment into chat; the PR comment is the record, and chat carries the status line and the follow-through only.
+Give a one-line status: recommendation (block / approve with changes / approve) and a link to the PR comment. Say whether any severity disagreements were left unresolved — that's the thing most worth the human's attention. Do not paste the posted comment into chat; the PR comment is the record, and chat carries the status line, the follow-through, and any observation of your own that no reviewer raised, marked as yours.
 
 Then run the follow-through protocol in [`.claude/skills/post-review-follow-through.md`](../post-review-follow-through.md) — re-bucket findings by action tier, surface decisions, and create GitHub issues for anything genuinely out of scope.
 
@@ -154,7 +155,7 @@ Expected time: 2–4 minutes, depending on PR size.
 
 **A reviewer returned nothing / errored:** synthesise from the remaining reports and say which perspective is missing, in both the chat summary and the PR comment. Don't re-spawn, and don't quietly ship a three-perspective review labelled as four.
 
-**Reviewers disagree and you can't tell who's right from the reports:** that's an expected outcome, not a failure. Keep the higher severity, document both positions under the finding, and let the human decide. Resist the urge to ask a reviewer a follow-up question — the unbounded back-and-forth that creates is exactly what this design removed.
+**Reviewers disagree and you can't tell who's right from the reports:** that's an expected outcome, not a failure. Keep the higher severity, record both positions on the finding's line under ⚖️ Unresolved, and let the human decide. Resist the urge to ask a reviewer a follow-up question — the unbounded back-and-forth that creates is exactly what this design removed.
 
 **The review runs past a screen:** findings have grown sub-bullets, or prose has appeared between sections. Every finding is one to three lines with reconciliation as a clause on the line; the rules under Step 2d are the fix.
 

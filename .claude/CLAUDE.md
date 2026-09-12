@@ -265,7 +265,7 @@ We value documentation - it enables picking up projects later and communicating 
 **Writing style:**
 - **British English** - Use British spelling throughout (optimise not optimize, minimise not minimize, colour not color, etc.)
 - **Headline capitalisation** - Only capitalise the first word in headlines and proper nouns, not every word (e.g., "Getting started with the project" not "Getting Started With The Project")
-- **Consistency** - Match the style of existing documentation when editing
+- **Consistency** - Match the style of existing documentation when editing. Prose rules (plain statement, length budgets) are in [writing-style.md](./COLLABORATION/writing-style.md)
 
 ### Proactive doc-refresh offers
 

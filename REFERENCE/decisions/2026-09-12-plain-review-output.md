@@ -46,7 +46,7 @@ A second problem arrived with more capable models: mannered prose. Phrases such 
 
 **Attribution is lighter.** Reviewer tags replace "raised by" sub-bullets. Accepted: the tag carries the same fact.
 
-**Three copies of the core rule to keep aligned.** Accepted: the copies are short, and the full reference is in one file.
+**The rule is repeated in many places.** The prose rule lives in three: the style file, `.claude/CLAUDE.md`, and the agents' shared contract. The length budget's numbers are repeated further: in every agent's pointer line and Output Format, in the three skills, and in the workflow reference, which is more than fifteen files. A future change to "one to three lines" touches all of them. Accepted: each copy is one sentence, the full reference is in one file, and a grep for the phrase finds every copy.
 
 ## Implications
 

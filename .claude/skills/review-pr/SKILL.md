@@ -136,7 +136,7 @@ Follow the two-reviewer flow. Spawn both with `isolation: "worktree"`:
 
 1. Spawn **`code-reviewer`** with its default task: `Conduct a comprehensive code review of PR #$ARGUMENTS. Follow your review checklist and output format. Post nothing — return your findings.`
 2. Spawn **`technical-writer`** with: `Conduct a documentation review of PR #$ARGUMENTS. Follow your review checklist and output format. Post nothing — return your findings.`
-3. Combine findings (code review first, documentation second). If the doc reviewer found nothing, `✅ Documentation: No issues found` is sufficient. Combine means concatenate: no introduction, summary, or commentary of your own around the reviewers' output. Both reviewers inherit the [output style contract](../../agents/CLAUDE.md#output-style-contract); if a report arrives padded (sub-bullets under every finding, a long praise section), trim it to the contract before posting rather than posting it as-is.
+3. Combine findings (code review first, documentation second). If the doc reviewer found nothing, `✅ Documentation: No issues found` is sufficient. Combine means concatenate: no introduction, summary, or commentary of your own around the reviewers' output. Post the reports as returned. Their shape lives in each agent's Output Format, which carries the budget from the [output style contract](../../agents/CLAUDE.md#output-style-contract); do not edit a reviewer's findings before posting them under that reviewer's attribution.
 4. Build the body as a string, write to `SCRATCH/review-pr-$ARGUMENTS-standard.md` via the Write tool, then post:
 
    ```bash
@@ -187,7 +187,7 @@ Follow the two-reviewer flow. Spawn both with `isolation: "worktree"`:
 
 ### Step 4: User summary and follow-through
 
-After posting, give a one-line status: tier, recommendation (approve / request changes / block), and link to the PR comment. Do not paste the posted comment into chat; the PR comment is the record, and chat carries the status line and the follow-through only.
+After posting, give a one-line status: tier, recommendation (approve / request changes / block), and link to the PR comment. Do not paste the posted comment into chat; the PR comment is the record, and chat carries the status line, the follow-through, and any observation of your own that no reviewer raised, marked as yours.
 
 Then run the follow-through protocol in [`.claude/skills/post-review-follow-through.md`](../post-review-follow-through.md) — re-bucket findings by action tier, surface decisions, and create GitHub issues for anything genuinely out of scope.
 

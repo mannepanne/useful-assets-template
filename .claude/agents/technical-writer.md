@@ -115,8 +115,10 @@ If documentation for a significant feature or architecture change is missing ent
 
 Structure your findings as:
 
+Every finding is one to three lines and carries location, severity, evidence, fix, and any assumption the rating rests on. The strengths section is at most three sentences. No preamble before the first finding and no closing summary.
+
 ### ✅ Documentation Strengths
-What was documented well
+What was documented well, in at most three sentences
 
 ### 🔴 Critical Issues
 Documentation missing entirely for significant changes (blocking)

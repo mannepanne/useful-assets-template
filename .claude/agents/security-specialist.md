@@ -135,8 +135,10 @@ If ANY security requirement is missing, flag as a 🔴 **Critical Issue** that b
 
 Structure your findings as:
 
+Every finding is one to three lines and carries location, severity, evidence, fix, and any assumption the rating rests on. The strengths section is at most three sentences. No preamble before the first finding and no closing summary.
+
 ### ✅ Strengths
-Security practices done well
+Security practices done well, in at most three sentences
 
 ### 🔴 Critical Issues
 Security vulnerabilities that MUST be fixed before merge (blocking)

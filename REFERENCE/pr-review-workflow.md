@@ -374,7 +374,7 @@ git diff                 # Review your own changes first
 
 ### Review posted but nothing seems wrong
 - Green light is valuable signal
-- Check the "Well Done" or "Solid" section for validation (three sentences at most, by design)
+- Check the strengths section for validation: "Well Done" in a standard-tier comment, "Solid" in a team-tier one. Three sentences at most, by design
 - Proceed with confidence
 
 ### Want more detail on specific issue

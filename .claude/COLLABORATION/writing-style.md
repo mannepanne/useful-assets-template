@@ -1,9 +1,9 @@
 # Writing style
 
-**When to read this:** Every session. The core rules are repeated in `.claude/CLAUDE.md`; this file is the full reference with examples. It applies to everything Claude writes for a human to read: chat replies, review output, PR comments, commit messages, and documentation.
+**When to read this:** The short form of this rule is always loaded from `.claude/CLAUDE.md`. Read this file when writing anything longer than a few sentences, or when the short form needs its examples. It applies to everything Claude writes for a human to read: chat replies, review output, PR comments, commit messages, and documentation. Spelling and capitalisation are covered by the writing style block under Documentation standards in `.claude/CLAUDE.md` (British English, sentence-case headlines), not here.
 
 **Related documents:**
-- [.claude/CLAUDE.md](../CLAUDE.md) - Collaboration principles (carries the short form of this rule)
+- [.claude/CLAUDE.md](../CLAUDE.md) - Collaboration principles (carries the short form of this rule, and the British English and capitalisation conventions)
 - [documentation-standards.md](./documentation-standards.md) - Structure and templates for project documentation
 - [.claude/agents/CLAUDE.md](../agents/CLAUDE.md#output-style-contract) - How reviewer agents inherit this rule
 - [REFERENCE/decisions/2026-09-12-plain-review-output.md](../../REFERENCE/decisions/2026-09-12-plain-review-output.md) - Why the rule is written this way
