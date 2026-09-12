@@ -63,7 +63,7 @@ The short form is inline on purpose. A rule that lives only behind a link is not
 
 ## Layer 2 — reviewer prompts (any prompt that defines a review output format)
 
-Apply to every prompt that returns findings in severity sections. In this template that is eight agents: the five PR reviewers (`code-reviewer`, `security-specialist`, `product-reviewer`, `architect-reviewer`, `technical-writer`) and the three spec reviewers (`requirements-auditor`, `technical-skeptic`, `devils-advocate`). Prompts that already return something tighter, such as a classification block or at most three one-line items, are left alone.
+Apply to every prompt that returns findings in severity sections. In this template that is eight agents: the five PR reviewers (`code-reviewer`, `security-specialist`, `product-reviewer`, `architect-reviewer`, `technical-writer`) and the three spec reviewers (`requirements-auditor`, `technical-skeptic`, `devils-advocate`). Prompts that already return something tighter, such as a classification block or at most three one-line items, are left alone. The automated check below recognises this template's heading shape (`## Output Format` with `### ✅` sections under `.claude/agents/`); a project whose reviewer prompts are headed differently checks steps 2a and 2b by reading each prompt.
 
 **2a. In each such prompt, directly after the line that introduces the output structure** ("Structure your findings as:" or equivalent), insert:
 
@@ -78,6 +78,8 @@ Apply to every prompt that returns findings in severity sections. In this templa
 > **Scope test:** does this agent return findings-shaped output? Those that do carry the budget in their own Output Format section, because a template shapes output more reliably than an inherited sentence. Agents that return a classification block or a handful of one-line items are already tighter than this contract. **Precedence:** where an agent's own Output Format is stricter than this contract, the agent's format wins.
 
 > The length budget is deliberate and lives in units rather than adjectives: "be concise" loses to a template that asks for four sub-bullets per finding, while "one to three lines" does not.
+
+The wording above is deliberately more general than the template's own contract, which names its eight agents; a derivative that applies Layer 2 rather than Layer 4 installs this wording and should keep it rather than "correcting" it to match the template's in a later sweep.
 
 If that file has a **Findings contract** listing what a finding carries, extend it with two items: **Fix** (what would resolve it, in one clause; a finding with no known fix says so) and **Assumption** (if the severity depends on something the reviewer could not verify, state it in one clause, because synthesis reconciles severity by checking whether another report discharges a stated assumption).
 
@@ -204,7 +206,7 @@ Please:
    end-to-end. Understand WHY before touching any file.
 2. Run the "Who needs this" checks and tell me which layers apply to this project, and
    which file here is the always-loaded instruction file (CLAUDE.md, AGENTS.md,
-   .cursorrules, or something else).
+   .cursorrules, GEMINI.md, or something else).
 3. Create a feature branch (e.g. `feature/adopt-plain-output`). Do NOT work on main.
 4. Layer 1, always: fetch writing-style.md byte-exact and place it where this project
    keeps behavioural guidance, fixing the relative links in its header. Add the short-form
@@ -233,18 +235,21 @@ Each layer's checks are guarded so they pass vacuously where the layer does not 
 
 ```bash
 # Layer 1: the style reference exists (any path) and carries the rule
-ws=""
-for c in .claude/COLLABORATION/writing-style.md docs/writing-style.md writing-style.md; do
-  [ -f "$c" ] && ws="$c" && break
-done
-test -n "$ws" || { echo "MISSING: writing-style.md (searched three conventional paths; pass the real one)"; exit 1; }
+# Set WS=<path> before running if the file lives somewhere other than the three paths tried here
+ws="${WS:-}"
+if [ -z "$ws" ]; then
+  for c in .claude/COLLABORATION/writing-style.md docs/writing-style.md writing-style.md; do
+    [ -f "$c" ] && ws="$c" && break
+  done
+fi
+test -n "$ws" && test -f "$ws" || { echo "MISSING: writing-style.md (tried three conventional paths; run with WS=<path> to name yours)"; exit 1; }
 grep -q 'Remove all mannered prose' "$ws"
 grep -q 'When a literal phrase is available, use it' "$ws"
 grep -q '| The fragment run |' "$ws"
 
 # Layer 1: the always-loaded file carries the short form, and the old one-liner is gone
-grep -qs 'Remove all mannered prose' .claude/CLAUDE.md CLAUDE.md AGENTS.md .cursorrules || { echo "MISSING: short-form rule in the always-loaded file"; exit 1; }
-! grep -qs "Don't waste tokens" .claude/CLAUDE.md CLAUDE.md AGENTS.md .cursorrules
+grep -qs 'Remove all mannered prose' .claude/CLAUDE.md CLAUDE.md AGENTS.md .cursorrules GEMINI.md || { echo "MISSING: short-form rule in the always-loaded file"; exit 1; }
+! grep -qs "Don't waste tokens" .claude/CLAUDE.md CLAUDE.md AGENTS.md .cursorrules GEMINI.md
 
 # Byte-identity over the "Copy verbatim" files that exist locally at the template path
 for p in .claude/COLLABORATION/writing-style.md REFERENCE/decisions/2026-09-12-plain-review-output.md; do
@@ -274,13 +279,18 @@ if [ -d .claude/agents ]; then
     grep -q '^4\. \*\*Fix\*\*' .claude/agents/CLAUDE.md
     grep -q '^5\. \*\*Assumption\*\*' .claude/agents/CLAUDE.md
   fi
-  # Pointer-line order: where both Read-only and Output style lines exist, Output style is two lines below
+  # Pointer-line order. Where the fixed-order block exists (Untrusted input directly above
+  # Read-only), Output style must sit two lines below Read-only. Where it does not, the
+  # packet only asks that the new line comes after the existing ones.
   for f in .claude/agents/*.md; do
     case "$f" in *CLAUDE.md) continue;; esac
+    u=$(grep -n '^\*\*Untrusted input:\*\* inherits' "$f" | cut -d: -f1)
     r=$(grep -n '^\*\*Read-only:\*\* inherits' "$f" | cut -d: -f1)
     o=$(grep -n '^\*\*Output style:\*\* inherits' "$f" | cut -d: -f1)
-    if [ -n "$r" ] && [ -n "$o" ]; then
-      { [ "$o" -gt "$r" ] && [ $((o-r)) -eq 2 ]; } || { echo "BAD ORDER: $f (Output style must append directly after Read-only)"; exit 1; }
+    [ -n "$r" ] && [ -n "$o" ] || continue
+    [ "$o" -gt "$r" ] || { echo "BAD ORDER: $f (Output style must come after Read-only)"; exit 1; }
+    if [ -n "$u" ] && [ $((r-u)) -eq 2 ]; then
+      [ $((o-r)) -eq 2 ] || { echo "BAD ORDER: $f (fixed-order block present; Output style must append directly after Read-only)"; exit 1; }
     fi
   done
   echo "pointer order holds"
@@ -315,7 +325,7 @@ if [ -f .claude/agents/CLAUDE.md ] && grep -q '### Output style contract' .claud
   fi
 fi
 if grep -qs '^\*\*Output style:\*\* inherits' .claude/agents/*.md; then
-  grep -q '### Output style contract' .claude/agents/CLAUDE.md || { echo "BROKEN: pointer lines exist but the contract section does not"; exit 1; }
+  grep -qs '### Output style contract' .claude/agents/CLAUDE.md || { echo "BROKEN: pointer lines exist but the contract section does not"; exit 1; }
 fi
 echo "no partial merge"
 ```
@@ -328,4 +338,5 @@ echo "no partial merge"
 - **The template's example paths are placeholders.** Do not carry a concrete `config.ts:42` into a template a model will fill; a fabricated location in a posted review destroys trust in the review system.
 - **Praise is capped, not banned.** A clean review still says in one to three sentences that the work is sound. "Omit if nothing stands out" applies when there are findings to read instead.
 - **Outside this template**, the equivalent of `.claude/agents/CLAUDE.md` might be a `prompts/` folder, a system prompt in code, or nothing. Layer 2's steps 2a and 2b apply to any prompt text that defines findings sections, wherever it lives. Layer 3 applies to any prompt that merges reports, including a single-agent "review then summarise" prompt.
+- **The byte-identity check compares against `main` of the source repo.** In this template itself, a branch that edits `writing-style.md` or the ADR reports DRIFT until it is merged. That is expected and is the check working; it needs network access and `gh` authentication to run.
 - **Do not ban formatting.** The style reference says when lists and headers help; older prompts sometimes carry "never use bullets" rules that over-correct newer models. If you find one, replace it with the rule from `writing-style.md` rather than stacking the two.
