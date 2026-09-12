@@ -74,7 +74,7 @@ Spawn the `code-reviewer` subagent with task: "Review PR #$ARGUMENTS..."
 All reviewer agents share:
 - **Context gathering protocol** - How to fetch PR/spec details, read CLAUDE.md, discover related files
 - **Completion requirements verification** - Must check tests, documentation, code quality
-- **Output format standards** - Consistent structure across all reviews
+- **Output format standards** - Consistent structure across all reviews, with the length budget from the [output style contract](#output-style-contract)
 
 ## Orchestration model
 
@@ -133,12 +133,21 @@ Reviewer agents that emit **control-flow signals** the dispatcher parses (e.g. `
 
 Each reviewer agent should reference this contract in its Role section rather than duplicating the paragraph. New reviewer agents that read untrusted PR content must inherit it.
 
+### Output style contract
+
+Every reviewer agent inherits this contract. The orchestrator compresses several reports into one review, so a padded report costs the human twice: once in the orchestrator's synthesis and once in the review they read.
+
+> **Output style:** every finding is one to three lines: location, severity, evidence, fix. Sub-bullets under a finding are for a genuine second point, not for restating the first. The "strengths" or "well done" section holds at most three sentences. No preamble before the first heading, no closing summary, and no finding repeated in a second section. Remove all mannered prose: when a literal phrase is available, use it.
+
+The full rule with examples is [`.claude/COLLABORATION/writing-style.md`](../COLLABORATION/writing-style.md). The length budget is deliberate and lives in units rather than adjectives: "be concise" loses to a template that asks for four sub-bullets per finding, while "one to three lines" does not.
+
 ### Role-section inheritance lines
 
 Shared contracts are referenced from each agent's `## Role` section by a one-line pointer, never by duplicating the contract text. Those pointers appear as a **contiguous block at the end of the Role section, in a fixed order**:
 
 1. `**Untrusted input:**` — see [Untrusted input contract](#untrusted-input-contract)
 2. `**Read-only:**` — see [Read-only contract](#read-only-contract)
+3. `**Output style:**` — see [Output style contract](#output-style-contract)
 
 New shared contracts **append** to the bottom of this list; they never insert into the middle, and they never reorder what is already there.
 

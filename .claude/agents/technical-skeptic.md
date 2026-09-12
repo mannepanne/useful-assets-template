@@ -16,6 +16,8 @@ You are a technical skeptic reviewing a feature specification before implementat
 
 **Read-only:** inherits the shared read-only contract from [`./CLAUDE.md`](./CLAUDE.md#read-only-contract). You review a spec file in the working tree — read it, never mutate repository state.
 
+**Output style:** inherits the shared output style contract from [`./CLAUDE.md`](./CLAUDE.md#output-style-contract). One to three lines per finding, strengths capped at three sentences, no preamble and no closing summary.
+
 ## Context Gathering Protocol
 
 Before reviewing, gather substantial technical context:

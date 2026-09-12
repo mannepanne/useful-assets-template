@@ -66,70 +66,42 @@ You now hold every report. This step is the review — do it properly rather tha
 
 **2c. Do not invent findings.** Every item in the synthesis traces to at least one reviewer's report. Your job is reconciliation, not a fifth review. If you personally spot something none of them did, that belongs in your chat summary to the user, clearly marked as yours — not in the PR comment attributed to the team.
 
-**2d. Build the comment** using this structure:
+**2d. Build the comment.** Verdict first, one line per finding, reviewer attribution as a tag at the end of the line. Reconciliation goes on the finding's own line as a clause, not as a block of sub-bullets. The output style contract in [`.claude/agents/CLAUDE.md`](../../agents/CLAUDE.md#output-style-contract) applies to you as much as to the reviewers.
 
 ```markdown
-## Comprehensive PR Review — Multi-Perspective Analysis
+## PR Review — team tier
 
-> Reviewed independently by four specialists — security, product, architecture, documentation — and synthesised into a single verdict.
+**Recommendation: [BLOCK MERGE / APPROVE WITH CHANGES / APPROVE]** — [one sentence saying why].
 
-### ✅ Completion Requirements Met?
-- [ ] Tests exist and pass (95%+ coverage shown)
-- [ ] Documentation updated (check REFERENCE/ if implementation work)
-- [ ] Code quality verified (conventions, no secrets, clean history)
+Reviewed independently by 🛡️ Security, 📦 Product, 🏗️ Architecture and ✍️ Docs. [If a reviewer failed, say which perspective is missing here.]
 
-### 🔴 Critical Issues — Must Fix Before Merge
+**Completion requirements:** tests [✅ / ❌ one clause] · documentation [✅ / ❌ one clause] · code quality [✅ / ❌ one clause]
 
-[Each blocking issue, with the reviewer(s) who raised it and the agreed severity]
+### 🔴 Must fix before merge
+- `config.ts:42` Hardcoded API key. Fix: read from an environment variable with validation at startup. — 🛡️ 🏗️
 
-**Example:**
-**Hardcoded API key in `config.ts:42`** 🛡️ Security 🏗️ Architecture
-- **Severity:** Critical — flagged independently by two reviewers
-- **Security:** secrets in code are an immediate vulnerability
-- **Architecture:** violates 12-factor app principles
-- **Fix:** use environment variables with validation
+### ⚠️ Should address
+- `handler.ts:17` No error handling on user input. Security rated 🔴 assuming the input was unvalidated; Architecture confirms validation at `routes.ts:31`, so ⚠️. Fix: defensive handling for future callers. — 🛡️ 📦
+- `migrations/004.sql` Drops `legacy_id`. Unresolved: Architecture reads the column as dead, Product believes an external consumer still reads it, and neither report settles it. Decide before merge. — 🏗️ 📦
 
-### ⚠️ Warnings & Concerns — Should Address
+### 💡 Suggestions
+- `lib/cache.ts:8` [One line]. — 🏗️
 
-[Non-blocking but important. Show which perspectives raised each.]
+### ✅ Solid
+[At most three sentences on what the PR does well. Omit the section if nothing stands out.]
 
-**Example (severity reconciled):**
-**No error handling in user input handler** 🛡️ Security 📦 Product
-- **Reported as:** Security 🔴, Product ⚠️
-- **Reconciled to:** ⚠️ — Security's rating assumed the input was unvalidated; the Architect's report confirms it is validated at the router (`routes.ts:31`)
-- **Fix:** add defensive error handling for future-proofing
-
-**Example (unresolved):**
-**Migration drops the `legacy_id` column** 🏗️ Architecture 📦 Product
-- **Reported as:** Architecture ⚠️, Product 🔴
-- **Unresolved:** Architecture reads the column as dead; Product believes an external consumer still reads it. Neither report settles whether an external consumer exists.
-- **Decide before merge.**
-
-### ✅ Strengths & Good Practices
-
-[What reviewers praised. Note where several converged on the same thing.]
-
-### 💡 Suggestions for Improvement
-
-[Compile from all reports. Deduplicate.]
-
-### 📊 Review Summary
-
-- 🛡️ Security Specialist: [X critical, Y warnings, Z suggestions]
-- 📦 Product Manager: [X critical, Y warnings, Z suggestions]
-- 🏗️ Senior Architect: [X critical, Y warnings, Z suggestions]
-- ✍️ Technical Writer: [X critical, Y gaps, Z suggestions]
-
-**Findings corroborated by 2+ reviewers:** X
-**Severity disagreements reconciled during synthesis:** Y
-**Severity disagreements left unresolved (flagged above):** Z
-
-**Recommendation:** [BLOCK MERGE / APPROVE WITH CHANGES / APPROVE]
-
----
-
-*Four specialists reviewed this PR independently; their findings were deduplicated and reconciled into the verdict above.*
+*Four specialists reviewed this PR independently; findings were deduplicated and reconciled into the verdict above.*
 ```
+
+**Rules for the comment:**
+
+- **One bullet per finding, one to three lines.** Location in a code span, then the finding, then the fix, then the reviewer tags. Sub-bullets only for a genuine second point.
+- **Reconciliation is a clause on the line**, as in the examples: what each reviewer rated, what settled it, the result. An unresolved disagreement keeps the higher severity and says "Unresolved" on the line.
+- **Every empty section is omitted.** No empty headers, no "none found".
+- **A finding appears once.** Do not restate a critical issue under warnings or suggestions.
+- **No count block.** The bullets are the summary; per-reviewer tallies restate them as numbers and add nothing the reader can act on.
+- **Length budget: one screen, about forty lines, unless there are more than eight findings.** If the comment runs longer, findings have grown sub-bullets or prose has crept in between sections. Cut it back before posting.
+- **No preamble before the title and no closing paragraph** beyond the one-line attribution footer.
 
 ### Step 3: Post the review
 
@@ -145,7 +117,7 @@ Using `--body-file` avoids the brittle heredoc-quoting pattern (where a synthesi
 
 ### Step 4: User summary and follow-through
 
-Give a one-line status: recommendation (block / approve with changes / approve) and a link to the PR comment. Say whether any severity disagreements were left unresolved — that's the thing most worth the human's attention.
+Give a one-line status: recommendation (block / approve with changes / approve) and a link to the PR comment. Say whether any severity disagreements were left unresolved — that's the thing most worth the human's attention. Do not paste the posted comment into chat; the PR comment is the record, and chat carries the status line and the follow-through only.
 
 Then run the follow-through protocol in [`.claude/skills/post-review-follow-through.md`](../post-review-follow-through.md) — re-bucket findings by action tier, surface decisions, and create GitHub issues for anything genuinely out of scope.
 
@@ -183,5 +155,7 @@ Expected time: 2–4 minutes, depending on PR size.
 **A reviewer returned nothing / errored:** synthesise from the remaining reports and say which perspective is missing, in both the chat summary and the PR comment. Don't re-spawn, and don't quietly ship a three-perspective review labelled as four.
 
 **Reviewers disagree and you can't tell who's right from the reports:** that's an expected outcome, not a failure. Keep the higher severity, document both positions under the finding, and let the human decide. Resist the urge to ask a reviewer a follow-up question — the unbounded back-and-forth that creates is exactly what this design removed.
+
+**The review runs past a screen:** findings have grown sub-bullets, or prose has appeared between sections. Every finding is one to three lines with reconciliation as a clause on the line; the rules under Step 2d are the fix.
 
 **The synthesis looks like four documents stapled together:** you skipped Step 2a/2b. Findings that share a `file:line` must be merged, and differing severities on a merged finding must be explicitly reconciled or explicitly recorded as unresolved.
